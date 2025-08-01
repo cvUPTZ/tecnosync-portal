@@ -43,47 +43,45 @@ const AdminLayout = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen">
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AdminSidebar />
-          
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Top Header */}
-            <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6 shrink-0">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-lg font-semibold text-tfa-blue">
-                  أكاديمية تكنو - نظام الإدارة
-                </h1>
+    <SidebarProvider defaultOpen={true}>
+      <div dir="rtl" className="min-h-screen bg-background flex w-full">
+        <AdminSidebar />
+        
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Header */}
+          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6 shrink-0">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold text-tfa-blue">
+                أكاديمية تكنو - نظام الإدارة
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{profile.full_name}</span>
               </div>
               
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{profile.full_name}</span>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  تسجيل الخروج
-                </Button>
-              </div>
-            </header>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                تسجيل الخروج
+              </Button>
+            </div>
+          </header>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
-              <Outlet />
-            </main>
-          </div>
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto">
+            <Outlet />
+          </main>
         </div>
-      </SidebarProvider>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

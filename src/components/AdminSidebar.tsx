@@ -74,6 +74,7 @@ const AdminSidebar = () => {
 
   return (
     <Sidebar
+      side="right"
       className={collapsed ? 'w-14' : 'w-64'}
       collapsible="icon"
     >
