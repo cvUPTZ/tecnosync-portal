@@ -12,6 +12,7 @@ import RegistrationManagement from "./pages/RegistrationManagement";
 import StudentManagement from "./pages/StudentManagement";
 import UserManagement from "./pages/UserManagement";
 import Attendance from "./pages/Attendance";
+import CoachManagement from "./pages/CoachManagement";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -35,6 +36,7 @@ const App = () => {
                 <Route path="students" element={<StudentManagement />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="attendance" element={<Attendance />} />
+                <Route path="coaches" element={<CoachManagement />} />
                 {/* Future admin routes will be added here */}
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
