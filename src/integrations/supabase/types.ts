@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      registrations: {
+        Row: {
+          additional_notes: string | null
+          address: string
+          application_date: string
+          created_at: string
+          date_of_birth: string
+          email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
+          full_name: string
+          how_did_you_hear: string | null
+          id: string
+          medical_conditions: string | null
+          nationality: string
+          parent_email: string | null
+          parent_id_number: string | null
+          parent_name: string | null
+          parent_phone: string | null
+          parent_profession: string | null
+          phone: string
+          position: string | null
+          preferred_foot: string | null
+          previous_experience: string | null
+          program_preference: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          address: string
+          application_date?: string
+          created_at?: string
+          date_of_birth: string
+          email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          full_name: string
+          how_did_you_hear?: string | null
+          id?: string
+          medical_conditions?: string | null
+          nationality: string
+          parent_email?: string | null
+          parent_id_number?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          parent_profession?: string | null
+          phone: string
+          position?: string | null
+          preferred_foot?: string | null
+          previous_experience?: string | null
+          program_preference?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_notes?: string | null
+          address?: string
+          application_date?: string
+          created_at?: string
+          date_of_birth?: string
+          email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          full_name?: string
+          how_did_you_hear?: string | null
+          id?: string
+          medical_conditions?: string | null
+          nationality?: string
+          parent_email?: string | null
+          parent_id_number?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          parent_profession?: string | null
+          phone?: string
+          position?: string | null
+          preferred_foot?: string | null
+          previous_experience?: string | null
+          program_preference?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
