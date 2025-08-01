@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { generateRegistrationPDF } from "./RegistrationPDF";
 import { 
   User, 
   Users, 
@@ -170,16 +171,43 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose }) =
 
       if (error) throw error;
 
+      // Generate and download PDF with proper data mapping
+      const pdfData = {
+        full_name: data.full_name,
+        date_of_birth: data.date_of_birth,
+        nationality: data.nationality,
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        parent_name: data.parent_name,
+        parent_phone: data.parent_phone,
+        parent_email: data.parent_email || "",
+        parent_id_number: data.parent_id_number,
+        parent_profession: data.parent_profession || "",
+        position: data.position || "",
+        previous_experience: data.previous_experience || "",
+        medical_conditions: data.medical_conditions || "",
+        preferred_foot: data.preferred_foot || "",
+        program_preference: data.program_preference || "",
+        emergency_contact_name: data.emergency_contact_name,
+        emergency_contact_phone: data.emergency_contact_phone,
+        emergency_contact_relation: data.emergency_contact_relation,
+        how_did_you_hear: data.how_did_you_hear || "",
+        additional_notes: data.additional_notes || "",
+      };
+      
+      await generateRegistrationPDF(pdfData);
+
       toast({
         title: "تم إرسال الطلب بنجاح",
-        description: "سيتم التواصل معك قريباً لاستكمال إجراءات التسجيل",
+        description: "تم تحميل ملف PDF بتفاصيل التسجيل. سيتم التواصل معك قريباً.",
       });
 
       form.reset();
       setCurrentStep(1);
       onClose?.();
     } catch (error) {
-      console.error('Error submitting registration:', error);
+      console.error("Error submitting registration:", error);
       toast({
         title: "خطأ في إرسال الطلب",
         description: "حدث خطأ أثناء إرسال طلب التسجيل. يرجى المحاولة مرة أخرى.",
@@ -642,9 +670,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose }) =
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-tfa-green hover:bg-tfa-green/90 flex items-center gap-2"
+                    className="bg-tfa-green hover:bg-tfa-green/90 flex items-center gap-2 min-w-[150px]"
                   >
-                    {isSubmitting ? "جاري الإرسال..." : "إرسال الطلب"}
+                    {isSubmitting ? "جاري الإرسال..." : "إرسال الطلب وتحميل PDF"}
                     <Check className="w-4 h-4" />
                   </Button>
                 )}
