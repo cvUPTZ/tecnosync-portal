@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 
@@ -37,25 +38,37 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const { error } = await signIn(data.email, data.password);
+      console.log('Attempting login with:', data.email);
+      
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
       if (error) {
+        console.error('Login error:', error);
         toast({
           title: 'خطأ في تسجيل الدخول',
           description: error.message === 'Invalid login credentials' 
             ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
-            : 'حدث خطأ أثناء تسجيل الدخول',
+            : error.message,
           variant: 'destructive',
         });
         return;
       }
 
+      console.log('Login successful:', authData);
+      
       toast({
         title: 'تم تسجيل الدخول بنجاح',
         description: 'مرحباً بك في لوحة التحكم',
       });
 
-      navigate('/admin');
+      // Force navigation after successful login
+      setTimeout(() => {
+        navigate('/admin');
+      }, 100);
+      
     } catch (error) {
       console.error('Login error:', error);
       toast({
