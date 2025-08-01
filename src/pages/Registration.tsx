@@ -2,21 +2,15 @@ import { RegistrationForm } from "@/components/RegistrationForm";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Home } from "lucide-react";
-
 const Registration = () => {
-  return (
-    <div className="min-h-screen bg-background" dir="rtl">
+  return <div className="min-h-screen bg-background" dir="rtl">
       {/* Navigation Header */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <img 
-                  src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
-                  alt="Tecno Football Academy Logo" 
-                  className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
-                />
+                <img src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" alt="Tecno Football Academy Logo" className="w-10 h-10 lg:w-12 lg:h-12 object-contain" />
                 <div>
                   <div className="font-bold text-base lg:text-lg text-tfa-blue">أكاديمية تكنو</div>
                   <div className="text-xs text-tfa-red font-medium">لكرة القدم</div>
@@ -37,9 +31,7 @@ const Registration = () => {
               </Link>
               
               <Link to="/login">
-                <Button variant="outline" size="sm" className="text-tfa-red border-tfa-red hover:bg-tfa-red hover:text-white">
-                  دخول الإدارة
-                </Button>
+                
               </Link>
             </div>
           </div>
@@ -50,8 +42,6 @@ const Registration = () => {
       <div className="py-8">
         <RegistrationForm />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Registration;
