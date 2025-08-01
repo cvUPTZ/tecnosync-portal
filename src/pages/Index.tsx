@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,9 +58,11 @@ const Index = () => {
               </div>
             </div>
 
-            <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors">
-              انضم إلينا الآن
-            </Button>
+            <Link to="/registration">
+              <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors">
+                انضم إلينا الآن
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -408,9 +411,11 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full bg-tfa-blue hover:bg-tfa-red transition-colors text-lg py-6">
-                  استمارة التسجيل الإلكترونية
-                </Button>
+                <Link to="/registration">
+                  <Button className="w-full bg-tfa-blue hover:bg-tfa-red transition-colors text-lg py-6">
+                    استمارة التسجيل الإلكترونية
+                  </Button>
+                </Link>
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   أو اتصل بنا مباشرة على الرقم أعلاه
                 </p>
