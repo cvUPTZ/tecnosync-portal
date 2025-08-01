@@ -46,6 +46,8 @@ const AdminSidebar = () => {
 
     const adminItems = [
       { title: 'طلبات التسجيل', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'] },
+      { title: 'إدارة الطلاب', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'] },
+      { title: 'إدارة المستخدمين', url: '/admin/users', icon: UserCheck, roles: ['director'] },
       { title: 'الحضور والغياب', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'] },
       { title: 'الجداول والفعاليات', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'] },
     ];
