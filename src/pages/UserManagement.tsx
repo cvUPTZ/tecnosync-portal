@@ -169,6 +169,7 @@ const UserManagement = () => {
           data: {
             full_name: data.full_name,
             role: data.role,
+            admin_created: true, // Flag to indicate admin creation
           },
           emailRedirectTo: undefined, // Disable email redirect
         },
