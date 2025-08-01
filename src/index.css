@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Football academy brand colors - green and white theme */
-    --primary: 142 76% 36%;
+    /* Tecno Football Academy brand colors - based on actual logo */
+    --primary: 217 91% 35%;        /* Royal blue from logo */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 13% 93%;
-    --secondary-foreground: 142 76% 36%;
+    --secondary: 45 93% 47%;       /* Gold/yellow accents */
+    --secondary-foreground: 222.2 84% 4.9%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 142 76% 40%;
+    --accent: 345 89% 42%;         /* Red/burgundy from logo stripes */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -35,16 +35,18 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    --ring: 217 91% 35%;
 
-    /* Football specific colors */
-    --success: 142 76% 36%;
-    --warning: 45 93% 47%;
-    --info: 217 91% 60%;
+    /* TFA specific colors */
+    --tfa-blue: 217 91% 35%;       /* Main blue */
+    --tfa-red: 345 89% 42%;        /* Red stripes */
+    --tfa-gold: 45 93% 47%;        /* Gold accents */
+    --tfa-green: 142 76% 36%;      /* Algerian flag green */
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(142 76% 25%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 25%));
+    /* Gradients using TFA colors */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--tfa-blue)), hsl(217 91% 25%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--tfa-blue)), hsl(var(--tfa-red)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--tfa-gold)), hsl(45 93% 37%));
 
     --radius: 0.75rem;
 
@@ -126,6 +128,35 @@ All colors MUST be HSL.
 
   .gradient-hero {
     background: var(--gradient-hero);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  /* TFA Brand specific gradients */
+  .bg-tfa-blue {
+    background: hsl(var(--tfa-blue));
+  }
+
+  .bg-tfa-red {
+    background: hsl(var(--tfa-red));
+  }
+
+  .bg-tfa-gold {
+    background: hsl(var(--tfa-gold));
+  }
+
+  .text-tfa-blue {
+    color: hsl(var(--tfa-blue));
+  }
+
+  .text-tfa-red {
+    color: hsl(var(--tfa-red));
+  }
+
+  .text-tfa-gold {
+    color: hsl(var(--tfa-gold));
   }
 
   /* Smooth animations */

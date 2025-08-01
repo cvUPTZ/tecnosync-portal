@@ -11,7 +11,7 @@ const Index = () => {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <span className="font-bold">🏆 أكاديمية تكنو لكرة القدم</span>
-            <Badge variant="secondary" className="bg-white/20 text-white">
+            <Badge variant="secondary" className="bg-tfa-gold text-primary">
               إعلان هام: التسجيل مفتوح الآن للموسم الجديد 2024-2025
             </Badge>
           </div>
@@ -34,11 +34,16 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">تكنو</span>
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
+                  alt="Tecno Football Academy Logo" 
+                  className="w-12 h-12 object-contain"
+                />
+                <div>
+                  <div className="font-bold text-lg text-tfa-blue">أكاديمية تكنو</div>
+                  <div className="text-xs text-tfa-red font-medium">لكرة القدم</div>
                 </div>
-                <span className="font-bold text-lg">أكاديمية تكنو</span>
               </div>
               
               <div className="hidden md:flex items-center gap-6">
@@ -52,7 +57,7 @@ const Index = () => {
               </div>
             </div>
 
-            <Button className="gradient-hero">
+            <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors">
               انضم إلينا الآن
             </Button>
           </div>
@@ -74,7 +79,7 @@ const Index = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button size="lg" variant="secondary" className="text-lg px-8">
+                <Button size="lg" className="bg-tfa-gold hover:bg-tfa-gold/90 text-primary text-lg px-8">
                   ابدأ رحلتك
                 </Button>
                 <Button size="lg" variant="outline" className="text-lg px-8 border-white/30 text-white hover:bg-white/10">
@@ -125,48 +130,48 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow border-tfa-blue/10">
               <CardHeader>
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-tfa-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-tfa-blue" />
                 </div>
-                <CardTitle>الهدف</CardTitle>
+                <CardTitle className="text-tfa-blue">الهدف</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">تطوير المواهب الكروية وإعداد جيل من اللاعبين المحترفين</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow border-tfa-red/10">
               <CardHeader>
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-tfa-red/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-tfa-red" />
                 </div>
-                <CardTitle>الشغف</CardTitle>
+                <CardTitle className="text-tfa-red">الشغف</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">حب كرة القدم والتفاني في تعليم أسس اللعبة الصحيحة</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow border-tfa-gold/10">
               <CardHeader>
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-tfa-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Star className="w-8 h-8 text-tfa-gold" />
                 </div>
-                <CardTitle>التميز</CardTitle>
+                <CardTitle className="text-tfa-gold">التميز</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">تقديم أعلى مستوى من التدريب باستخدام أحدث الأساليب</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow border-tfa-green/10">
               <CardHeader>
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-tfa-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-8 h-8 text-tfa-green" />
                 </div>
-                <CardTitle>الإنجاز</CardTitle>
+                <CardTitle className="text-tfa-green">الإنجاز</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">دعم اللاعبين لتحقيق أهدافهم والوصول لأعلى المستويات</p>
@@ -174,41 +179,41 @@ const Index = () => {
             </Card>
           </div>
 
-          <div className="bg-primary/5 rounded-2xl p-8">
+          <div className="bg-gradient-to-r from-tfa-blue/5 via-tfa-gold/5 to-tfa-red/5 rounded-2xl p-8 border border-tfa-blue/10">
             <h3 className="text-2xl font-bold mb-6 text-center">لماذا نحن الخيار الأفضل؟</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-blue rounded-full flex items-center justify-center flex-shrink-0">
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 <span>مدربون محترفون ومؤهلون</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-gold rounded-full flex items-center justify-center flex-shrink-0">
                   <Shield className="w-4 h-4 text-white" />
                 </div>
                 <span>ملاعب حديثة (5000 م²)</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-red rounded-full flex items-center justify-center flex-shrink-0">
                   <Award className="w-4 h-4 text-white" />
                 </div>
                 <span>أكثر من 50 لقب محلي</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-green rounded-full flex items-center justify-center flex-shrink-0">
                   <Shield className="w-4 h-4 text-white" />
                 </div>
                 <span>بيئة آمنة ومحفزة</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-blue rounded-full flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-4 h-4 text-white" />
                 </div>
                 <span>جداول مرنة ومناسبة</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-tfa-gold rounded-full flex items-center justify-center flex-shrink-0">
                   <Star className="w-4 h-4 text-white" />
                 </div>
                 <span>تطوير علمي متقدم</span>
@@ -229,7 +234,7 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-lg transition-shadow border-tfa-blue/20">
               <CardHeader>
                 <CardTitle className="text-xl">البراعم (5-8 سنوات)</CardTitle>
                 <CardDescription>تعلم أساسيات كرة القدم بطريقة ممتعة</CardDescription>
@@ -290,8 +295,8 @@ const Index = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Badge className="w-fit mb-2">15 يوليو</Badge>
-                <CardTitle className="text-lg">بطولة الأكاديمية الصيفية</CardTitle>
+                <Badge className="w-fit mb-2 bg-tfa-gold text-primary">15 يوليو</Badge>
+                <CardTitle className="text-lg text-tfa-blue">بطولة الأكاديمية الصيفية</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -403,7 +408,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full gradient-hero text-lg py-6">
+                <Button className="w-full bg-tfa-blue hover:bg-tfa-red transition-colors text-lg py-6">
                   استمارة التسجيل الإلكترونية
                 </Button>
                 <p className="text-center text-sm text-muted-foreground mt-4">
@@ -420,11 +425,16 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-primary font-bold text-sm">تكنو</span>
+              <div className="flex items-center gap-3 mb-4">
+                <img 
+                  src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
+                  alt="Tecno Football Academy Logo" 
+                  className="w-12 h-12 object-contain"
+                />
+                <div>
+                  <div className="font-bold text-lg">أكاديمية تكنو</div>
+                  <div className="text-xs text-tfa-gold font-medium">لكرة القدم</div>
                 </div>
-                <span className="font-bold">أكاديمية تكنو</span>
               </div>
               <p className="text-sm text-primary-foreground/80">
                 أكاديمية رائدة في تدريب كرة القدم منذ عام 2017
