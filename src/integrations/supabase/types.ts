@@ -55,6 +55,141 @@ export type Database = {
           },
         ]
       }
+      fee_structure: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          fee_type: string
+          group_id: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          fee_type?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          fee_type?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_structure_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "student_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_receipts: {
+        Row: {
+          created_at: string
+          id: string
+          issued_by: string | null
+          issued_date: string
+          payment_id: string
+          receipt_data: Json | null
+          receipt_number: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issued_by?: string | null
+          issued_date?: string
+          payment_id: string
+          receipt_data?: Json | null
+          receipt_number: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issued_by?: string | null
+          issued_date?: string
+          payment_id?: string
+          receipt_data?: Json | null
+          receipt_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_type: string
+          recorded_by: string | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_type?: string
+          recorded_by?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_type?: string
+          recorded_by?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -467,6 +602,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_receipt_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_student_code: {
         Args: Record<PropertyKey, never>
         Returns: string
