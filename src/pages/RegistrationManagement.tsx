@@ -227,12 +227,12 @@ const RegistrationManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-tfa-blue">إدارة طلبات التسجيل</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mt-1">
             مراجعة والموافقة على طلبات الانضمام للأكاديمية
           </p>
         </div>
@@ -243,50 +243,58 @@ const RegistrationManagement = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <FileText className="h-4 w-4 text-tfa-blue" />
-              <div className="ml-2">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="p-2 bg-tfa-blue/10 rounded-lg">
+                <FileText className="h-6 w-6 text-tfa-blue" />
+              </div>
+              <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">إجمالي الطلبات</p>
+                <p className="text-sm text-muted-foreground">إجمالي الطلبات</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <AlertCircle className="h-4 w-4 text-yellow-600" />
-              <div className="ml-2">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
                 <p className="text-2xl font-bold">{stats.pending}</p>
-                <p className="text-xs text-muted-foreground">معلقة</p>
+                <p className="text-sm text-muted-foreground">معلقة</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Check className="h-4 w-4 text-green-600" />
-              <div className="ml-2">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
                 <p className="text-2xl font-bold">{stats.approved}</p>
-                <p className="text-xs text-muted-foreground">مقبولة</p>
+                <p className="text-sm text-muted-foreground">مقبولة</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <X className="h-4 w-4 text-red-600" />
-              <div className="ml-2">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <X className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
                 <p className="text-2xl font-bold">{stats.rejected}</p>
-                <p className="text-xs text-muted-foreground">مرفوضة</p>
+                <p className="text-sm text-muted-foreground">مرفوضة</p>
               </div>
             </div>
           </CardContent>
