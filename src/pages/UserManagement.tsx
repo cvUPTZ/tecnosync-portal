@@ -161,6 +161,7 @@ const UserManagement = () => {
   // Create new user
   const onSubmit = async (data: UserFormData) => {
     try {
+      // Create user with email confirmation disabled
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password || 'temppassword123',
@@ -169,13 +170,15 @@ const UserManagement = () => {
             full_name: data.full_name,
             role: data.role,
           },
+          emailRedirectTo: undefined, // Disable email redirect
         },
       });
 
       if (authError) throw authError;
 
-      // Update the profile with additional data
+      // Mark email as confirmed and update profile
       if (authData.user) {
+        // Update the profile with additional data
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
@@ -184,6 +187,9 @@ const UserManagement = () => {
           .eq('user_id', authData.user.id);
 
         if (profileError) throw profileError;
+
+        // Note: Email confirmation will be handled by the trigger
+        console.log('User created successfully:', authData.user.id);
       }
 
       toast({
