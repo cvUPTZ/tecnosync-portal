@@ -15,6 +15,7 @@ import UserManagement from "./pages/UserManagement";
 import Attendance from "./pages/Attendance";
 import CoachManagement from "./pages/CoachManagement";
 import FinanceManagement from "./pages/FinanceManagement";
+import FinancialReports from "./pages/FinancialReports";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -40,6 +41,7 @@ const App = () => {
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="coaches" element={<CoachManagement />} />
                 <Route path="finance" element={<FinanceManagement />} />
+                <Route path="reports" element={<FinancialReports />} />
                 {/* Future admin routes will be added here */}
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
