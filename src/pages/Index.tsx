@@ -2,9 +2,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, Mail, MapPin, Star, Award, Users, Calendar, Shield, Target, Zap } from "lucide-react";
+import { Phone, Mail, MapPin, Star, Award, Users, Calendar, Shield, Target, Zap, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 const Index = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
@@ -62,6 +65,21 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <button
+                className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+              
+              {/* Admin Login for Mobile */}
+              <Link to="/login" className="lg:hidden">
+                <Button variant="outline" size="sm" className="text-tfa-red border-tfa-red hover:bg-tfa-red hover:text-white">
+                  دخول الإدارة
+                </Button>
+              </Link>
+              
               <Link to="/registration">
                 <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors text-sm lg:text-base px-3 lg:px-4">
                   انضم إلينا الآن
@@ -69,6 +87,19 @@ const Index = () => {
               </Link>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden bg-white border-t border-gray-200 py-4 space-y-3">
+              <a href="#home" className="block px-4 py-2 hover:bg-gray-100 rounded-md">الرئيسية</a>
+              <a href="#about" className="block px-4 py-2 hover:bg-gray-100 rounded-md">من نحن</a>
+              <a href="#programs" className="block px-4 py-2 hover:bg-gray-100 rounded-md">البرامج التدريبية</a>
+              <a href="#coaches" className="block px-4 py-2 hover:bg-gray-100 rounded-md">المدربون</a>
+              <a href="#facilities" className="block px-4 py-2 hover:bg-gray-100 rounded-md">المرافق</a>
+              <a href="#events" className="block px-4 py-2 hover:bg-gray-100 rounded-md">الفعاليات</a>
+              <a href="#contact" className="block px-4 py-2 hover:bg-gray-100 rounded-md">اتصل بنا</a>
+            </div>
+          )}
         </div>
       </nav>
 
