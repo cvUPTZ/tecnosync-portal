@@ -55,6 +55,9 @@ const Index = () => {
                 <a href="#facilities" className="hover:text-primary transition-colors">المرافق</a>
                 <a href="#events" className="hover:text-primary transition-colors">الفعاليات</a>
                 <a href="#contact" className="hover:text-primary transition-colors">اتصل بنا</a>
+                <Link to="/login" className="hover:text-primary transition-colors text-tfa-red font-medium">
+                  دخول الإدارة
+                </Link>
               </div>
             </div>
 
