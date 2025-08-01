@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import RegistrationManagement from "./pages/RegistrationManagement";
+import StudentManagement from "./pages/StudentManagement";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -29,6 +30,7 @@ const App = () => {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="registrations" element={<RegistrationManagement />} />
+                <Route path="students" element={<StudentManagement />} />
                 {/* Future admin routes will be added here */}
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

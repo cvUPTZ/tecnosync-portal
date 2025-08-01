@@ -140,11 +140,243 @@ export type Database = {
         }
         Relationships: []
       }
+      student_enrollments: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          enrollment_date: string
+          group_id: string | null
+          id: string
+          is_active: boolean | null
+          student_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          enrollment_date: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          student_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          enrollment_date?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "student_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_age: number
+          max_capacity: number | null
+          min_age: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_age: number
+          max_capacity?: number | null
+          min_age: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_age?: number
+          max_capacity?: number | null
+          min_age?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          academic_performance: string | null
+          achievements: string | null
+          address: string
+          allergies: string | null
+          blood_type: string | null
+          created_at: string
+          date_of_birth: string
+          doctor_name: string | null
+          doctor_phone: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
+          enrollment_date: string
+          full_name: string
+          gender: string | null
+          group_id: string | null
+          id: string
+          medical_conditions: string | null
+          monthly_fee: number | null
+          nationality: string
+          notes: string | null
+          parent_email: string | null
+          parent_id_number: string | null
+          parent_name: string | null
+          parent_phone: string | null
+          parent_profession: string | null
+          payment_status: string | null
+          phone: string | null
+          photo_url: string | null
+          position: string | null
+          preferred_foot: string | null
+          previous_experience: string | null
+          registration_id: string | null
+          school_grade: string | null
+          school_name: string | null
+          shirt_number: number | null
+          status: string | null
+          student_code: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          academic_performance?: string | null
+          achievements?: string | null
+          address: string
+          allergies?: string | null
+          blood_type?: string | null
+          created_at?: string
+          date_of_birth: string
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          enrollment_date?: string
+          full_name: string
+          gender?: string | null
+          group_id?: string | null
+          id?: string
+          medical_conditions?: string | null
+          monthly_fee?: number | null
+          nationality: string
+          notes?: string | null
+          parent_email?: string | null
+          parent_id_number?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          parent_profession?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          position?: string | null
+          preferred_foot?: string | null
+          previous_experience?: string | null
+          registration_id?: string | null
+          school_grade?: string | null
+          school_name?: string | null
+          shirt_number?: number | null
+          status?: string | null
+          student_code: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          academic_performance?: string | null
+          achievements?: string | null
+          address?: string
+          allergies?: string | null
+          blood_type?: string | null
+          created_at?: string
+          date_of_birth?: string
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          enrollment_date?: string
+          full_name?: string
+          gender?: string | null
+          group_id?: string | null
+          id?: string
+          medical_conditions?: string | null
+          monthly_fee?: number | null
+          nationality?: string
+          notes?: string | null
+          parent_email?: string | null
+          parent_id_number?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
+          parent_profession?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          position?: string | null
+          preferred_foot?: string | null
+          previous_experience?: string | null
+          registration_id?: string | null
+          school_grade?: string | null
+          school_name?: string | null
+          shirt_number?: number | null
+          status?: string | null
+          student_code?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "student_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_student_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]

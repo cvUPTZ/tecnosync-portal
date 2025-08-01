@@ -201,17 +201,17 @@ const AdminDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Link to="/admin/registrations">
+            <Link to="/admin/students">
               <Button className="w-full justify-start bg-tfa-blue hover:bg-tfa-blue/90">
                 <Users className="ml-2 h-4 w-4" />
-                مراجعة طلبات التسجيل
+                إدارة الطلاب
               </Button>
             </Link>
             
-            <Link to="/admin/attendance">
+            <Link to="/admin/registrations">
               <Button variant="outline" className="w-full justify-start">
                 <CheckCircle className="ml-2 h-4 w-4" />
-                تسجيل الحضور والغياب
+                مراجعة طلبات التسجيل
               </Button>
             </Link>
             

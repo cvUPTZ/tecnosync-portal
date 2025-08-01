@@ -9,7 +9,8 @@ import {
   FileText,
   BarChart3,
   Camera,
-  Settings
+  Settings,
+  GraduationCap
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
