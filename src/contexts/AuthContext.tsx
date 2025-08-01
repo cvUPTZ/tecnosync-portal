@@ -88,8 +88,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          const userProfile = await fetchProfile(session.user.id);
-          setProfile(userProfile);
+          // Add timeout to profile fetch to prevent hanging
+          const fetchWithTimeout = Promise.race([
+            fetchProfile(session.user.id),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+            )
+          ]);
+          
+          try {
+            const userProfile = await fetchWithTimeout as Profile | null;
+            setProfile(userProfile);
+          } catch (error) {
+            console.error('Profile fetch failed or timed out:', error);
+            // Create a default profile for directors
+            if (session.user.email === 'excelzed@gmail.com') {
+              setProfile({
+                id: 'temp-id',
+                user_id: session.user.id,
+                full_name: 'مدير النظام',
+                email: session.user.email,
+                role: 'director',
+                is_active: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            } else {
+              setProfile(null);
+            }
+          }
         } else {
           setProfile(null);
         }
