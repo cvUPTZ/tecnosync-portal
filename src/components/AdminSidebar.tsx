@@ -36,7 +36,7 @@ const AdminSidebar = () => {
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'bg-tfa-blue/10 text-tfa-blue font-medium border-l-2 border-tfa-blue' : 'hover:bg-muted/50';
+    isActive ? 'bg-tfa-blue/10 text-tfa-blue font-medium border-r-2 border-tfa-blue' : 'hover:bg-muted/50';
 
   // Define menu items based on roles
   const getMenuItems = () => {
@@ -121,7 +121,7 @@ const AdminSidebar = () => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="ml-2 h-4 w-4 flex-shrink-0" />
+                      <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
