@@ -43,40 +43,40 @@ const AdminLayout = () => {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div dir="rtl" className="min-h-screen bg-background flex w-full">
         <AdminSidebar />
         
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Header */}
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6 shrink-0">
-            <div className="flex items-center gap-4">
+          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-3 md:px-6 shrink-0">
+            <div className="flex items-center gap-2 md:gap-4">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold text-tfa-blue">
+              <h1 className="text-sm md:text-lg font-semibold text-tfa-blue truncate">
                 أكاديمية تكنو - نظام الإدارة
               </h1>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="hidden sm:flex items-center gap-2">
                 <User className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{profile.full_name}</span>
+                <span className="text-sm font-medium truncate max-w-32">{profile.full_name}</span>
               </div>
               
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 md:gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                تسجيل الخروج
+                <span className="hidden sm:inline">تسجيل الخروج</span>
               </Button>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto p-3 md:p-6">
             <Outlet />
           </main>
         </div>

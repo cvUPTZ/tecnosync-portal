@@ -426,12 +426,12 @@ const FinanceManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-tfa-blue">المالية والمدفوعات</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-tfa-blue">المالية والمدفوعات</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
             إدارة المدفوعات والرسوم المالية للأكاديمية
           </p>
         </div>
@@ -568,7 +568,7 @@ const FinanceManagement = () => {
       </div>
 
       {/* Financial Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="border-tfa-green/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
@@ -630,10 +630,10 @@ const FinanceManagement = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="payments" className="space-y-6">
+      <Tabs defaultValue="payments" className="space-y-4 md:space-y-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="payments">المدفوعات</TabsTrigger>
-          <TabsTrigger value="fee-structure">هيكل الرسوم</TabsTrigger>
+          <TabsTrigger value="payments" className="text-sm">المدفوعات</TabsTrigger>
+          <TabsTrigger value="fee-structure" className="text-sm">هيكل الرسوم</TabsTrigger>
         </TabsList>
 
         <TabsContent value="payments" className="space-y-6">
@@ -646,7 +646,7 @@ const FinanceManagement = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="search">البحث</Label>
                   <div className="relative">
@@ -703,65 +703,143 @@ const FinanceManagement = () => {
                 قائمة المدفوعات
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 sm:p-6">
               {filteredPayments.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">لا توجد مدفوعات</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>الطالب</TableHead>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>المبلغ</TableHead>
-                      <TableHead>تاريخ الاستحقاق</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>الطالب</TableHead>
+                          <TableHead>النوع</TableHead>
+                          <TableHead>المبلغ</TableHead>
+                          <TableHead>تاريخ الاستحقاق</TableHead>
+                          <TableHead>الحالة</TableHead>
+                          <TableHead>الإجراءات</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredPayments.map((payment) => (
+                          <TableRow key={payment.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{payment.student?.full_name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {payment.student?.student_code} • {payment.student?.group_name}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{getPaymentTypeLabel(payment.payment_type)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {getPaymentMethodLabel(payment.payment_method)}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono font-medium">
+                              {payment.amount.toLocaleString()} دج
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p>{format(new Date(payment.due_date), 'dd/MM/yyyy')}</p>
+                                {payment.paid_date && (
+                                  <p className="text-sm text-tfa-green">
+                                    دُفع في {format(new Date(payment.paid_date), 'dd/MM/yyyy')}
+                                  </p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {payment.status === 'pending' && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => markPaymentAsPaid(payment.id)}
+                                    className="bg-tfa-green hover:bg-tfa-green/90"
+                                  >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedPayment(payment);
+                                    setShowReceiptDialog(true);
+                                  }}
+                                >
+                                  <Receipt className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  {/* Mobile Cards */}
+                  <div className="md:hidden space-y-4 p-4">
                     {filteredPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{payment.student?.full_name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {payment.student?.student_code} • {payment.student?.group_name}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{getPaymentTypeLabel(payment.payment_type)}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {getPaymentMethodLabel(payment.payment_method)}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono font-medium">
-                          {payment.amount.toLocaleString()} دج
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>{format(new Date(payment.due_date), 'dd/MM/yyyy')}</p>
-                            {payment.paid_date && (
-                              <p className="text-sm text-tfa-green">
-                                دُفع في {format(new Date(payment.paid_date), 'dd/MM/yyyy')}
+                      <Card key={payment.id} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium text-sm">{payment.student?.full_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {payment.student?.student_code} • {payment.student?.group_name}
                               </p>
-                            )}
+                            </div>
+                            {getStatusBadge(payment.status)}
                           </div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                          
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">النوع:</span>
+                              <p className="font-medium">{getPaymentTypeLabel(payment.payment_type)}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">المبلغ:</span>
+                              <p className="font-mono font-medium">{payment.amount.toLocaleString()} دج</p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">الاستحقاق:</span>
+                              <p>{format(new Date(payment.due_date), 'dd/MM/yyyy')}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">الطريقة:</span>
+                              <p>{getPaymentMethodLabel(payment.payment_method)}</p>
+                            </div>
+                          </div>
+                          
+                          {payment.paid_date && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">تاريخ الدفع:</span>
+                              <p className="text-tfa-green">
+                                {format(new Date(payment.paid_date), 'dd/MM/yyyy')}
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 pt-2">
                             {payment.status === 'pending' && (
                               <Button
                                 size="sm"
                                 onClick={() => markPaymentAsPaid(payment.id)}
-                                className="bg-tfa-green hover:bg-tfa-green/90"
+                                className="bg-tfa-green hover:bg-tfa-green/90 flex-1"
                               >
-                                <CheckCircle2 className="h-4 w-4" />
+                                <CheckCircle2 className="h-4 w-4 ml-1" />
+                                تسجيل الدفع
                               </Button>
                             )}
                             <Button
@@ -771,15 +849,17 @@ const FinanceManagement = () => {
                                 setSelectedPayment(payment);
                                 setShowReceiptDialog(true);
                               }}
+                              className="flex-1"
                             >
-                              <Receipt className="h-4 w-4" />
+                              <Receipt className="h-4 w-4 ml-1" />
+                              الإيصال
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                      </Card>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>

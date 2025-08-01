@@ -79,8 +79,8 @@ const AdminSidebar = () => {
       side="right"
       className={collapsed ? 'w-14' : 'w-64'}
       collapsible="icon"
+      variant="sidebar"
     >
-      <SidebarTrigger className="m-2 self-end" />
       
       <SidebarContent>
         {/* Header */}
