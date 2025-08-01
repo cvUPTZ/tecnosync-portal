@@ -20,8 +20,22 @@ const AdminLayout = () => {
     );
   }
 
-  if (!user || !profile) {
+  console.log('AdminLayout - user:', user, 'profile:', profile);
+  
+  if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  // If user exists but profile is still loading, show loading state
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tfa-blue mx-auto mb-4"></div>
+          <p className="text-muted-foreground">جاري تحميل البيانات...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleLogout = async () => {
