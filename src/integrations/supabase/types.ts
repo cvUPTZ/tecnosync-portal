@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          recorded_by: string | null
+          session_date: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+          session_date?: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+          session_date?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -364,6 +405,59 @@ export type Database = {
             columns: ["registration_id"]
             isOneToOne: false
             referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          description: string | null
+          end_time: string
+          group_id: string | null
+          id: string
+          is_active: boolean
+          location: string | null
+          session_date: string
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          session_date: string
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          session_date?: string
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "student_groups"
             referencedColumns: ["id"]
           },
         ]
