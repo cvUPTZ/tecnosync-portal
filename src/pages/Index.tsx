@@ -9,14 +9,14 @@ const Index = () => {
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-2 text-sm">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <span className="font-bold">🏆 أكاديمية تكنو لكرة القدم</span>
-            <Badge variant="secondary" className="bg-tfa-gold text-primary">
+        <div className="container mx-auto px-4 flex flex-col lg:flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-2 lg:gap-4">
+            <span className="font-bold text-xs lg:text-sm">🏆 أكاديمية تكنو لكرة القدم</span>
+            <Badge variant="secondary" className="bg-tfa-gold text-primary text-xs">
               إعلان هام: التسجيل مفتوح الآن للموسم الجديد 2024-2025
             </Badge>
           </div>
-          <div className="flex items-center gap-4 text-xs">
+          <div className="hidden md:flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1">
               <Phone className="w-3 h-3" />
               <span>+213 XXX XXX XXX</span>
@@ -34,20 +34,20 @@ const Index = () => {
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-8 flex-1">
               <div className="flex items-center gap-3">
                 <img 
                   src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
                   alt="Tecno Football Academy Logo" 
-                  className="w-12 h-12 object-contain"
+                  className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
                 />
                 <div>
-                  <div className="font-bold text-lg text-tfa-blue">أكاديمية تكنو</div>
+                  <div className="font-bold text-base lg:text-lg text-tfa-blue">أكاديمية تكنو</div>
                   <div className="text-xs text-tfa-red font-medium">لكرة القدم</div>
                 </div>
               </div>
               
-              <div className="hidden md:flex items-center gap-6">
+              <div className="hidden lg:flex items-center gap-6">
                 <a href="#home" className="hover:text-primary transition-colors">الرئيسية</a>
                 <a href="#about" className="hover:text-primary transition-colors">من نحن</a>
                 <a href="#programs" className="hover:text-primary transition-colors">البرامج التدريبية</a>
@@ -61,50 +61,52 @@ const Index = () => {
               </div>
             </div>
 
-            <Link to="/registration">
-              <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors">
-                انضم إلينا الآن
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/registration">
+                <Button className="gradient-hero bg-tfa-blue hover:bg-tfa-red transition-colors text-sm lg:text-base px-3 lg:px-4">
+                  انضم إلينا الآن
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="gradient-hero text-white py-20">
+      <section id="home" className="gradient-hero text-white py-12 lg:py-20">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="animate-fade-in">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
                 أكاديمية تكنو
                 <br />
                 <span className="text-white/90">لكرة القدم</span>
               </h1>
-              <p className="text-xl mb-8 text-white/90 leading-relaxed">
+              <p className="text-lg lg:text-xl mb-8 text-white/90 leading-relaxed">
                 اكتشف موهبتك وطور مهاراتك في كرة القدم مع أفضل المدربين والمرافق الحديثة في الجزائر
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button size="lg" className="bg-tfa-gold hover:bg-tfa-gold/90 text-primary text-lg px-8">
+                <Button size="lg" className="bg-tfa-gold hover:bg-tfa-gold/90 text-primary text-base lg:text-lg px-6 lg:px-8">
                   ابدأ رحلتك
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 border-white/30 text-white hover:bg-white/10">
+                <Button size="lg" variant="outline" className="text-base lg:text-lg px-6 lg:px-8 border-white/30 text-white hover:bg-white/10">
                   شاهد الفيديو
                 </Button>
               </div>
 
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-3 gap-4 lg:gap-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold">+500</div>
-                  <div className="text-white/80">لاعب</div>
+                  <div className="text-2xl lg:text-3xl font-bold">+500</div>
+                  <div className="text-white/80 text-sm lg:text-base">لاعب</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold">15+</div>
-                  <div className="text-white/80">مدرب</div>
+                  <div className="text-2xl lg:text-3xl font-bold">15+</div>
+                  <div className="text-white/80 text-sm lg:text-base">مدرب</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold">7+</div>
-                  <div className="text-white/80">سنوات خبرة</div>
+                  <div className="text-2xl lg:text-3xl font-bold">7+</div>
+                  <div className="text-white/80 text-sm lg:text-base">سنوات خبرة</div>
                 </div>
               </div>
             </div>
@@ -128,14 +130,14 @@ const Index = () => {
       {/* About Section */}
       <section id="about" className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">من نحن</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">من نحن</h2>
+            <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
               أكاديمية رائدة في تدريب كرة القدم تأسست عام 2017 بهدف تطوير المواهب الشابة
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-12 lg:mb-16">
             <Card className="text-center hover:shadow-lg transition-shadow border-tfa-blue/10">
               <CardHeader>
                 <div className="w-16 h-16 bg-tfa-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -232,14 +234,14 @@ const Index = () => {
       {/* Programs Section */}
       <section id="programs" className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">البرامج التدريبية</h2>
-            <p className="text-xl text-muted-foreground">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">البرامج التدريبية</h2>
+            <p className="text-lg lg:text-xl text-muted-foreground">
               برامج متنوعة تناسب جميع الأعمار والمستويات
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <Card className="hover:shadow-lg transition-shadow border-tfa-blue/20">
               <CardHeader>
                 <CardTitle className="text-xl">البراعم (5-8 سنوات)</CardTitle>
@@ -291,14 +293,14 @@ const Index = () => {
       {/* Events Section */}
       <section id="events" className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">الفعاليات القادمة</h2>
-            <p className="text-xl text-muted-foreground">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">الفعاليات القادمة</h2>
+            <p className="text-lg lg:text-xl text-muted-foreground">
               انضم إلى فعالياتنا المثيرة والمتنوعة
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <Badge className="w-fit mb-2 bg-tfa-gold text-primary">15 يوليو</Badge>
@@ -365,16 +367,16 @@ const Index = () => {
       {/* Contact Section */}
       <section id="contact" className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">تواصل معنا</h2>
-            <p className="text-xl text-muted-foreground">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">تواصل معنا</h2>
+            <p className="text-lg lg:text-xl text-muted-foreground">
               نحن هنا لمساعدتك في بداية رحلتك الكروية
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             <div>
-              <h3 className="text-2xl font-bold mb-6">معلومات التواصل</h3>
+              <h3 className="text-xl lg:text-2xl font-bold mb-6">معلومات التواصل</h3>
               
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3">
@@ -429,9 +431,9 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-12">
+      <footer className="bg-primary text-primary-foreground py-8 lg:py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <img 
