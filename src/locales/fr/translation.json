@@ -24,5 +24,17 @@
   },
   "academyInfo": {
     "managementSystem": "Système de Gestion"
+  },
+  "landingPage": {
+    "heroTitle": "La Plateforme Tout-en-Un pour Votre Académie de Football",
+    "heroSubtitle": "Créez un site web professionnel et gérez vos opérations avec facilité. Commencez en quelques minutes.",
+    "getStarted": "Commencer",
+    "featuresTitle": "Tout ce Dont Vous Avez Besoin pour Réussir",
+    "feature1Title": "Site Web Professionnel",
+    "feature1Text": "Un site web public pour présenter votre académie, vos programmes et votre personnel.",
+    "feature2Title": "Panneau d'Administration Complet",
+    "feature2Text": "Gérez les inscriptions, les étudiants, les paiements et plus encore depuis un tableau de bord central.",
+    "feature3Title": "Modulaire et Personnalisable",
+    "feature3Text": "Choisissez les fonctionnalités dont vous avez besoin et personnalisez l'apparence pour qu'elle corresponde à votre marque."
   }
 }

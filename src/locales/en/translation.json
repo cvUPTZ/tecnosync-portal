@@ -24,5 +24,17 @@
   },
   "academyInfo": {
     "managementSystem": "Management System"
+  },
+  "landingPage": {
+    "heroTitle": "The All-in-One Platform for Your Football Academy",
+    "heroSubtitle": "Create a professional website and manage your operations with ease. Get started in minutes.",
+    "getStarted": "Get Started",
+    "featuresTitle": "Everything You Need to Succeed",
+    "feature1Title": "Professional Website",
+    "feature1Text": "A public-facing website to showcase your academy, programs, and staff.",
+    "feature2Title": "Complete Admin Panel",
+    "feature2Text": "Manage registrations, students, payments, and more from one central dashboard.",
+    "feature3Title": "Modular & Customizable",
+    "feature3Text": "Choose the features you need and customize the look to match your brand."
   }
 }
