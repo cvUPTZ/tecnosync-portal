@@ -1,20 +1,23 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react-pdf/renderer';
 
-// Register Arabic font
+// Register Arabic font with a reliable source
 Font.register({
-  family: 'NotoSansArabic',
+  family: 'Amiri',
   fonts: [
     {
-      src: 'https://fonts.gstatic.com/s/notosansarabic/v18/nwpxtLGrOAZMl5nJ_wfgRg3DrWFZWsnVBJ_sS6tlqHHFlhQ5l3sQWIHPqzCfyGyvu3CBFQLaig.woff2',
+      src: 'https://fonts.gstatic.com/s/amiri/v19/J7aRnpd8CGxBHqUpvrIw74j0.woff2',
       fontWeight: 'normal',
     },
     {
-      src: 'https://fonts.gstatic.com/s/notosansarabic/v18/nwpxtLGrOAZMl5nJ_wfgRg3DrWFZWsnVBJ_sS6tlqHHFlhQ5l3sQWIHPqzCfyGyvuXCBFQLaig.woff2',
+      src: 'https://fonts.gstatic.com/s/amiri/v19/J7afnpd8CGxBHqUpvq6J6Lj9eA.woff2',
       fontWeight: 'bold',
     }
   ]
 });
+
+// Fallback: register a simple Arabic-supporting font
+Font.registerHyphenationCallback(word => [word]);
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
@@ -22,8 +25,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#ffffff',
     padding: 30,
-    fontFamily: 'NotoSansArabic',
+    fontFamily: 'Amiri',
     fontSize: 11,
+    direction: 'rtl',
   },
   serialNumber: {
     position: 'absolute',
@@ -226,27 +230,27 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
         <Text style={styles.sectionTitle}>المعلومات الشخصية</Text>
         <View style={styles.row}>
           <Text style={styles.label}>الاسم الكامل:</Text>
-          <Text style={styles.value}>{data.full_name}</Text>
+          <Text style={styles.value}>{data.full_name || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>تاريخ الميلاد:</Text>
-          <Text style={styles.value}>{data.date_of_birth}</Text>
+          <Text style={styles.value}>{data.date_of_birth || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>الجنسية:</Text>
-          <Text style={styles.value}>{data.nationality}</Text>
+          <Text style={styles.value}>{data.nationality || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.phone}</Text>
+          <Text style={styles.value}>{data.phone || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>البريد الإلكتروني:</Text>
-          <Text style={styles.value}>{data.email}</Text>
+          <Text style={styles.value}>{data.email || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>العنوان:</Text>
-          <Text style={styles.value}>{data.address}</Text>
+          <Text style={styles.value}>{data.address || 'غير محدد'}</Text>
         </View>
       </View>
 
@@ -255,11 +259,11 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
         <Text style={styles.sectionTitle}>معلومات ولي الأمر</Text>
         <View style={styles.row}>
           <Text style={styles.label}>اسم ولي الأمر:</Text>
-          <Text style={styles.value}>{data.parent_name}</Text>
+          <Text style={styles.value}>{data.parent_name || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.parent_phone}</Text>
+          <Text style={styles.value}>{data.parent_phone || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>البريد الإلكتروني:</Text>
@@ -267,7 +271,7 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>رقم الهوية:</Text>
-          <Text style={styles.value}>{data.parent_id_number}</Text>
+          <Text style={styles.value}>{data.parent_id_number || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>المهنة:</Text>
@@ -305,15 +309,15 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
         <Text style={styles.sectionTitle}>معلومات الطوارئ</Text>
         <View style={styles.row}>
           <Text style={styles.label}>اسم جهة الاتصال:</Text>
-          <Text style={styles.value}>{data.emergency_contact_name}</Text>
+          <Text style={styles.value}>{data.emergency_contact_name || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.emergency_contact_phone}</Text>
+          <Text style={styles.value}>{data.emergency_contact_phone || 'غير محدد'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>علاقة القرابة:</Text>
-          <Text style={styles.value}>{data.emergency_contact_relation}</Text>
+          <Text style={styles.value}>{data.emergency_contact_relation || 'غير محدد'}</Text>
         </View>
       </View>
 
@@ -355,20 +359,25 @@ const generateSerialNumber = () => {
 
 // Function to generate and download PDF
 export const generateRegistrationPDF = async (data: RegistrationPDFProps['data']) => {
-  const serialNumber = generateSerialNumber();
-  const doc = <RegistrationPDF data={data} serialNumber={serialNumber} />;
-  const asPdf = pdf(doc);
-  const blob = await asPdf.toBlob();
-  
-  // Create download link
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `تسجيل-${data.full_name.replace(/\s+/g, '-')}-${serialNumber}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  
-  return serialNumber;
+  try {
+    const serialNumber = generateSerialNumber();
+    const doc = <RegistrationPDF data={data} serialNumber={serialNumber} />;
+    const asPdf = pdf(doc);
+    const blob = await asPdf.toBlob();
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `تسجيل-${data.full_name.replace(/\s+/g, '-')}-${serialNumber}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    return serialNumber;
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    throw new Error('فشل في إنشاء ملف PDF. يرجى المحاولة مرة أخرى.');
+  }
 };
