@@ -1,68 +1,111 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react-pdf/renderer';
+
+// Register Arabic font
+Font.register({
+  family: 'NotoSansArabic',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/s/notosansarabic/v18/nwpxtLGrOAZMl5nJ_wfgRg3DrWFZWsnVBJ_sS6tlqHHFlhQ5l3sQWIHPqzCfyGyvu3CBFQLaig.woff2',
+      fontWeight: 'normal',
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/notosansarabic/v18/nwpxtLGrOAZMl5nJ_wfgRg3DrWFZWsnVBJ_sS6tlqHHFlhQ5l3sQWIHPqzCfyGyvuXCBFQLaig.woff2',
+      fontWeight: 'bold',
+    }
+  ]
+});
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 20,
-    fontFamily: 'Helvetica',
+    padding: 30,
+    fontFamily: 'NotoSansArabic',
+    fontSize: 11,
+  },
+  serialNumber: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#2563eb',
+    color: 'white',
+    padding: '8 12',
+    borderRadius: 4,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    borderBottom: '2 solid #2563eb',
-    paddingBottom: 10,
+    marginBottom: 25,
+    marginTop: 15,
+    borderBottom: '3 solid #2563eb',
+    paddingBottom: 15,
+    backgroundColor: '#f8fafc',
+    padding: 15,
+    borderRadius: 8,
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     marginLeft: 20,
+    borderRadius: 35,
+    border: '2 solid #2563eb',
   },
   headerText: {
     flex: 1,
     textAlign: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-  section: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f8fafc',
-    borderRadius: 5,
-  },
-  sectionTitle: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#2563eb',
     marginBottom: 8,
-    borderBottom: '1 solid #e2e8f0',
-    paddingBottom: 3,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#64748b',
+    textAlign: 'center',
+    fontWeight: 'normal',
+  },
+  section: {
+    marginBottom: 18,
+    padding: 15,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    border: '1 solid #e2e8f0',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e40af',
+    marginBottom: 12,
+    borderBottom: '2 solid #3b82f6',
+    paddingBottom: 6,
+    backgroundColor: '#dbeafe',
+    padding: '8 12',
+    borderRadius: 4,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 5,
+    marginBottom: 8,
+    padding: '4 0',
   },
   label: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#374151',
     width: '40%',
+    paddingRight: 10,
   },
   value: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#1f2937',
     width: '60%',
+    lineHeight: 1.4,
   },
   footer: {
     position: 'absolute',
@@ -107,6 +150,7 @@ interface RegistrationPDFProps {
     how_did_you_hear?: string;
     additional_notes?: string;
   };
+  serialNumber?: string;
 }
 
 const translatePosition = (position: string) => {
@@ -150,9 +194,16 @@ const translateHowHeard = (source: string) => {
   return translations[source] || source;
 };
 
-export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data }) => (
+export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNumber }) => (
   <Document>
     <Page size="A4" style={styles.page}>
+      {/* Serial Number */}
+      {serialNumber && (
+        <Text style={styles.serialNumber}>
+          رقم التسجيل: {serialNumber}
+        </Text>
+      )}
+      
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerText}>
@@ -295,9 +346,17 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data }) => (
   </Document>
 );
 
+// Function to generate serial number
+const generateSerialNumber = () => {
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `TFA${timestamp}${random}`;
+};
+
 // Function to generate and download PDF
 export const generateRegistrationPDF = async (data: RegistrationPDFProps['data']) => {
-  const doc = <RegistrationPDF data={data} />;
+  const serialNumber = generateSerialNumber();
+  const doc = <RegistrationPDF data={data} serialNumber={serialNumber} />;
   const asPdf = pdf(doc);
   const blob = await asPdf.toBlob();
   
@@ -305,9 +364,11 @@ export const generateRegistrationPDF = async (data: RegistrationPDFProps['data']
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `تسجيل-${data.full_name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+  link.download = `تسجيل-${data.full_name.replace(/\s+/g, '-')}-${serialNumber}.pdf`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  
+  return serialNumber;
 };

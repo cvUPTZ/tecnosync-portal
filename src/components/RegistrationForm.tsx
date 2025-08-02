@@ -23,18 +23,27 @@ import {
   Check
 } from "lucide-react";
 
+// Arabic name validation regex
+const arabicNameRegex = /^[\u0600-\u06FF\s]+$/;
+
 // Define the form schema
 const registrationSchema = z.object({
   // Personal Information
-  full_name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل"),
+  full_name: z.string()
+    .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+    .regex(arabicNameRegex, "يجب أن يحتوي الاسم على أحرف عربية فقط"),
   date_of_birth: z.string().min(1, "تاريخ الميلاد مطلوب"),
-  nationality: z.string().min(1, "الجنسية مطلوبة"),
+  nationality: z.string()
+    .min(1, "الجنسية مطلوبة")
+    .regex(arabicNameRegex, "يجب أن تحتوي الجنسية على أحرف عربية فقط"),
   phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
   email: z.string().email("البريد الإلكتروني غير صحيح"),
   address: z.string().min(5, "العنوان يجب أن يكون 5 أحرف على الأقل"),
   
   // Parent Information
-  parent_name: z.string().min(2, "اسم ولي الأمر مطلوب"),
+  parent_name: z.string()
+    .min(2, "اسم ولي الأمر مطلوب")
+    .regex(arabicNameRegex, "يجب أن يحتوي اسم ولي الأمر على أحرف عربية فقط"),
   parent_phone: z.string().min(10, "رقم هاتف ولي الأمر مطلوب"),
   parent_email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
   parent_id_number: z.string().min(1, "رقم الهوية مطلوب"),
@@ -48,7 +57,9 @@ const registrationSchema = z.object({
   program_preference: z.string().optional(),
   
   // Emergency Information
-  emergency_contact_name: z.string().min(2, "اسم جهة الاتصال في الطوارئ مطلوب"),
+  emergency_contact_name: z.string()
+    .min(2, "اسم جهة الاتصال في الطوارئ مطلوب")
+    .regex(arabicNameRegex, "يجب أن يحتوي اسم جهة الاتصال على أحرف عربية فقط"),
   emergency_contact_phone: z.string().min(10, "رقم هاتف الطوارئ مطلوب"),
   emergency_contact_relation: z.string().min(1, "علاقة جهة الاتصال مطلوبة"),
   
