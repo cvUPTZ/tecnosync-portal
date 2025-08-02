@@ -1,0 +1,28 @@
+{
+  "sidebar": {
+    "mainMenu": "Menu Principal",
+    "dashboard": "Tableau de Bord",
+    "registrations": "Inscriptions",
+    "students": "Gestion des Étudiants",
+    "users": "Gestion des Utilisateurs",
+    "attendance": "Présence",
+    "schedule": "Calendrier et Événements",
+    "finance": "Finance et Paiements",
+    "reports": "Rapports Financiers",
+    "coaches": "Gestion des Entraîneurs",
+    "messages": "Messages",
+    "documents": "Gestion des Documents",
+    "gallery": "Galerie",
+    "website": "Gestion du Site Web",
+    "settings": "Paramètres"
+  },
+  "userRoles": {
+    "director": "Directeur de l'Académie",
+    "comptabilite_chief": "Chef de la Comptabilité",
+    "coach": "Entraîneur",
+    "parent": "Parent"
+  },
+  "academyInfo": {
+    "managementSystem": "Système de Gestion"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "sidebar": {
+    "mainMenu": "القائمة الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "registrations": "طلبات التسجيل",
+    "students": "إدارة الطلاب",
+    "users": "إدارة المستخدمين",
+    "attendance": "الحضور والغياب",
+    "schedule": "الجداول والفعاليات",
+    "finance": "المالية والمدفوعات",
+    "reports": "التقارير المالية",
+    "coaches": "إدارة المدربين",
+    "messages": "الرسائل",
+    "documents": "إدارة الوثائق",
+    "gallery": "معرض الصور",
+    "website": "إدارة الموقع",
+    "settings": "الإعدادات"
+  },
+  "userRoles": {
+    "director": "مدير الأكاديمية",
+    "comptabilite_chief": "رئيس المحاسبة",
+    "coach": "مدرب",
+    "parent": "ولي أمر"
+  },
+  "academyInfo": {
+    "managementSystem": "نظام الإدارة"
+  }
+}

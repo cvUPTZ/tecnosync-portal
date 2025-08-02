@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AdminLayout = () => {
@@ -58,6 +59,8 @@ const AdminLayout = () => {
             </div>
             
             <div className="flex items-center gap-2 md:gap-4">
+              <LanguageSwitcher />
+
               <div className="hidden sm:flex items-center gap-2">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm font-medium truncate max-w-32">{profile.full_name}</span>

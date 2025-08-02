@@ -1,0 +1,28 @@
+{
+  "sidebar": {
+    "mainMenu": "Main Menu",
+    "dashboard": "Dashboard",
+    "registrations": "Registrations",
+    "students": "Student Management",
+    "users": "User Management",
+    "attendance": "Attendance",
+    "schedule": "Schedule & Events",
+    "finance": "Finance & Payments",
+    "reports": "Financial Reports",
+    "coaches": "Coach Management",
+    "messages": "Messages",
+    "documents": "Document Management",
+    "gallery": "Gallery",
+    "website": "Website Management",
+    "settings": "Settings"
+  },
+  "userRoles": {
+    "director": "Academy Director",
+    "comptabilite_chief": "Head of Accounting",
+    "coach": "Coach",
+    "parent": "Parent"
+  },
+  "academyInfo": {
+    "managementSystem": "Management System"
+  }
+}
