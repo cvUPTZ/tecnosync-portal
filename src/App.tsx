@@ -35,6 +35,17 @@ const PlatformAdminRoute = () => {
   return isPlatformAdmin() ? <Outlet /> : <Navigate to="/login" />;
 };
 
+// Protected route for enabled modules
+const ModuleProtectedRoute = ({ moduleName }: { moduleName: string }) => {
+  const { isModuleEnabled, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner
+  }
+
+  return isModuleEnabled(moduleName) ? <Outlet /> : <Navigate to="/admin" />;
+};
+
 
 const App = () => {
   return (
@@ -56,14 +67,33 @@ const App = () => {
 
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
-                <Route path="registrations" element={<RegistrationManagement />} />
-                <Route path="students" element={<StudentManagement />} />
-                <Route path="users" element={<UserManagement />} />
-                <Route path="attendance" element={<Attendance />} />
-                <Route path="coaches" element={<CoachManagement />} />
-                <Route path="finance" element={<FinanceManagement />} />
-                <Route path="reports" element={<FinancialReports />} />
-                <Route path="documents" element={<DocumentManagement />} />
+
+                {/* Wrap each module route with the protection component */}
+                <Route element={<ModuleProtectedRoute moduleName="registrations" />}>
+                  <Route path="registrations" element={<RegistrationManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="students" />}>
+                  <Route path="students" element={<StudentManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="users" />}>
+                  <Route path="users" element={<UserManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="attendance" />}>
+                  <Route path="attendance" element={<Attendance />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="coaches" />}>
+                  <Route path="coaches" element={<CoachManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="finance" />}>
+                  <Route path="finance" element={<FinanceManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="reports" />}>
+                  <Route path="reports" element={<FinancialReports />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="documents" />}>
+                  <Route path="documents" element={<DocumentManagement />} />
+                </Route>
+
                 {/* Future admin routes will be added here */}
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

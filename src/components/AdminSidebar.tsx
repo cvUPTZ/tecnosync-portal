@@ -31,43 +31,42 @@ const AdminSidebar = () => {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
-  const { profile, isAdmin, hasRole } = useAuth();
+  const { profile, isModuleEnabled } = useAuth();
   const currentPath = location.pathname;
 
-  const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-tfa-blue/10 text-tfa-blue font-medium border-r-2 border-tfa-blue' : 'hover:bg-muted/50';
 
-  // Define menu items based on roles
+  // Define menu items based on roles and enabled modules
   const getMenuItems = () => {
-    const baseItems = [
-      { title: 'لوحة التحكم', url: '/admin', icon: LayoutDashboard, roles: ['director', 'comptabilite_chief', 'coach'] },
+    const allItems = [
+      // Always visible
+      { title: 'لوحة التحكم', url: '/admin', icon: LayoutDashboard, roles: ['director', 'comptabilite_chief', 'coach'], module: 'dashboard' },
+
+      // Module-based items
+      { title: 'طلبات التسجيل', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'], module: 'registrations' },
+      { title: 'إدارة الطلاب', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'], module: 'students' },
+      { title: 'إدارة المستخدمين', url: '/admin/users', icon: UserCheck, roles: ['director'], module: 'users' },
+      { title: 'الحضور والغياب', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'], module: 'attendance' },
+      { title: 'الجداول والفعاليات', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'], module: 'schedule' },
+      { title: 'المالية والمدفوعات', url: '/admin/finance', icon: Calculator, roles: ['director', 'comptabilite_chief'], module: 'finance' },
+      { title: 'التقارير المالية', url: '/admin/reports', icon: BarChart3, roles: ['director', 'comptabilite_chief'], module: 'reports' },
+      { title: 'إدارة المدربين', url: '/admin/coaches', icon: Users, roles: ['director'], module: 'coaches' },
+      { title: 'الرسائل', url: '/admin/messages', icon: MessageSquare, roles: ['director', 'comptabilite_chief', 'coach'], module: 'messages' },
+      { title: 'إدارة الوثائق', url: '/admin/documents', icon: FileText, roles: ['director', 'comptabilite_chief'], module: 'documents' },
+      { title: 'معرض الصور', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'], module: 'gallery' },
+
+      // Always visible
+      { title: 'الإعدادات', url: '/admin/settings', icon: Settings, roles: ['director'], module: 'settings' },
     ];
 
-    const adminItems = [
-      { title: 'طلبات التسجيل', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'] },
-      { title: 'إدارة الطلاب', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'] },
-      { title: 'إدارة المستخدمين', url: '/admin/users', icon: UserCheck, roles: ['director'] },
-      { title: 'الحضور والغياب', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'] },
-      { title: 'الجداول والفعاليات', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'] },
-    ];
-
-    const financialItems = [
-      { title: 'المالية والمدفوعات', url: '/admin/finance', icon: Calculator, roles: ['director', 'comptabilite_chief'] },
-      { title: 'التقارير المالية', url: '/admin/reports', icon: BarChart3, roles: ['director', 'comptabilite_chief'] },
-    ];
-
-    const managementItems = [
-      { title: 'إدارة المدربين', url: '/admin/coaches', icon: Users, roles: ['director'] },
-      { title: 'الرسائل', url: '/admin/messages', icon: MessageSquare, roles: ['director', 'comptabilite_chief', 'coach'] },
-      { title: 'إدارة الوثائق', url: '/admin/documents', icon: FileText, roles: ['director', 'comptabilite_chief'] },
-      { title: 'معرض الصور', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'] },
-      { title: 'الإعدادات', url: '/admin/settings', icon: Settings, roles: ['director'] },
-    ];
-
-    return [...baseItems, ...adminItems, ...financialItems, ...managementItems].filter(item => 
-      item.roles.includes(profile?.role || 'coach')
-    );
+    return allItems.filter(item => {
+      const roleMatch = item.roles.includes(profile?.role || '');
+      // Dashboard and settings are always enabled for logged-in users.
+      // For other modules, check if they are enabled in the academy's config.
+      const moduleMatch = item.module === 'dashboard' || item.module === 'settings' || isModuleEnabled(item.module);
+      return roleMatch && moduleMatch;
+    });
   };
 
   const menuItems = getMenuItems();
