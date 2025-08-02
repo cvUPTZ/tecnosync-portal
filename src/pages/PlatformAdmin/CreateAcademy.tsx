@@ -21,6 +21,7 @@ const availableModules = [
   { id: 'finance', label: 'Finance Management' },
   { id: 'reports', label: 'Financial Reports' },
   { id: 'documents', label: 'Document Management' },
+  { id: 'website', label: 'Website Content Management' },
 ] as const;
 
 const createAcademySchema = z.object({
