@@ -56,26 +56,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
-      const { data, error } = await supabase
+      // Step 1: Fetch the basic profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*, academies(*)')
+        .select('*')
         .eq('user_id', userId)
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
         return null;
       }
 
-      if (!data) {
+      if (!profileData) {
         console.log('No profile found for user:', userId);
         return null;
       }
 
-      console.log('Profile fetched successfully:', data);
-      return data as Profile;
+      let academyData = null;
+      // Step 2: If profile has an academy_id, fetch the academy details
+      if (profileData.academy_id) {
+        const { data: fetchedAcademyData, error: academyError } = await supabase
+          .from('academies')
+          .select('*')
+          .eq('id', profileData.academy_id)
+          .single();
+
+        if (academyError) {
+          console.error('Error fetching academy details:', academyError);
+          // Don't fail the whole profile load, just the academy part
+        } else {
+          academyData = fetchedAcademyData;
+        }
+      }
+
+      // Step 3: Combine the data
+      const fullProfile: Profile = {
+        ...profileData,
+        academies: academyData,
+      };
+
+      console.log('Profile fetched successfully:', fullProfile);
+      return fullProfile;
+
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error in fetchProfile process:', error);
       return null;
     }
   };
