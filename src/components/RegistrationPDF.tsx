@@ -1,11 +1,12 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react-pdf/renderer';
 
-// Register Arabic font
 Font.register({
   family: 'Cairo',
-  src: 'https://fonts.gstatic.com/s/cairo/v28/SLXjc1nY6HkvalIhTp2mxdt0UX8geg.woff2'
+  src: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap',
 });
+
+
 
 // TFA Brand colors (matching website)
 const TFA_COLORS = {
