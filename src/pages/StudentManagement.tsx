@@ -88,6 +88,7 @@ const StudentManagement = () => {
 
   // Fetch students
   const fetchStudents = async () => {
+    if (!profile?.academy_id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -99,6 +100,7 @@ const StudentManagement = () => {
             description
           )
         `)
+        .eq('academy_id', profile.academy_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -119,11 +121,13 @@ const StudentManagement = () => {
 
   // Fetch groups
   const fetchGroups = async () => {
+    if (!profile?.academy_id) return;
     try {
       const { data, error } = await supabase
         .from('student_groups')
         .select('*')
         .eq('is_active', true)
+        .eq('academy_id', profile.academy_id)
         .order('min_age', { ascending: true });
 
       if (error) throw error;

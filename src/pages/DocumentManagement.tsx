@@ -129,6 +129,7 @@ const DocumentManagement = () => {
   };
 
   const fetchDocuments = async () => {
+    if (!profile?.academy_id) return;
     const { data, error } = await supabase
       .from('documents')
       .select(`
@@ -137,6 +138,7 @@ const DocumentManagement = () => {
         student_groups(name)
       `)
       .eq('is_active', true)
+      .eq('academy_id', profile.academy_id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -165,10 +167,12 @@ const DocumentManagement = () => {
   };
 
   const fetchStudents = async () => {
+    if (!profile?.academy_id) return;
     const { data, error } = await supabase
       .from('students')
       .select('id, full_name, student_code')
       .eq('status', 'active')
+      .eq('academy_id', profile.academy_id)
       .order('full_name');
 
     if (error) throw error;
@@ -176,10 +180,12 @@ const DocumentManagement = () => {
   };
 
   const fetchGroups = async () => {
+    if (!profile?.academy_id) return;
     const { data, error } = await supabase
       .from('student_groups')
       .select('id, name')
       .eq('is_active', true)
+      .eq('academy_id', profile.academy_id)
       .order('name');
 
     if (error) throw error;
@@ -231,7 +237,8 @@ const DocumentManagement = () => {
           tags: tagsArray.length > 0 ? tagsArray : null,
           student_id: formData.student_id || null,
           group_id: formData.group_id || null,
-          uploaded_by: profile?.user_id
+          uploaded_by: profile?.user_id,
+          academy_id: profile?.academy_id,
         });
 
       if (dbError) throw dbError;
@@ -328,7 +335,8 @@ const DocumentManagement = () => {
       const { error: dbError } = await supabase
         .from('documents')
         .update({ is_active: false })
-        .eq('id', document.id);
+        .eq('id', document.id)
+        .eq('academy_id', profile.academy_id);
 
       if (dbError) throw dbError;
 

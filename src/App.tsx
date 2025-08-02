@@ -18,9 +18,23 @@ import FinanceManagement from "./pages/FinanceManagement";
 import FinancialReports from "./pages/FinancialReports";
 import DocumentManagement from "./pages/DocumentManagement";
 import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import CreateAcademyPage from "./pages/PlatformAdmin/CreateAcademy";
+import { Navigate, Outlet } from "react-router-dom";
 
 const queryClient = new QueryClient();
+
+// Protected route for platform admin
+const PlatformAdminRoute = () => {
+  const { isPlatformAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner
+  }
+
+  return isPlatformAdmin() ? <Outlet /> : <Navigate to="/login" />;
+};
+
 
 const App = () => {
   return (
@@ -34,6 +48,12 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/registration" element={<Registration />} />
               <Route path="/login" element={<Login />} />
+
+              {/* Platform Admin Routes */}
+              <Route element={<PlatformAdminRoute />}>
+                <Route path="/platform-admin/create-academy" element={<CreateAcademyPage />} />
+              </Route>
+
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="registrations" element={<RegistrationManagement />} />

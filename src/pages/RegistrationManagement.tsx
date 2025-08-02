@@ -92,11 +92,13 @@ const RegistrationManagement = () => {
 
   // Fetch registrations
   const fetchRegistrations = async () => {
+    if (!profile?.academy_id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('registrations')
         .select('*')
+        .eq('academy_id', profile.academy_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -142,6 +144,7 @@ const RegistrationManagement = () => {
 
   // Update registration status
   const updateRegistrationStatus = async (id: string, newStatus: 'approved' | 'rejected') => {
+    if (!profile?.academy_id) return;
     try {
       const { error } = await supabase
         .from('registrations')
@@ -149,7 +152,8 @@ const RegistrationManagement = () => {
           status: newStatus,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('academy_id', profile.academy_id);
 
       if (error) throw error;
 
