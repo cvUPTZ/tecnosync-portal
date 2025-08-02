@@ -1,40 +1,113 @@
 {
   "sidebar": {
-    "mainMenu": "Menu Principal",
-    "dashboard": "Tableau de Bord",
+    "mainMenu": "Menu principal",
+    "dashboard": "Tableau de bord",
     "registrations": "Inscriptions",
-    "students": "Gestion des Étudiants",
-    "users": "Gestion des Utilisateurs",
-    "attendance": "Présence",
-    "schedule": "Calendrier et Événements",
-    "finance": "Finance et Paiements",
-    "reports": "Rapports Financiers",
-    "coaches": "Gestion des Entraîneurs",
+    "students": "Gestion des étudiants",
+    "users": "Gestion des utilisateurs",
+    "attendance": "Présence et absences",
+    "schedule": "Emplois du temps et événements",
+    "finance": "Finances et paiements",
+    "reports": "Rapports financiers",
+    "coaches": "Gestion des entraîneurs",
     "messages": "Messages",
-    "documents": "Gestion des Documents",
-    "gallery": "Galerie",
-    "website": "Gestion du Site Web",
+    "documents": "Gestion des documents",
+    "gallery": "Galerie photo",
+    "website": "Gestion du site web",
     "settings": "Paramètres"
   },
   "userRoles": {
-    "director": "Directeur de l'Académie",
-    "comptabilite_chief": "Chef de la Comptabilité",
+    "director": "Directeur de l'académie",
+    "comptabilite_chief": "Chef comptable",
     "coach": "Entraîneur",
-    "parent": "Parent"
+    "parent": "Tuteur légal"
   },
   "academyInfo": {
-    "managementSystem": "Système de Gestion"
+    "managementSystem": "Système de gestion"
   },
   "landingPage": {
-    "heroTitle": "La Plateforme Tout-en-Un pour Votre Académie de Football",
-    "heroSubtitle": "Créez un site web professionnel et gérez vos opérations avec facilité. Commencez en quelques minutes.",
+    "heroTitle": "La plateforme tout-en-un pour votre académie de football",
+    "heroSubtitle": "Créez un site professionnel et gérez vos opérations facilement. Commencez en quelques minutes.",
     "getStarted": "Commencer",
-    "featuresTitle": "Tout ce Dont Vous Avez Besoin pour Réussir",
-    "feature1Title": "Site Web Professionnel",
-    "feature1Text": "Un site web public pour présenter votre académie, vos programmes et votre personnel.",
-    "feature2Title": "Panneau d'Administration Complet",
-    "feature2Text": "Gérez les inscriptions, les étudiants, les paiements et plus encore depuis un tableau de bord central.",
-    "feature3Title": "Modulaire et Personnalisable",
-    "feature3Text": "Choisissez les fonctionnalités dont vous avez besoin et personnalisez l'apparence pour qu'elle corresponde à votre marque."
+    "watchDemo": "Voir la démo",
+    "featuresTitle": "Tout ce dont vous avez besoin pour réussir",
+    "featuresSubtitle": "Un ensemble complet d'outils pour gérer votre académie en toute sérénité.",
+    "feature1Title": "Site web professionnel",
+    "feature1Text": "Un site public pour présenter votre académie, vos programmes et votre équipe.",
+    "feature2Title": "Tableau de bord complet",
+    "feature2Text": "Gérez les inscriptions, les joueurs, les paiements et plus encore depuis un tableau de bord centralisé.",
+    "feature3Title": "Système flexible et personnalisable",
+    "feature3Text": "Choisissez les fonctionnalités dont vous avez besoin et personnalisez l'apparence selon votre image de marque.",
+    
+    "testimonialsTitle": "Ce que disent nos partenaires académiques",
+    "testimonialsSubtitle": "Fait confiance par des académies de football dans toute la région.",
+    "testimonial1": {
+      "name": "Karim Benzari",
+      "role": "Directeur, Académie de Football d'Alger",
+      "content": "Cette plateforme a transformé notre gestion des inscriptions et la communication avec les parents."
+    },
+    "testimonial2": {
+      "name": "Nadia El Fassi",
+      "role": "Responsable opérations, Club de la Jeunesse de Casablanca",
+      "content": "Facile à utiliser, fiable, et excellent support. Fortement recommandé pour toute académie sportive."
+    },
+    "testimonial3": {
+      "name": "Youssef Amrani",
+      "role": "Entraîneur principal, Académie Tunis Stars",
+      "content": "Les outils de présence et de planning nous font gagner des heures chaque semaine."
+    },
+
+    "pricingTitle": "Tarification simple et transparente",
+    "pricingSubtitle": "Choisissez le forfait adapté à la taille et aux besoins de votre académie.",
+    "popular": "Populaire",
+    "pricing": {
+      "basic": {
+        "name": "Basique",
+        "price": "29€/mois",
+        "description": "Idéal pour les petites académies de moins de 50 joueurs.",
+        "feature1": "Jusqu'à 50 profils joueurs",
+        "feature2": "Gestion des inscriptions",
+        "feature3": "Planning basique",
+        "cta": "Choisir Basique"
+      },
+      "pro": {
+        "name": "Professionnel",
+        "price": "79€/mois",
+        "description": "Pour les académies moyennes ou grandes avec besoins avancés.",
+        "feature1": "Profils joueurs et parents illimités",
+        "feature2": "Suivi complet des finances et paiements",
+        "feature3": "Présence avancée et rapports",
+        "feature4": "Créateur de site personnalisable",
+        "cta": "Passer à Pro"
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "price": "Sur mesure",
+        "description": "Pour les académies multisites ou fédérations.",
+        "feature1": "Support multi-sites",
+        "feature2": "Responsable dédié",
+        "feature3": "Intégration API et systèmes",
+        "feature4": "Option de déploiement local",
+        "cta": "Nous contacter"
+      }
+    },
+
+    "faqTitle": "Questions fréquentes",
+    "faqSubtitle": "Tout ce que vous devez savoir sur notre plateforme.",
+    "faq": {
+      "q1": "Puis-je personnaliser le site web pour mon académie ?",
+      "a1": "Oui ! Vous pouvez personnaliser complètement les couleurs, logos, pages et contenu selon votre identité de marque.",
+      "q2": "La communication avec les parents est-elle prise en charge ?",
+      "a2": "Oui, les parents reçoivent automatiquement des mises à jour sur les horaires, paiements et présences par SMS et email.",
+      "q3": "Prenez-vous en charge les langues arabe et française ?",
+      "a3": "Oui, notre plateforme prend en charge l'arabe (RTL), le français et l'anglais nativement.",
+      "q4": "Puis-je importer mes données existantes de joueurs ?",
+      "a4": "Oui, vous pouvez facilement importer les données des joueurs et parents via CSV ou Excel."
+    },
+
+    "ctaTitle": "Prêt à numériser votre académie ?",
+    "ctaSubtitle": "Rejoignez des centaines d'académies de football qui utilisent déjà notre plateforme pour simplifier leurs opérations et accélérer leur croissance.",
+    "startFreeTrial": "Essai gratuit",
+    "contactSales": "Contacter les ventes"
   }
 }

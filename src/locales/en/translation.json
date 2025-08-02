@@ -3,22 +3,22 @@
     "mainMenu": "Main Menu",
     "dashboard": "Dashboard",
     "registrations": "Registrations",
-    "students": "Student Management",
-    "users": "User Management",
+    "students": "Students Management",
+    "users": "Users Management",
     "attendance": "Attendance",
     "schedule": "Schedule & Events",
     "finance": "Finance & Payments",
     "reports": "Financial Reports",
-    "coaches": "Coach Management",
+    "coaches": "Coaches Management",
     "messages": "Messages",
-    "documents": "Document Management",
-    "gallery": "Gallery",
+    "documents": "Documents Management",
+    "gallery": "Photo Gallery",
     "website": "Website Management",
     "settings": "Settings"
   },
   "userRoles": {
     "director": "Academy Director",
-    "comptabilite_chief": "Head of Accounting",
+    "comptabilite_chief": "Accounting Chief",
     "coach": "Coach",
     "parent": "Parent"
   },
@@ -29,12 +29,85 @@
     "heroTitle": "The All-in-One Platform for Your Football Academy",
     "heroSubtitle": "Create a professional website and manage your operations with ease. Get started in minutes.",
     "getStarted": "Get Started",
+    "watchDemo": "Watch Demo",
     "featuresTitle": "Everything You Need to Succeed",
+    "featuresSubtitle": "A complete toolkit to run your football academy smoothly.",
     "feature1Title": "Professional Website",
-    "feature1Text": "A public-facing website to showcase your academy, programs, and staff.",
-    "feature2Title": "Complete Admin Panel",
-    "feature2Text": "Manage registrations, students, payments, and more from one central dashboard.",
-    "feature3Title": "Modular & Customizable",
-    "feature3Text": "Choose the features you need and customize the look to match your brand."
+    "feature1Text": "A public website to showcase your academy, programs, and team.",
+    "feature2Title": "Full Dashboard",
+    "feature2Text": "Manage registrations, students, payments, and more from a single central dashboard.",
+    "feature3Title": "Flexible & Customizable System",
+    "feature3Text": "Choose the features you need and customize the look to match your brand.",
+    
+    "testimonialsTitle": "What Our Academy Partners Say",
+    "testimonialsSubtitle": "Trusted by football academies across the region.",
+    "testimonial1": {
+      "name": "Karim Benzari",
+      "role": "Director, Algiers Football Academy",
+      "content": "This platform has transformed how we manage registrations and communicate with parents."
+    },
+    "testimonial2": {
+      "name": "Nadia El Fassi",
+      "role": "Operations Manager, Casablanca Youth Club",
+      "content": "Easy to use, reliable, and excellent support. Highly recommended for any sports academy."
+    },
+    "testimonial3": {
+      "name": "Youssef Amrani",
+      "role": "Head Coach, Tunis Stars Academy",
+      "content": "The attendance and scheduling tools save us hours every week."
+    },
+
+    "pricingTitle": "Simple, Transparent Pricing",
+    "pricingSubtitle": "Choose the plan that fits your academy size and needs.",
+    "popular": "Popular",
+    "pricing": {
+      "basic": {
+        "name": "Basic",
+        "price": "$29/month",
+        "description": "Perfect for small academies with under 50 players.",
+        "feature1": "Up to 50 player profiles",
+        "feature2": "Registration management",
+        "feature3": "Basic scheduling",
+        "cta": "Choose Basic"
+      },
+      "pro": {
+        "name": "Professional",
+        "price": "$79/month",
+        "description": "For medium to large academies with advanced needs.",
+        "feature1": "Unlimited player & parent accounts",
+        "feature2": "Full finance & payment tracking",
+        "feature3": "Advanced attendance & reporting",
+        "feature4": "Custom website builder",
+        "cta": "Get Professional"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "description": "For multi-location academies or federations.",
+        "feature1": "Multi-branch support",
+        "feature2": "Dedicated account manager",
+        "feature3": "API & system integration",
+        "feature4": "On-premise deployment option",
+        "cta": "Contact Us"
+      }
+    },
+
+    "faqTitle": "Frequently Asked Questions",
+    "faqSubtitle": "Everything you need to know about our platform.",
+    "faq": {
+      "q1": "Can I customize the website for my academy?",
+      "a1": "Yes! You can fully customize colors, logos, pages, and content to match your brand identity.",
+      "q2": "Is parent communication supported?",
+      "a2": "Yes, parents receive automatic updates about schedules, payments, and attendance via SMS and email.",
+      "q3": "Do you support Arabic and French languages?",
+      "a3": "Yes, our platform supports Arabic (RTL), French, and English out of the box.",
+      "q4": "Can I import existing player data?",
+      "a4": "Yes, you can easily import player and parent data via CSV or Excel files."
+    },
+
+    "ctaTitle": "Ready to Digitize Your Academy?",
+    "ctaSubtitle": "Join hundreds of football academies already using our platform to streamline operations and grow faster.",
+    "startFreeTrial": "Start Free Trial",
+    "contactSales": "Contact Sales"
   }
 }
