@@ -112,7 +112,7 @@ const CreateAcademyPage = () => {
       adminFullName: '',
       adminEmail: '',
       adminPassword: '',
-      modules: availableModules.map(m => m.id), // Select all by default
+      modules: availableModules.map(m => m.id),
       websiteConfig: {
         welcomeMessage: 'Welcome to our Football Academy where champions are made!',
         aboutDescription: 'Our academy is dedicated to developing young talent through professional training, mentorship, and competitive opportunities. We believe in nurturing not just skilled players, but well-rounded individuals.',
@@ -125,7 +125,7 @@ const CreateAcademyPage = () => {
     },
   });
 
-  const { isSubmitting, errors } = form.formState;
+  const { isSubmitting } = form.formState;
   const selectedTemplate = form.watch('websiteConfig.template');
 
   // Update primary color when template changes
@@ -141,9 +141,7 @@ const CreateAcademyPage = () => {
       setSubdomainCheck({ isChecking: false, isAvailable: null, message: '' });
       return;
     }
-
     setSubdomainCheck({ isChecking: true, isAvailable: null, message: 'Checking availability...' });
-
     try {
       const { data, error } = await supabase
         .from('academies')
@@ -151,10 +149,9 @@ const CreateAcademyPage = () => {
         .eq('subdomain', subdomain)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" which is what we want
+      if (error && error.code !== 'PGRST116') {
         throw error;
       }
-
       const isAvailable = !data;
       setSubdomainCheck({
         isChecking: false,
@@ -173,12 +170,10 @@ const CreateAcademyPage = () => {
   const onSubdomainChange = (value: string) => {
     const lowercaseValue = value.toLowerCase();
     form.setValue('academySubdomain', lowercaseValue);
-    
     // Debounce the availability check
     const timeoutId = setTimeout(() => {
       checkSubdomainAvailability(lowercaseValue);
     }, 500);
-
     return () => clearTimeout(timeoutId);
   };
 
@@ -240,11 +235,9 @@ const CreateAcademyPage = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
-
       console.log('Default content created successfully');
     } catch (error) {
       console.error('Error creating default content:', error);
-      // Don't throw error here as the academy is already created
     }
   };
 
@@ -275,9 +268,7 @@ const CreateAcademyPage = () => {
         modules_config: modulesObject,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       // Create default public content
       await createDefaultContent(newAcademy.id, values);
@@ -298,7 +289,6 @@ const CreateAcademyPage = () => {
 
       setLastCreatedAcademy(createdAcademyInfo);
       form.reset();
-
     } catch (error: any) {
       console.error('Failed to create academy:', error);
       toast({
@@ -335,13 +325,6 @@ const CreateAcademyPage = () => {
           <CardContent>
             <Button onClick={() => navigate('/')}>Go to Homepage</Button>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-export default CreateAcademyPage;
         </Card>
       </div>
     );
@@ -385,7 +368,6 @@ export default CreateAcademyPage;
                 </a>
               </div>
             </div>
-
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -396,7 +378,6 @@ export default CreateAcademyPage;
                 Password: (as provided during creation)
               </AlertDescription>
             </Alert>
-
             <div className="p-4 border rounded-lg bg-gray-50">
               <p className="font-semibold mb-3">Next Steps:</p>
               <ul className="list-disc list-inside text-left space-y-2 text-sm">
@@ -408,7 +389,6 @@ export default CreateAcademyPage;
                 <li>Configure email notifications and communication settings</li>
               </ul>
             </div>
-
             <div className="flex gap-4 justify-center">
               <Button onClick={() => setLastCreatedAcademy(null)} variant="outline">
                 Create Another Academy
@@ -435,7 +415,6 @@ export default CreateAcademyPage;
                 {/* Academy Details Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Academy Details</h3>
-                  
                   <FormField
                     control={form.control}
                     name="academyName"
@@ -452,7 +431,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="academySubdomain"
@@ -498,7 +476,6 @@ export default CreateAcademyPage;
                 {/* Admin User Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Initial Admin User</h3>
-                  
                   <FormField
                     control={form.control}
                     name="adminFullName"
@@ -512,7 +489,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="adminEmail"
@@ -529,7 +505,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="adminPassword"
@@ -566,7 +541,6 @@ export default CreateAcademyPage;
                 {/* Website Configuration Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Public Website Setup</h3>
-                  
                   <FormField
                     control={form.control}
                     name="websiteConfig.template"
@@ -607,7 +581,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.welcomeMessage"
@@ -629,7 +602,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.aboutDescription"
@@ -651,7 +623,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -666,7 +637,6 @@ export default CreateAcademyPage;
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="websiteConfig.contactPhone"
@@ -681,7 +651,6 @@ export default CreateAcademyPage;
                       )}
                     />
                   </div>
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.address"
@@ -725,7 +694,6 @@ export default CreateAcademyPage;
                       </Button>
                     </div>
                   </div>
-                  
                   <FormField
                     control={form.control}
                     name="modules"
@@ -737,37 +705,33 @@ export default CreateAcademyPage;
                               key={item.id}
                               control={form.control}
                               name="modules"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={item.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== item.id
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                      <FormLabel className="font-medium cursor-pointer">
-                                        {item.label}
-                                      </FormLabel>
-                                      <FormDescription className="text-xs">
-                                        {item.description}
-                                      </FormDescription>
-                                    </div>
-                                  </FormItem>
-                                )
-                              }}
+                              render={({ field }) => (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, item.id])
+                                          : field.onChange(
+                                              field.value?.filter((value) => value !== item.id)
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel className="font-medium cursor-pointer">
+                                      {item.label}
+                                    </FormLabel>
+                                    <FormDescription className="text-xs">
+                                      {item.description}
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
                             />
                           ))}
                         </div>
@@ -792,7 +756,7 @@ export default CreateAcademyPage;
                   )}
                 </Button>
 
-                {Object.keys(errors).length > 0 && (
+                {Object.keys(form.formState.errors).length > 0 && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -803,3 +767,10 @@ export default CreateAcademyPage;
               </form>
             </Form>
           </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default CreateAcademyPage;
