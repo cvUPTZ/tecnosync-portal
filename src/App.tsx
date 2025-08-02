@@ -17,6 +17,8 @@ import CoachManagement from "./pages/CoachManagement";
 import FinanceManagement from "./pages/FinanceManagement";
 import FinancialReports from "./pages/FinancialReports";
 import DocumentManagement from "./pages/DocumentManagement";
+import WebsiteContentManagement from "./pages/WebsiteContentManagement";
+import PublicSite from "./pages/PublicSite";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import CreateAcademyPage from "./pages/PlatformAdmin/CreateAcademy";
@@ -57,6 +59,7 @@ const App = () => {
             <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/site/:subdomain" element={<PublicSite />} />
               <Route path="/registration" element={<Registration />} />
               <Route path="/login" element={<Login />} />
 
@@ -92,6 +95,9 @@ const App = () => {
                 </Route>
                 <Route element={<ModuleProtectedRoute moduleName="documents" />}>
                   <Route path="documents" element={<DocumentManagement />} />
+                </Route>
+                <Route element={<ModuleProtectedRoute moduleName="website" />}>
+                  <Route path="website" element={<WebsiteContentManagement />} />
                 </Route>
 
                 {/* Future admin routes will be added here */}

@@ -57,6 +57,7 @@ const AdminSidebar = () => {
       { title: 'معرض الصور', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'], module: 'gallery' },
 
       // Always visible
+      { title: 'إدارة الموقع', url: '/admin/website', icon: FileText, roles: ['director'], module: 'website' },
       { title: 'الإعدادات', url: '/admin/settings', icon: Settings, roles: ['director'], module: 'settings' },
     ];
 
