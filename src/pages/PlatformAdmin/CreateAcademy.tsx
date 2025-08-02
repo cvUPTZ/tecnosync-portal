@@ -14,7 +14,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { useSubdomainCheck } from '@/hooks/useSubdomainCheck'; // Import the hook
 
+// Available modules configuration
 const availableModules = [
   { id: 'registrations', label: 'Registration Management', description: 'Manage student registrations and enrollments' },
   { id: 'students', label: 'Student Management', description: 'Track student information and progress' },
@@ -27,6 +29,7 @@ const availableModules = [
   { id: 'website', label: 'Website Content Management', description: 'Manage public website content and pages' },
 ] as const;
 
+// Website templates
 const websiteTemplates = [
   { 
     id: 'classic', 
@@ -48,6 +51,7 @@ const websiteTemplates = [
   },
 ];
 
+// Form schema
 const createAcademySchema = z.object({
   academyName: z.string().min(3, 'Academy name must be at least 3 characters'),
   academySubdomain: z.string()
@@ -86,23 +90,15 @@ interface CreatedAcademyInfo {
   adminUrl: string;
 }
 
-interface SubdomainCheckState {
-  isChecking: boolean;
-  isAvailable: boolean | null;
-  message: string;
-}
-
 const CreateAcademyPage = () => {
   const { isPlatformAdmin, loading, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [lastCreatedAcademy, setLastCreatedAcademy] = useState<CreatedAcademyInfo | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [subdomainCheck, setSubdomainCheck] = useState<SubdomainCheckState>({
-    isChecking: false,
-    isAvailable: null,
-    message: ''
-  });
+
+  // Use the custom hook for subdomain checking
+  const { checkSubdomain, result: subdomainCheck, cleanup } = useSubdomainCheck(800);
 
   const form = useForm<CreateAcademyFormValues>({
     resolver: zodResolver(createAcademySchema),
@@ -112,7 +108,7 @@ const CreateAcademyPage = () => {
       adminFullName: '',
       adminEmail: '',
       adminPassword: '',
-      modules: availableModules.map(m => m.id), // Select all by default
+      modules: availableModules.map(m => m.id),
       websiteConfig: {
         welcomeMessage: 'Welcome to our Football Academy where champions are made!',
         aboutDescription: 'Our academy is dedicated to developing young talent through professional training, mentorship, and competitive opportunities. We believe in nurturing not just skilled players, but well-rounded individuals.',
@@ -125,17 +121,15 @@ const CreateAcademyPage = () => {
     },
   });
 
-  const { isSubmitting, errors } = form.formState;
+  const { isSubmitting } = form.formState;
   const selectedTemplate = form.watch('websiteConfig.template');
 
-  // Clean up timeout on unmount
+  // Clean up on unmount
   React.useEffect(() => {
     return () => {
-      if (window.subdomainCheckTimeout) {
-        clearTimeout(window.subdomainCheckTimeout);
-      }
+      cleanup(); // Cancel any pending requests or timeouts
     };
-  }, []);
+  }, [cleanup]);
 
   // Update primary color when template changes
   React.useEffect(() => {
@@ -145,72 +139,14 @@ const CreateAcademyPage = () => {
     }
   }, [selectedTemplate, form]);
 
-  const checkSubdomainAvailability = async (subdomain: string) => {
-    if (!subdomain || subdomain.length < 3) {
-      setSubdomainCheck({ isChecking: false, isAvailable: null, message: '' });
-      return;
-    }
-
-    // Validate subdomain format first
-    if (!/^[a-z0-9-]+$/.test(subdomain)) {
-      setSubdomainCheck({
-        isChecking: false,
-        isAvailable: false,
-        message: 'Invalid subdomain format'
-      });
-      return;
-    }
-
-    setSubdomainCheck({ isChecking: true, isAvailable: null, message: 'Checking availability...' });
-
-    try {
-      const { data, error } = await supabase
-        .from('academies')
-        .select('id')
-        .eq('subdomain', subdomain)
-        .limit(1);
-
-      if (error) {
-        console.error('Subdomain check error:', error);
-        setSubdomainCheck({
-          isChecking: false,
-          isAvailable: false,
-          message: 'Error checking subdomain availability'
-        });
-        return;
-      }
-
-      const isAvailable = !data || data.length === 0;
-      setSubdomainCheck({
-        isChecking: false,
-        isAvailable,
-        message: isAvailable ? 'Subdomain is available!' : 'Subdomain is already taken'
-      });
-    } catch (error: any) {
-      console.error('Subdomain check error:', error);
-      setSubdomainCheck({
-        isChecking: false,
-        isAvailable: false,
-        message: 'Error checking subdomain availability'
-      });
-    }
-  };
-
+  // Handle subdomain input change
   const onSubdomainChange = (value: string) => {
     const lowercaseValue = value.toLowerCase().trim();
     form.setValue('academySubdomain', lowercaseValue);
-    
-    // Clear any existing timeout
-    if (window.subdomainCheckTimeout) {
-      clearTimeout(window.subdomainCheckTimeout);
-    }
-    
-    // Debounce the availability check
-    window.subdomainCheckTimeout = setTimeout(() => {
-      checkSubdomainAvailability(lowercaseValue);
-    }, 800);
+    checkSubdomain(lowercaseValue); // Trigger debounced check via hook
   };
 
+  // Module selection helpers
   const selectAllModules = () => {
     form.setValue('modules', availableModules.map(m => m.id));
   };
@@ -219,9 +155,9 @@ const CreateAcademyPage = () => {
     form.setValue('modules', []);
   };
 
+  // Create default website content after academy creation
   const createDefaultContent = async (academyId: string, values: CreateAcademyFormValues) => {
     try {
-      // Create default homepage content
       await supabase.from('public_pages').insert({
         academy_id: academyId,
         slug: 'homepage',
@@ -236,7 +172,6 @@ const CreateAcademyPage = () => {
         updated_at: new Date().toISOString()
       });
 
-      // Create default about page
       await supabase.from('public_pages').insert({
         academy_id: academyId,
         slug: 'about-us',
@@ -252,7 +187,6 @@ const CreateAcademyPage = () => {
         updated_at: new Date().toISOString()
       });
 
-      // Create website settings
       await supabase.from('website_settings').insert({
         academy_id: academyId,
         template: values.websiteConfig.template,
@@ -269,27 +203,23 @@ const CreateAcademyPage = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
-
-      console.log('Default content created successfully');
     } catch (error) {
       console.error('Error creating default content:', error);
-      // Don't throw error here as the academy is already created
     }
   };
 
+  // Form submission handler
   const onSubmit = async (values: CreateAcademyFormValues) => {
-    try {
-      // Final subdomain check
-      if (subdomainCheck.isAvailable === false) {
-        toast({
-          title: 'Subdomain Not Available',
-          description: 'Please choose a different subdomain.',
-          variant: 'destructive',
-        });
-        return;
-      }
+    if (subdomainCheck.isAvailable === false) {
+      toast({
+        title: 'Subdomain Not Available',
+        description: 'Please choose a different subdomain.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-      // Convert the array of module IDs into a JSON object
+    try {
       const modulesObject = values.modules.reduce((acc, moduleId) => {
         acc[moduleId] = true;
         return acc;
@@ -304,11 +234,8 @@ const CreateAcademyPage = () => {
         modules_config: modulesObject,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Create default public content
       await createDefaultContent(newAcademy.id, values);
 
       const createdAcademyInfo: CreatedAcademyInfo = {
@@ -327,7 +254,6 @@ const CreateAcademyPage = () => {
 
       setLastCreatedAcademy(createdAcademyInfo);
       form.reset();
-
     } catch (error: any) {
       console.error('Failed to create academy:', error);
       toast({
@@ -365,13 +291,6 @@ const CreateAcademyPage = () => {
             <Button onClick={() => navigate('/')}>Go to Homepage</Button>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
-};
-
-export default CreateAcademyPage;
-        </Card>
       </div>
     );
   }
@@ -379,6 +298,7 @@ export default CreateAcademyPage;
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       {lastCreatedAcademy ? (
+        // Success Screen
         <Card className="w-full max-w-3xl text-center">
           <CardHeader>
             <div className="flex justify-center mb-4">
@@ -414,7 +334,6 @@ export default CreateAcademyPage;
                 </a>
               </div>
             </div>
-
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -425,7 +344,6 @@ export default CreateAcademyPage;
                 Password: (as provided during creation)
               </AlertDescription>
             </Alert>
-
             <div className="p-4 border rounded-lg bg-gray-50">
               <p className="font-semibold mb-3">Next Steps:</p>
               <ul className="list-disc list-inside text-left space-y-2 text-sm">
@@ -437,7 +355,6 @@ export default CreateAcademyPage;
                 <li>Configure email notifications and communication settings</li>
               </ul>
             </div>
-
             <div className="flex gap-4 justify-center">
               <Button onClick={() => setLastCreatedAcademy(null)} variant="outline">
                 Create Another Academy
@@ -451,6 +368,7 @@ export default CreateAcademyPage;
           </CardContent>
         </Card>
       ) : (
+        // Creation Form
         <Card className="w-full max-w-4xl">
           <CardHeader>
             <CardTitle className="text-2xl">Create New Football Academy</CardTitle>
@@ -461,10 +379,9 @@ export default CreateAcademyPage;
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Academy Details Section */}
+                {/* Academy Details */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Academy Details</h3>
-                  
                   <FormField
                     control={form.control}
                     name="academyName"
@@ -481,7 +398,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="academySubdomain"
@@ -490,19 +406,25 @@ export default CreateAcademyPage;
                         <FormLabel>Subdomain *</FormLabel>
                         <FormControl>
                           <div className="space-y-2">
-                            <Input 
-                              placeholder="e.g., tecno-football" 
-                              {...field}
+                            <Input
+                              placeholder="e.g., tecno-football"
+                              value={field.value}
                               onChange={(e) => onSubdomainChange(e.target.value)}
                             />
                             <div className="text-sm text-gray-600">
-                              Your website will be: <code>{window.location.origin}/site/{field.value || 'your-subdomain'}</code>
+                              Your website will be:{' '}
+                              <code>{window.location.origin}/site/{field.value || 'your-subdomain'}</code>
                             </div>
                             {subdomainCheck.message && (
-                              <div className={`flex items-center gap-2 text-sm ${
-                                subdomainCheck.isAvailable === true ? 'text-green-600' : 
-                                subdomainCheck.isAvailable === false ? 'text-red-600' : 'text-gray-600'
-                              }`}>
+                              <div
+                                className={`flex items-center gap-2 text-sm ${
+                                  subdomainCheck.isAvailable === true
+                                    ? 'text-green-600'
+                                    : subdomainCheck.isAvailable === false
+                                      ? 'text-red-600'
+                                      : 'text-gray-600'
+                                }`}
+                              >
                                 {subdomainCheck.isChecking ? (
                                   <Loader2 className="h-3 w-3 animate-spin" />
                                 ) : subdomainCheck.isAvailable === true ? (
@@ -524,10 +446,9 @@ export default CreateAcademyPage;
                   />
                 </div>
 
-                {/* Admin User Section */}
+                {/* Admin User */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Initial Admin User</h3>
-                  
                   <FormField
                     control={form.control}
                     name="adminFullName"
@@ -541,7 +462,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="adminEmail"
@@ -558,7 +478,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="adminPassword"
@@ -567,10 +486,10 @@ export default CreateAcademyPage;
                         <FormLabel>Admin Password *</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input 
-                              type={showPassword ? "text" : "password"} 
-                              placeholder="********" 
-                              {...field} 
+                            <Input
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="********"
+                              {...field}
                             />
                             <Button
                               type="button"
@@ -592,10 +511,9 @@ export default CreateAcademyPage;
                   />
                 </div>
 
-                {/* Website Configuration Section */}
+                {/* Website Configuration */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Public Website Setup</h3>
-                  
                   <FormField
                     control={form.control}
                     name="websiteConfig.template"
@@ -608,8 +526,8 @@ export default CreateAcademyPage;
                               <div
                                 key={template.id}
                                 className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                                  field.value === template.id 
-                                    ? 'border-blue-500 bg-blue-50' 
+                                  field.value === template.id
+                                    ? 'border-blue-500 bg-blue-50'
                                     : 'border-gray-200 hover:border-gray-300'
                                 }`}
                                 onClick={() => field.onChange(template.id)}
@@ -624,8 +542,8 @@ export default CreateAcademyPage;
                                   <span className="font-medium">{template.name}</span>
                                 </div>
                                 <p className="text-sm text-gray-600">{template.description}</p>
-                                <div 
-                                  className="w-full h-4 rounded mt-2" 
+                                <div
+                                  className="w-full h-4 rounded mt-2"
                                   style={{ backgroundColor: template.primaryColor }}
                                 ></div>
                               </div>
@@ -636,7 +554,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.welcomeMessage"
@@ -644,11 +561,11 @@ export default CreateAcademyPage;
                       <FormItem>
                         <FormLabel>Welcome Message *</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Welcome to our Football Academy where champions are made!"
                             className="resize-none"
                             rows={3}
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormDescription>
@@ -658,7 +575,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.aboutDescription"
@@ -666,11 +582,11 @@ export default CreateAcademyPage;
                       <FormItem>
                         <FormLabel>About Description *</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Describe your academy's mission, values, and what makes it special..."
                             className="resize-none"
                             rows={4}
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormDescription>
@@ -680,7 +596,6 @@ export default CreateAcademyPage;
                       </FormItem>
                     )}
                   />
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -695,7 +610,6 @@ export default CreateAcademyPage;
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="websiteConfig.contactPhone"
@@ -710,7 +624,6 @@ export default CreateAcademyPage;
                       )}
                     />
                   </div>
-
                   <FormField
                     control={form.control}
                     name="websiteConfig.address"
@@ -718,11 +631,11 @@ export default CreateAcademyPage;
                       <FormItem>
                         <FormLabel>Academy Address *</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="123 Sports Complex Drive, City, State 12345"
                             className="resize-none"
                             rows={2}
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -731,30 +644,19 @@ export default CreateAcademyPage;
                   />
                 </div>
 
-                {/* Modules Section */}
+                {/* Modules */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold border-b pb-2 flex-1">Enabled Modules</h3>
                     <div className="flex gap-2 ml-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={selectAllModules}
-                      >
+                      <Button type="button" variant="outline" size="sm" onClick={selectAllModules}>
                         Select All
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={deselectAllModules}
-                      >
+                      <Button type="button" variant="outline" size="sm" onClick={deselectAllModules}>
                         Deselect All
                       </Button>
                     </div>
                   </div>
-                  
                   <FormField
                     control={form.control}
                     name="modules"
@@ -766,37 +668,27 @@ export default CreateAcademyPage;
                               key={item.id}
                               control={form.control}
                               name="modules"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={item.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== item.id
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                      <FormLabel className="font-medium cursor-pointer">
-                                        {item.label}
-                                      </FormLabel>
-                                      <FormDescription className="text-xs">
-                                        {item.description}
-                                      </FormDescription>
-                                    </div>
-                                  </FormItem>
-                                )
-                              }}
+                              render={({ field }) => (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, item.id])
+                                          : field.onChange(field.value?.filter((value) => value !== item.id));
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel className="font-medium cursor-pointer">{item.label}</FormLabel>
+                                    <FormDescription className="text-xs">{item.description}</FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
                             />
                           ))}
                         </div>
@@ -806,9 +698,10 @@ export default CreateAcademyPage;
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting || subdomainCheck.isAvailable === false} 
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || subdomainCheck.isAvailable === false}
                   className="w-full h-12 text-lg"
                 >
                   {isSubmitting ? (
@@ -821,12 +714,10 @@ export default CreateAcademyPage;
                   )}
                 </Button>
 
-                {Object.keys(errors).length > 0 && (
+                {Object.keys(form.formState.errors).length > 0 && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Please fix the errors above before submitting.
-                    </AlertDescription>
+                    <AlertDescription>Please fix the errors above before submitting.</AlertDescription>
                   </Alert>
                 )}
               </form>
