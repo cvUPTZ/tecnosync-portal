@@ -37,10 +37,16 @@ const createAcademySchema = z.object({
 
 type CreateAcademyFormValues = z.infer<typeof createAcademySchema>;
 
+interface CreatedAcademyInfo {
+  name: string;
+  subdomain: string;
+}
+
 const CreateAcademyPage = () => {
   const { isPlatformAdmin, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [lastCreatedAcademy, setLastCreatedAcademy] = useState<CreatedAcademyInfo | null>(null);
 
   const form = useForm<CreateAcademyFormValues>({
     resolver: zodResolver(createAcademySchema),
@@ -64,13 +70,13 @@ const CreateAcademyPage = () => {
         return acc;
       }, {} as Record<string, boolean>);
 
-      const { error } = await supabase.rpc('create_new_academy', {
+      const { data: newAcademy, error } = await supabase.rpc('create_new_academy', {
         academy_name: values.academyName,
         academy_subdomain: values.academySubdomain,
         admin_full_name: values.adminFullName,
         admin_email: values.adminEmail,
         admin_password: values.adminPassword,
-        modules_config: modulesObject, // This will be a new parameter
+        modules_config: modulesObject,
       });
 
       if (error) {
@@ -81,6 +87,7 @@ const CreateAcademyPage = () => {
         title: 'Success!',
         description: `Academy "${values.academyName}" created successfully.`,
       });
+      setLastCreatedAcademy(newAcademy);
       form.reset();
 
     } catch (error: any) {
@@ -116,17 +123,54 @@ const CreateAcademyPage = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>Create New Football Academy</CardTitle>
-          <CardDescription>Fill out the form below to create a new academy and its first admin user.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Academy Details</h3>
-                <FormField
+      {lastCreatedAcademy ? (
+        <Card className="w-full max-w-2xl text-center">
+          <CardHeader>
+            <CardTitle>Academy Created Successfully!</CardTitle>
+            <CardDescription>
+              The academy "{lastCreatedAcademy.name}" is now live.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 border rounded-lg bg-muted">
+              <p className="font-semibold">Public Website URL:</p>
+              <a
+                href={`/site/${lastCreatedAcademy.subdomain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-tfa-blue hover:underline"
+              >
+                {`${window.location.origin}/site/${lastCreatedAcademy.subdomain}`}
+              </a>
+            </div>
+            <div className="p-4 border rounded-lg bg-muted">
+              <p className="font-semibold">Admin Login URL:</p>
+              <a
+                href="/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-tfa-blue hover:underline"
+              >
+                {`${window.location.origin}/login`}
+              </a>
+            </div>
+            <Button onClick={() => setLastCreatedAcademy(null)} className="mt-4">
+              Create Another Academy
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle>Create New Football Academy</CardTitle>
+            <CardDescription>Fill out the form below to create a new academy and its first admin user.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Academy Details</h3>
+                  <FormField
                   control={form.control}
                   name="academyName"
                   render={({ field }) => (
@@ -241,7 +285,8 @@ const CreateAcademyPage = () => {
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 };
