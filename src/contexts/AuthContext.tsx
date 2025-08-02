@@ -2,6 +2,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Academy {
+  id: string;
+  name: string;
+  modules: Record<string, boolean>;
+}
+
 interface Profile {
   id: string;
   user_id: string;
@@ -13,7 +19,8 @@ interface Profile {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  academy_id?: string; // Add academy_id to profile
+  academy_id?: string;
+  academies?: Academy; // This will hold the joined academy data
 }
 
 interface AuthContextType {
@@ -27,6 +34,7 @@ interface AuthContextType {
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
   isPlatformAdmin: () => boolean;
+  isModuleEnabled: (moduleName: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, academies(*)')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -176,6 +184,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return profile?.role === 'platform_admin';
   };
 
+  const isModuleEnabled = (moduleName: string): boolean => {
+    if (isPlatformAdmin()) return true; // Platform admin has access to all modules
+    return profile?.academies?.modules?.[moduleName] ?? false;
+  };
+
   const value = {
     user,
     session,
@@ -187,6 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     hasRole,
     isAdmin,
     isPlatformAdmin,
+    isModuleEnabled,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

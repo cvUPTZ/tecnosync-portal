@@ -7,9 +7,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+
+const availableModules = [
+  { id: 'registrations', label: 'Registration Management' },
+  { id: 'students', label: 'Student Management' },
+  { id: 'users', label: 'User Management' },
+  { id: 'attendance', label: 'Attendance Tracking' },
+  { id: 'coaches', label: 'Coach Management' },
+  { id: 'finance', label: 'Finance Management' },
+  { id: 'reports', label: 'Financial Reports' },
+  { id: 'documents', label: 'Document Management' },
+] as const;
 
 const createAcademySchema = z.object({
   academyName: z.string().min(3, 'Academy name must be at least 3 characters'),
@@ -17,6 +29,9 @@ const createAcademySchema = z.object({
   adminFullName: z.string().min(3, 'Admin name must be at least 3 characters'),
   adminEmail: z.string().email('Invalid email address'),
   adminPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  modules: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: 'You have to select at least one module.',
+  }),
 });
 
 type CreateAcademyFormValues = z.infer<typeof createAcademySchema>;
@@ -34,6 +49,7 @@ const CreateAcademyPage = () => {
       adminFullName: '',
       adminEmail: '',
       adminPassword: '',
+      modules: availableModules.map(m => m.id), // Select all by default
     },
   });
 
@@ -41,12 +57,19 @@ const CreateAcademyPage = () => {
 
   const onSubmit = async (values: CreateAcademyFormValues) => {
     try {
+      // Convert the array of module IDs into a JSON object
+      const modulesObject = values.modules.reduce((acc, moduleId) => {
+        acc[moduleId] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
+
       const { error } = await supabase.rpc('create_new_academy', {
         academy_name: values.academyName,
         academy_subdomain: values.academySubdomain,
         admin_full_name: values.adminFullName,
         admin_email: values.adminEmail,
         admin_password: values.adminPassword,
+        modules_config: modulesObject, // This will be a new parameter
       });
 
       if (error) {
@@ -157,6 +180,54 @@ const CreateAcademyPage = () => {
                     <FormItem>
                       <FormLabel>Admin Password</FormLabel>
                       <FormControl><Input type="password" placeholder="********" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Enabled Modules</h3>
+                <FormField
+                  control={form.control}
+                  name="modules"
+                  render={() => (
+                    <FormItem>
+                      <div className="grid grid-cols-2 gap-4">
+                        {availableModules.map((item) => (
+                          <FormField
+                            key={item.id}
+                            control={form.control}
+                            name="modules"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, item.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== item.id
+                                              )
+                                            )
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item.label}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

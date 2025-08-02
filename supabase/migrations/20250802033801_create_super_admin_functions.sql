@@ -28,7 +28,8 @@ CREATE OR REPLACE FUNCTION public.create_new_academy(
   academy_subdomain TEXT,
   admin_full_name TEXT,
   admin_email TEXT,
-  admin_password TEXT
+  admin_password TEXT,
+  modules_config JSONB DEFAULT '{}'::jsonb
 )
 RETURNS UUID -- Returns the new academy's ID
 LANGUAGE plpgsql
@@ -46,8 +47,8 @@ BEGIN
   END IF;
 
   -- Create the new academy
-  INSERT INTO public.academies (name, subdomain)
-  VALUES (academy_name, academy_subdomain)
+  INSERT INTO public.academies (name, subdomain, modules)
+  VALUES (academy_name, academy_subdomain, modules_config)
   RETURNING id INTO new_academy_id;
 
   -- Create the new user in auth.users
