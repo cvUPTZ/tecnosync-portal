@@ -13,6 +13,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, Trash2 } from 'lucide-react';
 
+const homePageSchema = z.object({
+  title: z.string().min(3, 'Title is required'),
+  content: z.object({
+    subtitle: z.string().optional(),
+  }),
+});
+
 const aboutPageSchema = z.object({
   title: z.string().min(3, 'Title is required'),
   hero_image_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
@@ -32,6 +39,7 @@ const teamMemberSchema = z.object({
 });
 
 const websiteContentSchema = z.object({
+  homePage: homePageSchema,
   aboutPage: aboutPageSchema,
   teamMembers: z.array(teamMemberSchema),
 });
@@ -47,6 +55,10 @@ const WebsiteContentManagement = () => {
   const form = useForm<WebsiteContentFormValues>({
     resolver: zodResolver(websiteContentSchema),
     defaultValues: {
+      homePage: {
+        title: '',
+        content: { subtitle: '' },
+      },
       aboutPage: {
         title: '',
         hero_image_url: '',
@@ -69,23 +81,29 @@ const WebsiteContentManagement = () => {
     if (!profile?.academy_id) return;
     setLoading(true);
     try {
-      // Fetch About Us page
-      const { data: pageData, error: pageError } = await supabase
+      // Fetch Homepage and About Us pages
+      const { data: pagesData, error: pagesError } = await supabase
         .from('public_pages')
         .select('*')
         .eq('academy_id', profile.academy_id)
-        .eq('slug', 'about-us')
-        .maybeSingle();
+        .in('slug', ['homepage', 'about-us']);
 
-      if (pageError) throw pageError;
+      if (pagesError) throw pagesError;
 
-      if (pageData) {
-        form.reset({
-          aboutPage: {
-            title: pageData.title,
-            hero_image_url: pageData.hero_image_url || '',
-            content: pageData.content ? pageData.content : { introduction: '', mission: '', vision: '' },
-          },
+      const homePageData = pagesData.find(p => p.slug === 'homepage');
+      const aboutPageData = pagesData.find(p => p.slug === 'about-us');
+
+      if (homePageData) {
+        form.setValue('homePage', {
+          title: homePageData.title,
+          content: homePageData.content ? homePageData.content : { subtitle: '' },
+        });
+      }
+      if (aboutPageData) {
+        form.setValue('aboutPage', {
+          title: aboutPageData.title,
+          hero_image_url: aboutPageData.hero_image_url || '',
+          content: aboutPageData.content ? aboutPageData.content : { introduction: '', mission: '', vision: '' },
         });
       }
 
@@ -114,17 +132,28 @@ const WebsiteContentManagement = () => {
     if (!profile?.academy_id) return;
     setSaving(true);
     try {
-      // Upsert About Us page
-      const { error: pageError } = await supabase
-        .from('public_pages')
-        .upsert({
+      // Upsert Homepage and About Us pages
+      const pagesToUpsert = [
+        {
+          academy_id: profile.academy_id,
+          slug: 'homepage',
+          title: values.homePage.title,
+          content: values.homePage.content,
+          updated_at: new Date().toISOString(),
+        },
+        {
           academy_id: profile.academy_id,
           slug: 'about-us',
           title: values.aboutPage.title,
           hero_image_url: values.aboutPage.hero_image_url,
           content: values.aboutPage.content,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'academy_id, slug' });
+        }
+      ];
+
+      const { error: pageError } = await supabase
+        .from('public_pages')
+        .upsert(pagesToUpsert, { onConflict: 'academy_id, slug' });
 
       if (pageError) throw pageError;
 
@@ -170,11 +199,45 @@ const WebsiteContentManagement = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="about-page">
+        <Tabs defaultValue="homepage">
           <TabsList>
+            <TabsTrigger value="homepage">Homepage</TabsTrigger>
             <TabsTrigger value="about-page">About Us Page</TabsTrigger>
             <TabsTrigger value="team-members">Team Members</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="homepage">
+            <Card>
+              <CardHeader>
+                <CardTitle>Edit Homepage</CardTitle>
+                <CardDescription>Set the main title and subtitle for your academy's public homepage.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="homePage.title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Homepage Title</FormLabel>
+                      <FormControl><Input {...field} placeholder="Welcome to Our Academy" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="homePage.content.subtitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Homepage Subtitle</FormLabel>
+                      <FormControl><Textarea {...field} placeholder="Your home for football excellence." /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="about-page">
             <Card>

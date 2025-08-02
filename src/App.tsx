@@ -18,7 +18,7 @@ import FinanceManagement from "./pages/FinanceManagement";
 import FinancialReports from "./pages/FinancialReports";
 import DocumentManagement from "./pages/DocumentManagement";
 import WebsiteContentManagement from "./pages/WebsiteContentManagement";
-import PublicSite from "./pages/PublicSite";
+import AcademyHomepage from "./pages/public/AcademyHomepage";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import CreateAcademyPage from "./pages/PlatformAdmin/CreateAcademy";
@@ -59,7 +59,7 @@ const App = () => {
             <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/site/:subdomain" element={<PublicSite />} />
+              <Route path="/site/:subdomain" element={<AcademyHomepage />} />
               <Route path="/registration" element={<Registration />} />
               <Route path="/login" element={<Login />} />
 
