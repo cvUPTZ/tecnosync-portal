@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // Added missing useState import
 import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,7 +43,7 @@ interface CreatedAcademyInfo {
 }
 
 const CreateAcademyPage = () => {
-  const { isPlatformAdmin, loading } = useAuth();
+  const { isPlatformAdmin, loading, profile } = useAuth(); // Added profile to debug
   const { toast } = useToast();
   const navigate = useNavigate();
   const [lastCreatedAcademy, setLastCreatedAcademy] = useState<CreatedAcademyInfo | null>(null);
@@ -104,6 +104,10 @@ const CreateAcademyPage = () => {
     return <div>Loading...</div>;
   }
 
+  // Debug logging to help troubleshoot
+  console.log('Profile data:', profile);
+  console.log('isPlatformAdmin result:', isPlatformAdmin());
+
   if (!isPlatformAdmin()) {
     // Or redirect to a 403 Forbidden page
     return (
@@ -111,7 +115,14 @@ const CreateAcademyPage = () => {
             <Card>
                 <CardHeader>
                     <CardTitle>Access Denied</CardTitle>
-                    <CardDescription>You do not have permission to view this page.</CardDescription>
+                    <CardDescription>
+                      You do not have permission to view this page.
+                      {profile && (
+                        <div className="mt-2 text-sm">
+                          Current role: {profile.role || 'No role assigned'}
+                        </div>
+                      )}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Button onClick={() => navigate('/')}>Go to Homepage</Button>
