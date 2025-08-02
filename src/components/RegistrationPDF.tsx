@@ -1,23 +1,5 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react-pdf/renderer';
-
-// Register Arabic font with a reliable source
-Font.register({
-  family: 'Amiri',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/amiri/v19/J7aRnpd8CGxBHqUpvrIw74j0.woff2',
-      fontWeight: 'normal',
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/amiri/v19/J7afnpd8CGxBHqUpvq6J6Lj9eA.woff2',
-      fontWeight: 'bold',
-    }
-  ]
-});
-
-// Fallback: register a simple Arabic-supporting font
-Font.registerHyphenationCallback(word => [word]);
+import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
@@ -25,9 +7,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#ffffff',
     padding: 30,
-    fontFamily: 'Amiri',
-    fontSize: 11,
-    direction: 'rtl',
+    fontFamily: 'Helvetica',
+    fontSize: 12,
   },
   serialNumber: {
     position: 'absolute',
@@ -159,41 +140,41 @@ interface RegistrationPDFProps {
 
 const translatePosition = (position: string) => {
   const translations: { [key: string]: string } = {
-    'goalkeeper': 'حارس مرمى',
-    'defender': 'مدافع',
-    'midfielder': 'وسط ميدان',
-    'forward': 'مهاجم',
-    'any': 'أي مركز'
+    'goalkeeper': 'Goalkeeper',
+    'defender': 'Defender', 
+    'midfielder': 'Midfielder',
+    'forward': 'Forward',
+    'any': 'Any Position'
   };
   return translations[position] || position;
 };
 
 const translateFoot = (foot: string) => {
   const translations: { [key: string]: string } = {
-    'right': 'اليمنى',
-    'left': 'اليسرى',
-    'both': 'كلاهما'
+    'right': 'Right',
+    'left': 'Left',
+    'both': 'Both'
   };
   return translations[foot] || foot;
 };
 
 const translateProgram = (program: string) => {
   const translations: { [key: string]: string } = {
-    'children': 'البراعم (5-8 سنوات)',
-    'youth': 'الأشبال (9-12 سنة)',
-    'junior': 'الناشئين (13-16 سنة)'
+    'children': 'Children (5-8 years)',
+    'youth': 'Youth (9-12 years)', 
+    'junior': 'Junior (13-16 years)'
   };
   return translations[program] || program;
 };
 
 const translateHowHeard = (source: string) => {
   const translations: { [key: string]: string } = {
-    'social_media': 'وسائل التواصل الاجتماعي',
-    'friends': 'من الأصدقاء',
-    'family': 'من العائلة',
-    'internet': 'البحث على الإنترنت',
-    'advertisement': 'إعلان',
-    'other': 'أخرى'
+    'social_media': 'Social Media',
+    'friends': 'Friends',
+    'family': 'Family',
+    'internet': 'Internet Search',
+    'advertisement': 'Advertisement',
+    'other': 'Other'
   };
   return translations[source] || source;
 };
@@ -204,136 +185,132 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
       {/* Serial Number */}
       {serialNumber && (
         <Text style={styles.serialNumber}>
-          رقم التسجيل: {serialNumber}
+          Registration No: {serialNumber}
         </Text>
       )}
       
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerText}>
-          <Text style={styles.title}>أكاديمية تكنو لكرة القدم</Text>
-          <Text style={styles.subtitle}>استمارة التسجيل الإلكترونية</Text>
+          <Text style={styles.title}>Tecno Football Academy</Text>
+          <Text style={styles.subtitle}>Electronic Registration Form</Text>
         </View>
-        <Image
-          style={styles.logo}
-          src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png"
-        />
       </View>
 
       {/* Date */}
       <Text style={styles.date}>
-        تاريخ التسجيل: {new Date().toLocaleDateString('ar-DZ')}
+        Registration Date: {new Date().toLocaleDateString('en-US')}
       </Text>
 
       {/* Personal Information */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>المعلومات الشخصية</Text>
+        <Text style={styles.sectionTitle}>Personal Information</Text>
         <View style={styles.row}>
-          <Text style={styles.label}>الاسم الكامل:</Text>
-          <Text style={styles.value}>{data.full_name || 'غير محدد'}</Text>
+          <Text style={styles.label}>Full Name:</Text>
+          <Text style={styles.value}>{data.full_name || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>تاريخ الميلاد:</Text>
-          <Text style={styles.value}>{data.date_of_birth || 'غير محدد'}</Text>
+          <Text style={styles.label}>Date of Birth:</Text>
+          <Text style={styles.value}>{data.date_of_birth || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>الجنسية:</Text>
-          <Text style={styles.value}>{data.nationality || 'غير محدد'}</Text>
+          <Text style={styles.label}>Nationality:</Text>
+          <Text style={styles.value}>{data.nationality || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.phone || 'غير محدد'}</Text>
+          <Text style={styles.label}>Phone:</Text>
+          <Text style={styles.value}>{data.phone || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>البريد الإلكتروني:</Text>
-          <Text style={styles.value}>{data.email || 'غير محدد'}</Text>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value}>{data.email || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>العنوان:</Text>
-          <Text style={styles.value}>{data.address || 'غير محدد'}</Text>
+          <Text style={styles.label}>Address:</Text>
+          <Text style={styles.value}>{data.address || 'Not specified'}</Text>
         </View>
       </View>
 
       {/* Parent Information */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>معلومات ولي الأمر</Text>
+        <Text style={styles.sectionTitle}>Parent Information</Text>
         <View style={styles.row}>
-          <Text style={styles.label}>اسم ولي الأمر:</Text>
-          <Text style={styles.value}>{data.parent_name || 'غير محدد'}</Text>
+          <Text style={styles.label}>Parent Name:</Text>
+          <Text style={styles.value}>{data.parent_name || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.parent_phone || 'غير محدد'}</Text>
+          <Text style={styles.label}>Phone:</Text>
+          <Text style={styles.value}>{data.parent_phone || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>البريد الإلكتروني:</Text>
-          <Text style={styles.value}>{data.parent_email || 'غير محدد'}</Text>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value}>{data.parent_email || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>رقم الهوية:</Text>
-          <Text style={styles.value}>{data.parent_id_number || 'غير محدد'}</Text>
+          <Text style={styles.label}>ID Number:</Text>
+          <Text style={styles.value}>{data.parent_id_number || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>المهنة:</Text>
-          <Text style={styles.value}>{data.parent_profession || 'غير محدد'}</Text>
+          <Text style={styles.label}>Profession:</Text>
+          <Text style={styles.value}>{data.parent_profession || 'Not specified'}</Text>
         </View>
       </View>
 
       {/* Technical Information */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>المعلومات التقنية</Text>
+        <Text style={styles.sectionTitle}>Technical Information</Text>
         <View style={styles.row}>
-          <Text style={styles.label}>المركز المفضل:</Text>
-          <Text style={styles.value}>{data.position ? translatePosition(data.position) : 'غير محدد'}</Text>
+          <Text style={styles.label}>Preferred Position:</Text>
+          <Text style={styles.value}>{data.position ? translatePosition(data.position) : 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>القدم المفضلة:</Text>
-          <Text style={styles.value}>{data.preferred_foot ? translateFoot(data.preferred_foot) : 'غير محدد'}</Text>
+          <Text style={styles.label}>Preferred Foot:</Text>
+          <Text style={styles.value}>{data.preferred_foot ? translateFoot(data.preferred_foot) : 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>البرنامج المفضل:</Text>
-          <Text style={styles.value}>{data.program_preference ? translateProgram(data.program_preference) : 'غير محدد'}</Text>
+          <Text style={styles.label}>Program Preference:</Text>
+          <Text style={styles.value}>{data.program_preference ? translateProgram(data.program_preference) : 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>الخبرة السابقة:</Text>
-          <Text style={styles.value}>{data.previous_experience || 'لا توجد'}</Text>
+          <Text style={styles.label}>Previous Experience:</Text>
+          <Text style={styles.value}>{data.previous_experience || 'None'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>الحالات الطبية:</Text>
-          <Text style={styles.value}>{data.medical_conditions || 'لا توجد'}</Text>
+          <Text style={styles.label}>Medical Conditions:</Text>
+          <Text style={styles.value}>{data.medical_conditions || 'None'}</Text>
         </View>
       </View>
 
       {/* Emergency Contact */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>معلومات الطوارئ</Text>
+        <Text style={styles.sectionTitle}>Emergency Contact</Text>
         <View style={styles.row}>
-          <Text style={styles.label}>اسم جهة الاتصال:</Text>
-          <Text style={styles.value}>{data.emergency_contact_name || 'غير محدد'}</Text>
+          <Text style={styles.label}>Contact Name:</Text>
+          <Text style={styles.value}>{data.emergency_contact_name || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>رقم الهاتف:</Text>
-          <Text style={styles.value}>{data.emergency_contact_phone || 'غير محدد'}</Text>
+          <Text style={styles.label}>Phone:</Text>
+          <Text style={styles.value}>{data.emergency_contact_phone || 'Not specified'}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>علاقة القرابة:</Text>
-          <Text style={styles.value}>{data.emergency_contact_relation || 'غير محدد'}</Text>
+          <Text style={styles.label}>Relationship:</Text>
+          <Text style={styles.value}>{data.emergency_contact_relation || 'Not specified'}</Text>
         </View>
       </View>
 
       {/* Additional Information */}
       {(data.how_did_you_hear || data.additional_notes) && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>معلومات إضافية</Text>
+          <Text style={styles.sectionTitle}>Additional Information</Text>
           {data.how_did_you_hear && (
             <View style={styles.row}>
-              <Text style={styles.label}>كيف سمعت عنا:</Text>
+              <Text style={styles.label}>How did you hear about us:</Text>
               <Text style={styles.value}>{translateHowHeard(data.how_did_you_hear)}</Text>
             </View>
           )}
           {data.additional_notes && (
             <View style={styles.row}>
-              <Text style={styles.label}>ملاحظات إضافية:</Text>
+              <Text style={styles.label}>Additional Notes:</Text>
               <Text style={styles.value}>{data.additional_notes}</Text>
             </View>
           )}
@@ -342,9 +319,9 @@ export const RegistrationPDF: React.FC<RegistrationPDFProps> = ({ data, serialNu
 
       {/* Footer */}
       <Text style={styles.footer}>
-        أكاديمية تكنو لكرة القدم - الجزائر العاصمة{'\n'}
+        Tecno Football Academy - Algiers{'\n'}
         +213 XXX XXX XXX | info@tecnofootball.dz{'\n'}
-        © 2024 جميع الحقوق محفوظة
+        © 2024 All Rights Reserved
       </Text>
     </Page>
   </Document>
