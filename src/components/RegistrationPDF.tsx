@@ -3,7 +3,10 @@ import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react
 
 Font.register({
   family: 'Cairo',
-  src: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/cairo/v30/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf' },
+    { src: 'https://fonts.gstatic.com/s/cairo/v30/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hAc5W1Q.ttf', fontWeight: 700 },
+  ]
 });
 
 
