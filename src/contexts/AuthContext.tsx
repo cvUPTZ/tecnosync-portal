@@ -8,11 +8,12 @@ interface Profile {
   full_name: string;
   email: string;
   phone?: string;
-  role: 'director' | 'comptabilite_chief' | 'coach' | 'parent';
+  role: 'director' | 'comptabilite_chief' | 'coach' | 'parent' | 'platform_admin';
   avatar_url?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  academy_id?: string; // Add academy_id to profile
 }
 
 interface AuthContextType {
@@ -25,6 +26,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
+  isPlatformAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -170,6 +172,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return profile?.role === 'director' || profile?.role === 'comptabilite_chief';
   };
 
+  const isPlatformAdmin = (): boolean => {
+    return profile?.role === 'platform_admin';
+  };
+
   const value = {
     user,
     session,
@@ -180,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     hasRole,
     isAdmin,
+    isPlatformAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
