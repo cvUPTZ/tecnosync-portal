@@ -22,6 +22,7 @@ import AcademyHomepage from "./pages/public/AcademyHomepage";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import CreateAcademyPage from "./pages/PlatformAdmin/CreateAcademy";
+import PlatformAdminLogin from "./pages/PlatformAdmin/Login";
 import { Navigate, Outlet } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -34,7 +35,7 @@ const PlatformAdminRoute = () => {
     return <div>Loading...</div>; // Or a spinner
   }
 
-  return isPlatformAdmin() ? <Outlet /> : <Navigate to="/login" />;
+  return isPlatformAdmin() ? <Outlet /> : <Navigate to="/platform-admin/login" />;
 };
 
 // Protected route for enabled modules
@@ -64,6 +65,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
 
               {/* Platform Admin Routes */}
+              <Route path="/platform-admin/login" element={<PlatformAdminLogin />} />
               <Route element={<PlatformAdminRoute />}>
                 <Route path="/platform-admin/create-academy" element={<CreateAcademyPage />} />
               </Route>

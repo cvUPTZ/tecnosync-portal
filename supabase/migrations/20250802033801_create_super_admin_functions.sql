@@ -31,14 +31,14 @@ CREATE OR REPLACE FUNCTION public.create_new_academy(
   admin_password TEXT,
   modules_config JSONB DEFAULT '{}'::jsonb
 )
-RETURNS UUID -- Returns the new academy's ID
+RETURNS RECORD -- Returns a record with the new academy's info
 LANGUAGE plpgsql
 SECURITY DEFINER -- Essential to have the power to create users and insert into restricted tables.
 SET search_path = public, auth;
 AS $$
 DECLARE
   new_user_id UUID;
-  new_academy_id UUID;
+  new_academy RECORD;
 BEGIN
   -- Check if the calling user is a platform admin.
   -- This is a critical security check.
@@ -49,7 +49,7 @@ BEGIN
   -- Create the new academy
   INSERT INTO public.academies (name, subdomain, modules)
   VALUES (academy_name, academy_subdomain, modules_config)
-  RETURNING id INTO new_academy_id;
+  RETURNING id, name, subdomain INTO new_academy;
 
   -- Create the new user in auth.users
   -- Note: In a real production app, you might handle password complexity here.
@@ -88,9 +88,9 @@ BEGIN
     admin_full_name,
     admin_email,
     'director',
-    new_academy_id
+    new_academy.id
   );
 
-  RETURN new_academy_id;
+  RETURN new_academy;
 END;
 $$;
