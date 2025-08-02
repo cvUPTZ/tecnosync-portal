@@ -112,7 +112,7 @@ const CreateAcademyPage = () => {
       adminFullName: '',
       adminEmail: '',
       adminPassword: '',
-      modules: availableModules.map(m => m.id),
+      modules: availableModules.map(m => m.id), // Select all by default
       websiteConfig: {
         welcomeMessage: 'Welcome to our Football Academy where champions are made!',
         aboutDescription: 'Our academy is dedicated to developing young talent through professional training, mentorship, and competitive opportunities. We believe in nurturing not just skilled players, but well-rounded individuals.',
@@ -125,8 +125,17 @@ const CreateAcademyPage = () => {
     },
   });
 
-  const { isSubmitting } = form.formState;
+  const { isSubmitting, errors } = form.formState;
   const selectedTemplate = form.watch('websiteConfig.template');
+
+  // Clean up timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (window.subdomainCheckTimeout) {
+        clearTimeout(window.subdomainCheckTimeout);
+      }
+    };
+  }, []);
 
   // Update primary color when template changes
   React.useEffect(() => {
@@ -141,24 +150,44 @@ const CreateAcademyPage = () => {
       setSubdomainCheck({ isChecking: false, isAvailable: null, message: '' });
       return;
     }
+
+    // Validate subdomain format first
+    if (!/^[a-z0-9-]+$/.test(subdomain)) {
+      setSubdomainCheck({
+        isChecking: false,
+        isAvailable: false,
+        message: 'Invalid subdomain format'
+      });
+      return;
+    }
+
     setSubdomainCheck({ isChecking: true, isAvailable: null, message: 'Checking availability...' });
+
     try {
       const { data, error } = await supabase
         .from('academies')
         .select('id')
         .eq('subdomain', subdomain)
-        .maybeSingle();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (error) {
+        console.error('Subdomain check error:', error);
+        setSubdomainCheck({
+          isChecking: false,
+          isAvailable: false,
+          message: 'Error checking subdomain availability'
+        });
+        return;
       }
-      const isAvailable = !data;
+
+      const isAvailable = !data || data.length === 0;
       setSubdomainCheck({
         isChecking: false,
         isAvailable,
         message: isAvailable ? 'Subdomain is available!' : 'Subdomain is already taken'
       });
     } catch (error: any) {
+      console.error('Subdomain check error:', error);
       setSubdomainCheck({
         isChecking: false,
         isAvailable: false,
@@ -168,13 +197,18 @@ const CreateAcademyPage = () => {
   };
 
   const onSubdomainChange = (value: string) => {
-    const lowercaseValue = value.toLowerCase();
+    const lowercaseValue = value.toLowerCase().trim();
     form.setValue('academySubdomain', lowercaseValue);
+    
+    // Clear any existing timeout
+    if (window.subdomainCheckTimeout) {
+      clearTimeout(window.subdomainCheckTimeout);
+    }
+    
     // Debounce the availability check
-    const timeoutId = setTimeout(() => {
+    window.subdomainCheckTimeout = setTimeout(() => {
       checkSubdomainAvailability(lowercaseValue);
-    }, 500);
-    return () => clearTimeout(timeoutId);
+    }, 800);
   };
 
   const selectAllModules = () => {
@@ -235,9 +269,11 @@ const CreateAcademyPage = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
+
       console.log('Default content created successfully');
     } catch (error) {
       console.error('Error creating default content:', error);
+      // Don't throw error here as the academy is already created
     }
   };
 
@@ -268,7 +304,9 @@ const CreateAcademyPage = () => {
         modules_config: modulesObject,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Create default public content
       await createDefaultContent(newAcademy.id, values);
@@ -289,6 +327,7 @@ const CreateAcademyPage = () => {
 
       setLastCreatedAcademy(createdAcademyInfo);
       form.reset();
+
     } catch (error: any) {
       console.error('Failed to create academy:', error);
       toast({
@@ -325,6 +364,13 @@ const CreateAcademyPage = () => {
           <CardContent>
             <Button onClick={() => navigate('/')}>Go to Homepage</Button>
           </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default CreateAcademyPage;
         </Card>
       </div>
     );
@@ -368,6 +414,7 @@ const CreateAcademyPage = () => {
                 </a>
               </div>
             </div>
+
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -378,6 +425,7 @@ const CreateAcademyPage = () => {
                 Password: (as provided during creation)
               </AlertDescription>
             </Alert>
+
             <div className="p-4 border rounded-lg bg-gray-50">
               <p className="font-semibold mb-3">Next Steps:</p>
               <ul className="list-disc list-inside text-left space-y-2 text-sm">
@@ -389,6 +437,7 @@ const CreateAcademyPage = () => {
                 <li>Configure email notifications and communication settings</li>
               </ul>
             </div>
+
             <div className="flex gap-4 justify-center">
               <Button onClick={() => setLastCreatedAcademy(null)} variant="outline">
                 Create Another Academy
@@ -415,6 +464,7 @@ const CreateAcademyPage = () => {
                 {/* Academy Details Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Academy Details</h3>
+                  
                   <FormField
                     control={form.control}
                     name="academyName"
@@ -431,6 +481,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="academySubdomain"
@@ -476,6 +527,7 @@ const CreateAcademyPage = () => {
                 {/* Admin User Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Initial Admin User</h3>
+                  
                   <FormField
                     control={form.control}
                     name="adminFullName"
@@ -489,6 +541,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="adminEmail"
@@ -505,6 +558,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="adminPassword"
@@ -541,6 +595,7 @@ const CreateAcademyPage = () => {
                 {/* Website Configuration Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold border-b pb-2">Public Website Setup</h3>
+                  
                   <FormField
                     control={form.control}
                     name="websiteConfig.template"
@@ -581,6 +636,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="websiteConfig.welcomeMessage"
@@ -602,6 +658,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="websiteConfig.aboutDescription"
@@ -623,6 +680,7 @@ const CreateAcademyPage = () => {
                       </FormItem>
                     )}
                   />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -637,6 +695,7 @@ const CreateAcademyPage = () => {
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="websiteConfig.contactPhone"
@@ -651,6 +710,7 @@ const CreateAcademyPage = () => {
                       )}
                     />
                   </div>
+
                   <FormField
                     control={form.control}
                     name="websiteConfig.address"
@@ -694,6 +754,7 @@ const CreateAcademyPage = () => {
                       </Button>
                     </div>
                   </div>
+                  
                   <FormField
                     control={form.control}
                     name="modules"
@@ -705,33 +766,37 @@ const CreateAcademyPage = () => {
                               key={item.id}
                               control={form.control}
                               name="modules"
-                              render={({ field }) => (
-                                <FormItem
-                                  key={item.id}
-                                  className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(item.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, item.id])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== item.id)
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel className="font-medium cursor-pointer">
-                                      {item.label}
-                                    </FormLabel>
-                                    <FormDescription className="text-xs">
-                                      {item.description}
-                                    </FormDescription>
-                                  </div>
-                                </FormItem>
-                              )}
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className="flex flex-row items-start space-x-3 space-y-0 border rounded-lg p-3"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value, item.id])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== item.id
+                                                )
+                                              )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                      <FormLabel className="font-medium cursor-pointer">
+                                        {item.label}
+                                      </FormLabel>
+                                      <FormDescription className="text-xs">
+                                        {item.description}
+                                      </FormDescription>
+                                    </div>
+                                  </FormItem>
+                                )
+                              }}
                             />
                           ))}
                         </div>
@@ -756,7 +821,7 @@ const CreateAcademyPage = () => {
                   )}
                 </Button>
 
-                {Object.keys(form.formState.errors).length > 0 && (
+                {Object.keys(errors).length > 0 && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
