@@ -26,13 +26,14 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const AdminSidebar = () => {
+  const { t } = useTranslation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const { profile, isModuleEnabled } = useAuth();
-  const currentPath = location.pathname;
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-tfa-blue/10 text-tfa-blue font-medium border-r-2 border-tfa-blue' : 'hover:bg-muted/50';
@@ -41,24 +42,24 @@ const AdminSidebar = () => {
   const getMenuItems = () => {
     const allItems = [
       // Always visible
-      { title: 'لوحة التحكم', url: '/admin', icon: LayoutDashboard, roles: ['director', 'comptabilite_chief', 'coach'], module: 'dashboard' },
+      { titleKey: 'sidebar.dashboard', url: '/admin', icon: LayoutDashboard, roles: ['director', 'comptabilite_chief', 'coach'], module: 'dashboard' },
 
       // Module-based items
-      { title: 'طلبات التسجيل', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'], module: 'registrations' },
-      { title: 'إدارة الطلاب', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'], module: 'students' },
-      { title: 'إدارة المستخدمين', url: '/admin/users', icon: UserCheck, roles: ['director'], module: 'users' },
-      { title: 'الحضور والغياب', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'], module: 'attendance' },
-      { title: 'الجداول والفعاليات', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'], module: 'schedule' },
-      { title: 'المالية والمدفوعات', url: '/admin/finance', icon: Calculator, roles: ['director', 'comptabilite_chief'], module: 'finance' },
-      { title: 'التقارير المالية', url: '/admin/reports', icon: BarChart3, roles: ['director', 'comptabilite_chief'], module: 'reports' },
-      { title: 'إدارة المدربين', url: '/admin/coaches', icon: Users, roles: ['director'], module: 'coaches' },
-      { title: 'الرسائل', url: '/admin/messages', icon: MessageSquare, roles: ['director', 'comptabilite_chief', 'coach'], module: 'messages' },
-      { title: 'إدارة الوثائق', url: '/admin/documents', icon: FileText, roles: ['director', 'comptabilite_chief'], module: 'documents' },
-      { title: 'معرض الصور', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'], module: 'gallery' },
+      { titleKey: 'sidebar.registrations', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'], module: 'registrations' },
+      { titleKey: 'sidebar.students', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'], module: 'students' },
+      { titleKey: 'sidebar.users', url: '/admin/users', icon: UserCheck, roles: ['director'], module: 'users' },
+      { titleKey: 'sidebar.attendance', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'], module: 'attendance' },
+      { titleKey: 'sidebar.schedule', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'], module: 'schedule' },
+      { titleKey: 'sidebar.finance', url: '/admin/finance', icon: Calculator, roles: ['director', 'comptabilite_chief'], module: 'finance' },
+      { titleKey: 'sidebar.reports', url: '/admin/reports', icon: BarChart3, roles: ['director', 'comptabilite_chief'], module: 'reports' },
+      { titleKey: 'sidebar.coaches', url: '/admin/coaches', icon: Users, roles: ['director'], module: 'coaches' },
+      { titleKey: 'sidebar.messages', url: '/admin/messages', icon: MessageSquare, roles: ['director', 'comptabilite_chief', 'coach'], module: 'messages' },
+      { titleKey: 'sidebar.documents', url: '/admin/documents', icon: FileText, roles: ['director', 'comptabilite_chief'], module: 'documents' },
+      { titleKey: 'sidebar.gallery', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'], module: 'gallery' },
 
       // Always visible
-      { title: 'إدارة الموقع', url: '/admin/website', icon: FileText, roles: ['director'], module: 'website' },
-      { title: 'الإعدادات', url: '/admin/settings', icon: Settings, roles: ['director'], module: 'settings' },
+      { titleKey: 'sidebar.website', url: '/admin/website', icon: FileText, roles: ['director'], module: 'website' },
+      { titleKey: 'sidebar.settings', url: '/admin/settings', icon: Settings, roles: ['director'], module: 'settings' },
     ];
 
     return allItems.filter(item => {
@@ -94,7 +95,7 @@ const AdminSidebar = () => {
             {!collapsed && (
               <div>
                 <h2 className="font-bold text-tfa-blue text-sm">أكاديمية تكنو</h2>
-                <p className="text-xs text-muted-foreground">نظام الإدارة</p>
+                <p className="text-xs text-muted-foreground">{t('academyInfo.managementSystem')}</p>
               </div>
             )}
           </div>
@@ -106,10 +107,7 @@ const AdminSidebar = () => {
             <div className="text-sm">
               <p className="font-medium text-tfa-blue">{profile.full_name}</p>
               <p className="text-xs text-muted-foreground">
-                {profile.role === 'director' && 'مدير الأكاديمية'}
-                {profile.role === 'comptabilite_chief' && 'رئيس المحاسبة'}
-                {profile.role === 'coach' && 'مدرب'}
-                {profile.role === 'parent' && 'ولي أمر'}
+                {t(`userRoles.${profile.role}`)}
               </p>
             </div>
           </div>
@@ -117,15 +115,15 @@ const AdminSidebar = () => {
 
         {/* Navigation Menu */}
         <SidebarGroup>
-          <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('sidebar.mainMenu')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
                       <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
