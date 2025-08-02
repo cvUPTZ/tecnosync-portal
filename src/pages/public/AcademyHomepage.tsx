@@ -5,9 +5,22 @@ import PublicLayout from '@/components/public/PublicLayout';
 import AboutSection from '@/components/public/AboutSection';
 import TeamSection from '@/components/public/TeamSection';
 
-const PublicSite = () => {
+// A new Hero component for the academy's specific hero section
+const AcademyHero = ({ pageData }: { pageData: any }) => {
+  if (!pageData) return null;
+  return (
+    <div className="bg-gray-800 text-white">
+      <div className="container mx-auto px-6 py-24 text-center">
+        <h1 className="text-4xl font-bold">{pageData.title}</h1>
+        {pageData.content?.subtitle && <p className="text-xl mt-4">{pageData.content.subtitle}</p>}
+      </div>
+    </div>
+  );
+};
+
+const AcademyHomepage = () => {
   const { subdomain } = useParams<{ subdomain: string }>();
-  const [academy, setAcademy] = useState<any>(null);
+  const [homePage, setHomePage] = useState<any>(null);
   const [aboutPage, setAboutPage] = useState<any>(null);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +38,7 @@ const PublicSite = () => {
       setError(null);
 
       try {
-        // 1. Fetch academy details by subdomain
+        // 1. Fetch academy ID by subdomain
         const { data: academyData, error: academyError } = await supabase
           .from('academies')
           .select('id, name')
@@ -35,12 +48,17 @@ const PublicSite = () => {
         if (academyError || !academyData) {
           throw new Error('Academy not found.');
         }
-        setAcademy(academyData);
 
-        // 2. Fetch public content for this academy
         const academyId = academyData.id;
 
-        const [pageResult, teamResult] = await Promise.all([
+        // 2. Fetch all public content for this academy
+        const [homeResult, aboutResult, teamResult] = await Promise.all([
+          supabase
+            .from('public_pages')
+            .select('*')
+            .eq('academy_id', academyId)
+            .eq('slug', 'homepage') // Fetch the new homepage content
+            .maybeSingle(),
           supabase
             .from('public_pages')
             .select('*')
@@ -54,10 +72,12 @@ const PublicSite = () => {
             .order('display_order'),
         ]);
 
-        if (pageResult.error) throw pageResult.error;
+        if (homeResult.error) throw homeResult.error;
+        if (aboutResult.error) throw aboutResult.error;
         if (teamResult.error) throw teamResult.error;
 
-        setAboutPage(pageResult.data);
+        setHomePage(homeResult.data);
+        setAboutPage(aboutResult.data);
         setTeamMembers(teamResult.data || []);
 
       } catch (err: any) {
@@ -75,7 +95,7 @@ const PublicSite = () => {
     return (
       <PublicLayout>
         <div className="container mx-auto px-6 py-12 text-center">
-          <p>Loading academy site...</p>
+          <p>Loading Academy Homepage...</p>
         </div>
       </PublicLayout>
     );
@@ -94,18 +114,11 @@ const PublicSite = () => {
 
   return (
     <PublicLayout>
-      {/* Render sections based on fetched data */}
+      <AcademyHero pageData={homePage} />
       {aboutPage && <AboutSection pageData={aboutPage} />}
       {teamMembers.length > 0 && <TeamSection teamMembers={teamMembers} />}
-
-      {!aboutPage && teamMembers.length === 0 && (
-         <div className="container mx-auto px-6 py-12 text-center">
-            <h1 className="text-2xl font-bold">{academy?.name}</h1>
-            <p>This academy has not configured its public website yet.</p>
-        </div>
-      )}
     </PublicLayout>
   );
 };
 
-export default PublicSite;
+export default AcademyHomepage;
