@@ -14,8 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email('البريد الإلكتروني غير صحيح'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -48,9 +48,9 @@ const Login = () => {
       if (error) {
         console.error('Login error:', error);
         toast({
-          title: 'خطأ في تسجيل الدخول',
+          title: 'Login Failed',
           description: error.message === 'Invalid login credentials' 
-            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+            ? 'Invalid email or password.'
             : error.message,
           variant: 'destructive',
         });
@@ -60,8 +60,8 @@ const Login = () => {
       console.log('Login successful:', authData);
       
       toast({
-        title: 'تم تسجيل الدخول بنجاح',
-        description: 'مرحباً بك في لوحة التحكم',
+        title: 'Login Successful',
+        description: 'Welcome to your dashboard.',
       });
 
       // Force navigation after successful login
@@ -72,8 +72,8 @@ const Login = () => {
     } catch (error) {
       console.error('Login error:', error);
       toast({
-        title: 'خطأ في تسجيل الدخول',
-        description: 'حدث خطأ غير متوقع',
+        title: 'Login Error',
+        description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
     } finally {
@@ -82,27 +82,25 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
-            alt="Tecno Football Academy Logo" 
-            className="w-20 h-20 mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-tfa-blue">أكاديمية تكنو</h1>
-          <p className="text-muted-foreground">نظام إدارة الأكاديمية</p>
+          <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+            <GraduationCap className="w-12 h-12 text-gray-500" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">Academy Portal</h1>
+          <p className="text-muted-foreground">Academy Management System</p>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-tfa-blue">
+            <CardTitle className="flex items-center justify-center gap-2 text-gray-800">
               <LogIn className="w-5 h-5" />
-              تسجيل الدخول
+              Login
             </CardTitle>
             <CardDescription>
-              ادخل بياناتك للوصول إلى لوحة التحكم
+              Enter your credentials to access your dashboard.
             </CardDescription>
           </CardHeader>
 
@@ -114,11 +112,11 @@ const Login = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>البريد الإلكتروني</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="admin@tecnofootball.dz"
+                          placeholder="admin@example.com"
                           {...field}
                         />
                       </FormControl>
@@ -132,7 +130,7 @@ const Login = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>كلمة المرور</FormLabel>
+                      <FormLabel>Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -144,7 +142,7 @@ const Login = () => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
                           >
                             {showPassword ? (
@@ -162,10 +160,10 @@ const Login = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-tfa-blue hover:bg-tfa-blue/90"
+                  className="w-full bg-gray-800 hover:bg-gray-700"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+                  {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
               </form>
             </Form>
@@ -173,20 +171,11 @@ const Login = () => {
             <div className="mt-6 text-center">
               <Link
                 to="/"
-                className="text-sm text-muted-foreground hover:text-tfa-blue transition-colors"
+                className="text-sm text-muted-foreground hover:text-gray-800 transition-colors"
               >
-                العودة إلى الموقع الرئيسي
+                Back to main site
               </Link>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Demo Credentials Info */}
-        <Card className="mt-4 bg-muted/50">
-          <CardContent className="pt-4">
-            <p className="text-xs text-center text-muted-foreground">
-              للاختبار: يمكن إنشاء حساب من قبل الإدارة فقط
-            </p>
           </CardContent>
         </Card>
       </div>

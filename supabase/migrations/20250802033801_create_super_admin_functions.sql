@@ -52,9 +52,8 @@ BEGIN
   RETURNING id, name, subdomain INTO new_academy;
 
   -- Create the new user in auth.users
-  -- Note: In a real production app, you might handle password complexity here.
   new_user_id := gen_random_uuid();
-  INSERT INTO auth.users (id, email, encrypted_password, aud, role, raw_user_meta_data, created_at, updated_at)
+  INSERT INTO auth.users (id, email, encrypted_password, aud, role, raw_user_meta_data, email_confirmed_at, created_at, updated_at)
   VALUES (
     new_user_id,
     admin_email,
@@ -65,6 +64,7 @@ BEGIN
       'full_name', admin_full_name,
       'role', 'director' -- The first user is always a director
     ),
+    now(), -- email_confirmed_at
     now(),
     now()
   );
@@ -90,6 +90,12 @@ BEGIN
     'director',
     new_academy.id
   );
+
+  -- Seed default public pages for the new academy
+  INSERT INTO public.public_pages (academy_id, slug, title, content)
+  VALUES
+    (new_academy.id, 'homepage', 'Welcome to ' || new_academy.name, '{"subtitle": "Your new home for football excellence."}'),
+    (new_academy.id, 'about-us', 'About ' || new_academy.name, '{"introduction": "This is the about page for your new academy. You can edit this content from the admin dashboard."}');
 
   RETURN new_academy;
 END;
