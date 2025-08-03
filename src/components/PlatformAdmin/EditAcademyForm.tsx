@@ -5,9 +5,12 @@ import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { ExternalLink, Copy } from 'lucide-react';
 
 // Re-using the list of modules from the create page
 const availableModules = [
@@ -37,6 +40,7 @@ interface EditAcademyFormProps {
   academy: {
     id: string;
     name: string;
+    subdomain: string;
     modules: Record<string, boolean>;
   };
   onSuccess: () => void; // Callback to close dialog and refresh list
@@ -88,68 +92,131 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
     }
   };
 
+  const publicUrl = `${window.location.origin}/site/${academy.subdomain}`;
+  const adminUrl = `${window.location.origin}/login`;
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Academy Name</FormLabel>
-              <FormControl><Input {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="space-y-6">
+      {/* Academy URLs */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Academy Access</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Public Website</Label>
+            <div className="flex items-center gap-2">
+              <code className="bg-gray-100 px-2 py-1 rounded text-sm flex-1">
+                {publicUrl}
+              </code>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(publicUrl)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
 
-        <FormField
-          control={form.control}
-          name="modules"
-          render={() => (
-            <FormItem>
-              <FormLabel>Enabled Modules</FormLabel>
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                {availableModules.map((item) => (
-                  <FormField
-                    key={item.id}
-                    control={form.control}
-                    name="modules"
-                    render={({ field }) => (
-                      <FormItem
-                        key={item.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, item.id])
-                                : field.onChange(
-                                    field.value?.filter((value) => value !== item.id)
-                                  );
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
+          <div className="space-y-2">
+            <Label>Admin Login</Label>
+            <div className="flex items-center gap-2">
+              <code className="bg-gray-100 px-2 py-1 rounded text-sm flex-1">
+                {adminUrl}
+              </code>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(adminUrl)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={adminUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Edit Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Academy Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Academy Name</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="modules"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Enabled Modules</FormLabel>
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      {availableModules.map((item) => (
+                        <FormField
+                          key={item.id}
+                          control={form.control}
+                          name="modules"
+                          render={({ field }) => (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, item.id])
+                                      : field.onChange(
+                                          field.value?.filter((value) => value !== item.id)
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">{item.label}</FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </Button>
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-        </div>
-      </form>
-    </Form>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

@@ -20,6 +20,8 @@ const AcademyHero = ({ pageData }: { pageData: any }) => {
 
 const AcademyHomepage = () => {
   const { subdomain } = useParams<{ subdomain: string }>();
+  const [academyData, setAcademyData] = useState<any>(null);
+  const [websiteSettings, setWebsiteSettings] = useState<any>(null);
   const [homePage, setHomePage] = useState<any>(null);
   const [aboutPage, setAboutPage] = useState<any>(null);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -50,9 +52,15 @@ const AcademyHomepage = () => {
         }
 
         const academyId = academyData.id;
+        setAcademyData(academyData);
 
-        // 2. Fetch all public content for this academy
-        const [homeResult, aboutResult, teamResult] = await Promise.all([
+        // 2. Fetch website settings and public content for this academy
+        const [settingsResult, homeResult, aboutResult, teamResult] = await Promise.all([
+          supabase
+            .from('website_settings')
+            .select('*')
+            .eq('academy_id', academyId)
+            .maybeSingle(),
           supabase
             .from('public_pages')
             .select('*')
@@ -72,10 +80,12 @@ const AcademyHomepage = () => {
             .order('display_order'),
         ]);
 
+        if (settingsResult.error) throw settingsResult.error;
         if (homeResult.error) throw homeResult.error;
         if (aboutResult.error) throw aboutResult.error;
         if (teamResult.error) throw teamResult.error;
 
+        setWebsiteSettings(settingsResult.data);
         setHomePage(homeResult.data);
         setAboutPage(aboutResult.data);
         setTeamMembers(teamResult.data || []);
@@ -113,10 +123,29 @@ const AcademyHomepage = () => {
   }
 
   return (
-    <PublicLayout>
+    <PublicLayout 
+      academyName={academyData?.name}
+      primaryColor={websiteSettings?.primary_color}
+    >
       <AcademyHero pageData={homePage} />
-      {aboutPage && <AboutSection pageData={aboutPage} />}
-      {teamMembers.length > 0 && <TeamSection teamMembers={teamMembers} />}
+      {aboutPage && (
+        <AboutSection 
+          title="About Us"
+          content={(aboutPage?.content as any)?.introduction || 'Welcome to our academy'}
+        />
+      )}
+      {teamMembers && teamMembers.length > 0 && (
+        <TeamSection 
+          title="Our Team"
+          members={teamMembers?.map(member => ({
+            id: member.id,
+            name: member.name,
+            position: member.position,
+            bio: member.bio,
+            image_url: member.image_url
+          })) || []}
+        />
+      )}
     </PublicLayout>
   );
 };

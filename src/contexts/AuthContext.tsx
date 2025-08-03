@@ -14,7 +14,7 @@ interface Profile {
   full_name: string;
   email: string;
   phone?: string;
-  role: 'director' | 'comptabilite_chief' | 'coach' | 'parent' | 'platform_admin';
+  role: 'director' | 'comptabilite_chief' | 'coach' | 'parent' | 'platform_admin' | 'admin';
   avatar_url?: string;
   is_active: boolean;
   created_at: string;

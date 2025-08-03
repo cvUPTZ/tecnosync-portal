@@ -96,14 +96,18 @@ const WebsiteContentManagement = () => {
       if (homePageData) {
         form.setValue('homePage', {
           title: homePageData.title,
-          content: homePageData.content ? homePageData.content : { subtitle: '' },
+          content: { subtitle: (homePageData.content as any)?.subtitle || '' },
         });
       }
       if (aboutPageData) {
         form.setValue('aboutPage', {
           title: aboutPageData.title,
-          hero_image_url: aboutPageData.hero_image_url || '',
-          content: aboutPageData.content ? aboutPageData.content : { introduction: '', mission: '', vision: '' },
+          hero_image_url: (aboutPageData.content as any)?.hero_image_url || '',
+          content: { 
+            introduction: (aboutPageData.content as any)?.introduction || '',
+            mission: (aboutPageData.content as any)?.mission || '',
+            vision: (aboutPageData.content as any)?.vision || ''
+          },
         });
       }
 
@@ -117,7 +121,13 @@ const WebsiteContentManagement = () => {
       if (teamError) throw teamError;
 
       if (teamData) {
-        form.setValue('teamMembers', teamData);
+        form.setValue('teamMembers', teamData.map(member => ({
+          id: member.id,
+          full_name: member.name,
+          position: member.position,
+          bio: member.bio,
+          photo_url: member.image_url
+        })));
       }
 
     } catch (error) {
@@ -162,12 +172,12 @@ const WebsiteContentManagement = () => {
         .from('team_members')
         .upsert(
           values.teamMembers.map((member, index) => ({
-            id: member.id, // Let Supabase handle create vs update
+            id: member.id, 
             academy_id: profile.academy_id,
-            full_name: member.full_name,
+            name: member.full_name,
             position: member.position,
             bio: member.bio,
-            photo_url: member.photo_url,
+            image_url: member.photo_url,
             display_order: index,
           }))
         );

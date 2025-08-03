@@ -13,7 +13,13 @@ interface Academy {
   name: string;
   subdomain: string;
   created_at: string;
-  modules: Record<string, boolean>;
+  modules: any;
+  address?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  logo_url?: string;
+  is_active?: boolean;
+  settings?: any;
 }
 
 const AcademyManagement = () => {

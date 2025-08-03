@@ -1,6 +1,6 @@
-// components/academy/AcademySetupChecklist.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Circle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,59 +22,52 @@ const AcademySetupChecklist: React.FC<AcademySetupChecklistProps> = ({
   academyId,
   academySubdomain
 }) => {
-  const [setupTasks, setSetupTasks] = React.useState<SetupTask[]>([
+  const [tasks, setTasks] = useState<SetupTask[]>([
     {
-      id: 'logo',
-      title: 'Upload Academy Logo',
-      description: 'Add your academy logo to improve brand recognition',
+      id: 'website-settings',
+      title: 'Configure Website Settings',
+      description: 'Set up your academy\'s primary color, logo, and contact information',
       completed: false,
-      link: `/admin/settings/branding`,
+      link: '/website-content',
       priority: 'high'
     },
     {
-      id: 'team',
+      id: 'team-members',
       title: 'Add Team Members',
-      description: 'Add coaches and staff to your public website',
+      description: 'Add coaches and staff members to your public website',
       completed: false,
-      link: `/admin/team`,
+      link: '/website-content',
       priority: 'high'
     },
     {
-      id: 'content',
-      title: 'Customize Website Content',
-      description: 'Update homepage and about page content',
+      id: 'about-page',
+      title: 'Setup About Page',
+      description: 'Create compelling content for your academy\'s about section',
       completed: false,
-      link: `/admin/website/pages`,
+      link: '/website-content',
       priority: 'medium'
     },
     {
-      id: 'contact',
-      title: 'Verify Contact Information',
-      description: 'Ensure all contact details are correct',
+      id: 'student-groups',
+      title: 'Create Student Groups',
+      description: 'Set up age groups and training categories',
       completed: false,
-      link: `/admin/settings/contact`,
+      link: '/admin/student-management',
+      priority: 'high'
+    },
+    {
+      id: 'fee-structure',
+      title: 'Define Fee Structure',
+      description: 'Set up monthly fees and payment structure',
+      completed: false,
+      link: '/admin/finance',
       priority: 'medium'
-    },
-    {
-      id: 'students',
-      title: 'Add First Students',
-      description: 'Start managing your academy students',
-      completed: false,
-      link: `/admin/students`,
-      priority: 'low'
-    },
-    {
-      id: 'registration',
-      title: 'Set Up Registration Forms',
-      description: 'Configure registration process for new students',
-      completed: false,
-      link: `/admin/registration/settings`,
-      priority: 'low'
     }
   ]);
 
-  const completedTasks = setupTasks.filter(task => task.completed).length;
-  const progressPercentage = (completedTasks / setupTasks.length) * 100;
+  // Calculate completion percentage
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const completionPercentage = Math.round((completedTasks / tasks.length) * 100);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -89,60 +82,55 @@ const AcademySetupChecklist: React.FC<AcademySetupChecklistProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Academy Setup Checklist
-          <span className="text-sm font-normal text-gray-600">
-            {completedTasks}/{setupTasks.length} completed
-          </span>
+          Academy Setup Progress
+          <Badge variant="outline">
+            {completionPercentage}% Complete
+          </Badge>
         </CardTitle>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
+            className="bg-primary h-2 rounded-full transition-all duration-300"
+            style={{ width: `${completionPercentage}%` }}
           />
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {setupTasks.map((task) => (
-          <div 
-            key={task.id}
-            className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50"
-          >
-            <div className="flex-shrink-0 mt-1">
-              {task.completed ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              ) : (
-                <Circle className="h-5 w-5 text-gray-400" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-900">
-                  {task.title}
-                </h4>
-                <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                  {task.priority.toUpperCase()}
-                </span>
+      <CardContent>
+        <div className="space-y-4">
+          {tasks.map((task) => (
+            <div key={task.id} className="flex items-start gap-3 p-3 border rounded-lg">
+              <div className="flex-shrink-0 mt-1">
+                {task.completed ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <Circle className="h-5 w-5 text-gray-400" />
+                )}
               </div>
-              <p className="text-sm text-gray-600 mt-1">
-                {task.description}
-              </p>
-              {task.link && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2"
-                  asChild
-                >
-                  <a href={task.link} className="inline-flex items-center">
-                    Complete Task
-                    <ExternalLink className="ml-1 h-3 w-3" />
-                  </a>
-                </Button>
-              )}
+              <div className="flex-grow">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">{task.title}</h4>
+                  <Badge 
+                    variant="outline" 
+                    className={getPriorityColor(task.priority)}
+                  >
+                    {task.priority}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                {task.link && !task.completed && (
+                  <Button variant="outline" size="sm" className="mt-2" asChild>
+                    <a href={task.link} className="inline-flex items-center gap-1">
+                      Complete Task
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
 };
+
+export default AcademySetupChecklist;
