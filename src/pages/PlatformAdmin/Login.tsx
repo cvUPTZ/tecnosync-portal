@@ -53,8 +53,8 @@ const PlatformAdminLogin = () => {
         description: 'Welcome, Platform Administrator.',
       });
 
-      // Redirect to the create academy page
-      navigate('/platform-admin/create-academy');
+      // Redirect to the platform admin dashboard
+      navigate('/platform-admin');
 
     } catch (error) {
       toast({

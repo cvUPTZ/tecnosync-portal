@@ -21,7 +21,10 @@ import WebsiteContentManagement from "./pages/WebsiteContentManagement";
 import AcademyHomepage from "./pages/public/AcademyHomepage";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import PlatformAdminLayout from "./components/PlatformAdminLayout";
+import PlatformAdminDashboard from "./pages/PlatformAdmin/Dashboard";
 import CreateAcademyPage from "./pages/PlatformAdmin/CreateAcademy";
+import AcademyManagement from "./pages/PlatformAdmin/AcademyManagement";
 import PlatformAdminLogin from "./pages/PlatformAdmin/Login";
 import { Navigate, Outlet } from "react-router-dom";
 
@@ -67,7 +70,11 @@ const App = () => {
               {/* Platform Admin Routes */}
               <Route path="/platform-admin/login" element={<PlatformAdminLogin />} />
               <Route element={<PlatformAdminRoute />}>
-                <Route path="/platform-admin/create-academy" element={<CreateAcademyPage />} />
+                <Route path="/platform-admin" element={<PlatformAdminLayout />}>
+                  <Route index element={<PlatformAdminDashboard />} />
+                  <Route path="create-academy" element={<CreateAcademyPage />} />
+                  <Route path="academies" element={<AcademyManagement />} />
+                </Route>
               </Route>
 
               <Route path="/admin" element={<AdminLayout />}>
