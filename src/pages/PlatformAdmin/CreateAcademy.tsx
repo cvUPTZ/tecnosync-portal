@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -225,21 +225,23 @@ const CreateAcademyPage = () => {
         return acc;
       }, {} as Record<string, boolean>);
 
-      const { data: newAcademy, error } = await supabase.rpc('create_new_academy', {
-        academy_name: values.academyName,
-        academy_subdomain: values.academySubdomain,
-        admin_full_name: values.adminFullName,
-        admin_email: values.adminEmail,
-        admin_password: values.adminPassword,
-        modules_config: modulesObject,
-      });
+      // First create the academy directly
+      const { data: newAcademyData, error: academyError } = await supabase
+        .from('academies')
+        .insert({
+          name: values.academyName,
+          subdomain: values.academySubdomain,
+          modules: modulesObject,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (academyError) throw academyError;
 
-      await createDefaultContent(newAcademy.id, values);
+      await createDefaultContent(newAcademyData.id, values);
 
       const createdAcademyInfo: CreatedAcademyInfo = {
-        id: newAcademy.id,
+        id: newAcademyData.id,
         name: values.academyName,
         subdomain: values.academySubdomain,
         adminEmail: values.adminEmail,
