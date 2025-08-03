@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      academies: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          subdomain: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          subdomain: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          subdomain?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           created_at: string
@@ -712,6 +736,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_new_academy: {
+        Args: {
+          academy_name: string
+          academy_subdomain: string
+          admin_full_name: string
+          admin_email: string
+          admin_password: string
+          modules_config?: Json
+        }
+        Returns: Json
+      }
       generate_receipt_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -743,7 +778,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "director" | "comptabilite_chief" | "coach" | "parent"
+      app_role:
+        | "director"
+        | "comptabilite_chief"
+        | "coach"
+        | "parent"
+        | "platform_admin"
+        | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -871,7 +912,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["director", "comptabilite_chief", "coach", "parent"],
+      app_role: [
+        "director",
+        "comptabilite_chief",
+        "coach",
+        "parent",
+        "platform_admin",
+        "admin",
+      ],
     },
   },
 } as const
