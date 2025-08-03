@@ -16,23 +16,44 @@ export type Database = {
     Tables: {
       academies: {
         Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string | null
           id: string
+          is_active: boolean
+          logo_url: string | null
+          modules: Json
           name: string
+          settings: Json | null
           subdomain: string
           updated_at: string | null
         }
         Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          modules?: Json
           name: string
+          settings?: Json | null
           subdomain: string
           updated_at?: string | null
         }
         Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          modules?: Json
           name?: string
+          settings?: Json | null
           subdomain?: string
           updated_at?: string | null
         }
@@ -326,6 +347,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          academy_id: string | null
           avatar_url: string | null
           created_at: string
           email: string
@@ -338,6 +360,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          academy_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
@@ -350,6 +373,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          academy_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -361,7 +385,62 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_pages: {
+        Row: {
+          academy_id: string
+          content: Json
+          created_at: string
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_keywords: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          academy_id: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          academy_id?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_pages_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       registrations: {
         Row: {
@@ -678,6 +757,53 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          academy_id: string
+          bio: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          name: string
+          position: string
+          updated_at: string
+        }
+        Insert: {
+          academy_id: string
+          bio?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          name: string
+          position: string
+          updated_at?: string
+        }
+        Update: {
+          academy_id?: string
+          bio?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          name?: string
+          position?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_sessions: {
         Row: {
           coach_id: string | null
@@ -727,6 +853,68 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "student_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      website_settings: {
+        Row: {
+          academy_id: string
+          address: string | null
+          analytics_code: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          custom_css: string | null
+          favicon_url: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string
+          seo_settings: Json | null
+          social_media: Json | null
+          template: string
+          updated_at: string
+        }
+        Insert: {
+          academy_id: string
+          address?: string | null
+          analytics_code?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          custom_css?: string | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          seo_settings?: Json | null
+          social_media?: Json | null
+          template?: string
+          updated_at?: string
+        }
+        Update: {
+          academy_id?: string
+          address?: string | null
+          analytics_code?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          custom_css?: string | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          seo_settings?: Json | null
+          social_media?: Json | null
+          template?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_settings_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
             referencedColumns: ["id"]
           },
         ]
