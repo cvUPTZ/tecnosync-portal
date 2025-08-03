@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Eye, EyeOff, GraduationCap } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
