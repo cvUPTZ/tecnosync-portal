@@ -132,13 +132,8 @@ const DocumentManagement = () => {
     if (!profile?.academy_id) return;
     const { data, error } = await supabase
       .from('documents')
-      .select(`
-        *,
-        students(full_name),
-        student_groups(name)
-      `)
+      .select('*')
       .eq('is_active', true)
-      .eq('academy_id', profile.academy_id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -158,8 +153,8 @@ const DocumentManagement = () => {
       return {
         ...doc,
         uploader_name: uploaderName,
-        student_name: doc.students?.full_name,
-        group_name: doc.student_groups?.name
+        student_name: '',
+        group_name: ''
       };
     }));
 
@@ -172,7 +167,6 @@ const DocumentManagement = () => {
       .from('students')
       .select('id, full_name, student_code')
       .eq('status', 'active')
-      .eq('academy_id', profile.academy_id)
       .order('full_name');
 
     if (error) throw error;
@@ -185,7 +179,6 @@ const DocumentManagement = () => {
       .from('student_groups')
       .select('id, name')
       .eq('is_active', true)
-      .eq('academy_id', profile.academy_id)
       .order('name');
 
     if (error) throw error;
@@ -335,8 +328,7 @@ const DocumentManagement = () => {
       const { error: dbError } = await supabase
         .from('documents')
         .update({ is_active: false })
-        .eq('id', document.id)
-        .eq('academy_id', profile.academy_id);
+        .eq('id', document.id);
 
       if (dbError) throw dbError;
 

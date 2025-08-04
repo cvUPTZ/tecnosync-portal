@@ -103,50 +103,44 @@ const AcademyHomepage = () => {
 
   if (loading) {
     return (
-      <PublicLayout>
-        <div className="container mx-auto px-6 py-12 text-center">
-          <p>Loading Academy Homepage...</p>
-        </div>
-      </PublicLayout>
+      <div className="container mx-auto px-6 py-12 text-center">
+        <p>Loading Academy Homepage...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <PublicLayout>
-        <div className="container mx-auto px-6 py-12 text-center">
-          <h1 className="text-2xl font-bold text-red-600">Error</h1>
-          <p>{error}</p>
-        </div>
-      </PublicLayout>
+      <div className="container mx-auto px-6 py-12 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Error</h1>
+        <p>{error}</p>
+      </div>
     );
   }
 
   return (
-    <PublicLayout 
-      academyName={academyData?.name}
-      primaryColor={websiteSettings?.primary_color}
-    >
+    <div>
       <AcademyHero pageData={homePage} />
       {aboutPage && (
         <AboutSection 
-          title="About Us"
-          content={(aboutPage?.content as any)?.introduction || 'Welcome to our academy'}
+          pageData={{
+            title: aboutPage.title || 'About Us',
+            content: aboutPage.content || { introduction: 'Welcome to our academy' }
+          }}
         />
       )}
       {teamMembers && teamMembers.length > 0 && (
         <TeamSection 
-          title="Our Team"
-          members={teamMembers?.map(member => ({
+          teamMembers={teamMembers?.map(member => ({
             id: member.id,
-            name: member.name,
+            full_name: member.name,
             position: member.position,
             bio: member.bio,
-            image_url: member.image_url
+            photo_url: member.image_url
           })) || []}
         />
       )}
-    </PublicLayout>
+    </div>
   );
 };
 

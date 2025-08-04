@@ -93,14 +93,7 @@ const StudentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('students')
-        .select(`
-          *,
-          student_groups (
-            name,
-            description
-          )
-        `)
-        .eq('academy_id', profile.academy_id)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -127,7 +120,6 @@ const StudentManagement = () => {
         .from('student_groups')
         .select('*')
         .eq('is_active', true)
-        .eq('academy_id', profile.academy_id)
         .order('min_age', { ascending: true });
 
       if (error) throw error;

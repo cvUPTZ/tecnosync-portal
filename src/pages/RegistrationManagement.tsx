@@ -98,7 +98,6 @@ const RegistrationManagement = () => {
       const { data, error } = await supabase
         .from('registrations')
         .select('*')
-        .eq('academy_id', profile.academy_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -152,8 +151,7 @@ const RegistrationManagement = () => {
           status: newStatus,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id)
-        .eq('academy_id', profile.academy_id);
+        .eq('id', id);
 
       if (error) throw error;
 

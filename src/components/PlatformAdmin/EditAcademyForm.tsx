@@ -63,6 +63,29 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
     },
   });
 
+  const [adminProfile, setAdminProfile] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('academy_id', academy.id)
+          .eq('role', 'director')
+          .limit(1);
+
+        if (profiles && profiles.length > 0) {
+          setAdminProfile(profiles[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching admin profile:', error);
+      }
+    };
+
+    fetchAdminProfile();
+  }, [academy.id]);
+
   const onSubmit = async (values: EditAcademyFormValues) => {
     setIsSubmitting(true);
     try {
@@ -142,6 +165,33 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Admin Credentials */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Admin Account</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Admin Email</Label>
+            <code className="bg-gray-100 px-2 py-1 rounded text-sm block">
+              {adminProfile?.email || 'Loading...'}
+            </code>
+          </div>
+          <div className="space-y-2">
+            <Label>Admin Name</Label>
+            <code className="bg-gray-100 px-2 py-1 rounded text-sm block">
+              {adminProfile?.full_name || 'Loading...'}
+            </code>
+          </div>
+          <div className="space-y-2">
+            <Label>Password</Label>
+            <div className="text-sm text-gray-600">
+              Password is securely stored. Contact the academy admin to reset if needed.
             </div>
           </div>
         </CardContent>
