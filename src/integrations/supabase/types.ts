@@ -935,6 +935,18 @@ export type Database = {
         }
         Returns: Json
       }
+      create_new_academy_with_user: {
+        Args: {
+          academy_name: string
+          academy_subdomain: string
+          admin_full_name: string
+          admin_email: string
+          admin_password: string
+          user_id: string
+          modules_config?: Json
+        }
+        Returns: Json
+      }
       generate_receipt_number: {
         Args: Record<PropertyKey, never>
         Returns: string

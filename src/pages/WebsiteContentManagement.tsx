@@ -1,394 +1,434 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Save, Eye, Settings, Palette, Layout, Type } from 'lucide-react';
+import ThemeCustomization from '@/components/academy/ThemeCustomization';
+import ContentManagement from '@/components/academy/ContentManagement';
 
-const homePageSchema = z.object({
-  title: z.string().min(3, 'Title is required'),
-  content: z.object({
-    subtitle: z.string().optional(),
-  }),
-});
+interface PublicPage {
+  id: string;
+  slug: string;
+  title: string;
+  content: any;
+  is_published: boolean;
+  updated_at: string;
+  meta_description?: string;
+}
 
-const aboutPageSchema = z.object({
-  title: z.string().min(3, 'Title is required'),
-  hero_image_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  content: z.object({
-    introduction: z.string().min(10, 'Introduction is required'),
-    mission: z.string().optional(),
-    vision: z.string().optional(),
-  }),
-});
-
-const teamMemberSchema = z.object({
-  id: z.string().uuid().optional(),
-  full_name: z.string().min(3, 'Name is required'),
-  position: z.string().min(2, 'Position is required'),
-  bio: z.string().optional(),
-  photo_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-});
-
-const websiteContentSchema = z.object({
-  homePage: homePageSchema,
-  aboutPage: aboutPageSchema,
-  teamMembers: z.array(teamMemberSchema),
-});
-
-type WebsiteContentFormValues = z.infer<typeof websiteContentSchema>;
+interface WebsiteSettings {
+  id?: string;
+  academy_id: string;
+  template: string;
+  primary_color: string;
+  logo_url?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  address?: string;
+  social_media?: any;
+  seo_settings?: any;
+  custom_css?: string;
+  analytics_code?: string;
+}
 
 const WebsiteContentManagement = () => {
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const form = useForm<WebsiteContentFormValues>({
-    resolver: zodResolver(websiteContentSchema),
-    defaultValues: {
-      homePage: {
-        title: '',
-        content: { subtitle: '' },
-      },
-      aboutPage: {
-        title: '',
-        hero_image_url: '',
-        content: { introduction: '', mission: '', vision: '' },
-      },
-      teamMembers: [],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "teamMembers",
+  const [pages, setPages] = useState<PublicPage[]>([]);
+  const [websiteSettings, setWebsiteSettings] = useState<WebsiteSettings | null>(null);
+  const [selectedPage, setSelectedPage] = useState<PublicPage | null>(null);
+  const [pageContent, setPageContent] = useState({
+    title: '',
+    content: {},
+    meta_description: '',
+    is_published: true
   });
 
   useEffect(() => {
-    fetchWebsiteContent();
-  }, []);
+    if (profile?.academy_id) {
+      loadPages();
+      loadWebsiteSettings();
+    }
+  }, [profile?.academy_id]);
 
-  const fetchWebsiteContent = async () => {
+  const loadPages = async () => {
     if (!profile?.academy_id) return;
-    setLoading(true);
+    
     try {
-      // Fetch Homepage and About Us pages
-      const { data: pagesData, error: pagesError } = await supabase
+      const { data, error } = await supabase
         .from('public_pages')
         .select('*')
         .eq('academy_id', profile.academy_id)
-        .in('slug', ['homepage', 'about-us']);
+        .order('slug');
 
-      if (pagesError) throw pagesError;
+      if (error) throw error;
+      setPages(data || []);
+    } catch (error: any) {
+      toast.error('Failed to load pages: ' + error.message);
+    }
+  };
 
-      const homePageData = pagesData.find(p => p.slug === 'homepage');
-      const aboutPageData = pagesData.find(p => p.slug === 'about-us');
+  const loadWebsiteSettings = async () => {
+    if (!profile?.academy_id) return;
 
-      if (homePageData) {
-        form.setValue('homePage', {
-          title: homePageData.title,
-          content: { subtitle: (homePageData.content as any)?.subtitle || '' },
-        });
-      }
-      if (aboutPageData) {
-        form.setValue('aboutPage', {
-          title: aboutPageData.title,
-          hero_image_url: (aboutPageData.content as any)?.hero_image_url || '',
-          content: { 
-            introduction: (aboutPageData.content as any)?.introduction || '',
-            mission: (aboutPageData.content as any)?.mission || '',
-            vision: (aboutPageData.content as any)?.vision || ''
-          },
-        });
-      }
-
-      // Fetch team members
-      const { data: teamData, error: teamError } = await supabase
-        .from('team_members')
+    try {
+      const { data, error } = await supabase
+        .from('website_settings')
         .select('*')
         .eq('academy_id', profile.academy_id)
-        .order('display_order');
+        .single();
 
-      if (teamError) throw teamError;
-
-      if (teamData) {
-        form.setValue('teamMembers', teamData.map(member => ({
-          id: member.id,
-          full_name: member.name,
-          position: member.position,
-          bio: member.bio,
-          photo_url: member.image_url
-        })));
-      }
-
-    } catch (error) {
-      console.error('Error fetching website content:', error);
-      toast({ title: 'Error', description: 'Failed to fetch website content.', variant: 'destructive' });
+      if (error && error.code !== 'PGRST116') throw error;
+      setWebsiteSettings(data);
+    } catch (error: any) {
+      toast.error('Failed to load website settings: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const onSubmit = async (values: WebsiteContentFormValues) => {
-    if (!profile?.academy_id) return;
-    setSaving(true);
+  const saveWebsiteSettings = async () => {
+    if (!profile?.academy_id || !websiteSettings) return;
+
     try {
-      // Upsert Homepage and About Us pages
-      const pagesToUpsert = [
-        {
+      setSaving(true);
+      const { error } = await supabase
+        .from('website_settings')
+        .upsert({
           academy_id: profile.academy_id,
-          slug: 'homepage',
-          title: values.homePage.title,
-          content: values.homePage.content,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          academy_id: profile.academy_id,
-          slug: 'about-us',
-          title: values.aboutPage.title,
-          hero_image_url: values.aboutPage.hero_image_url,
-          content: values.aboutPage.content,
-          updated_at: new Date().toISOString(),
-        }
-      ];
+          ...websiteSettings
+        });
 
-      const { error: pageError } = await supabase
-        .from('public_pages')
-        .upsert(pagesToUpsert, { onConflict: 'academy_id, slug' });
-
-      if (pageError) throw pageError;
-
-      // Upsert Team Members
-      const { error: teamError } = await supabase
-        .from('team_members')
-        .upsert(
-          values.teamMembers.map((member, index) => ({
-            id: member.id, 
-            academy_id: profile.academy_id,
-            name: member.full_name,
-            position: member.position,
-            bio: member.bio,
-            image_url: member.photo_url,
-            display_order: index,
-          }))
-        );
-
-      if (teamError) throw teamError;
-
-      toast({ title: 'Success', description: 'Website content saved successfully.' });
-      fetchWebsiteContent(); // Refresh data
-
-    } catch (error) {
-      console.error('Error saving website content:', error);
-      toast({ title: 'Error', description: 'Failed to save website content.', variant: 'destructive' });
+      if (error) throw error;
+      toast.success('Website settings saved successfully!');
+    } catch (error: any) {
+      toast.error('Failed to save settings: ' + error.message);
     } finally {
       setSaving(false);
     }
   };
 
+  const savePageContent = async () => {
+    if (!profile?.academy_id || !selectedPage) return;
+
+    try {
+      setSaving(true);
+      const { error } = await supabase
+        .from('public_pages')
+        .update({
+          title: pageContent.title,
+          content: pageContent.content,
+          meta_description: pageContent.meta_description,
+          is_published: pageContent.is_published,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedPage.id);
+
+      if (error) throw error;
+      
+      toast.success('Page content saved successfully!');
+      setSelectedPage(null);
+      loadPages();
+    } catch (error: any) {
+      toast.error('Failed to save page: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedPage) {
+      setPageContent({
+        title: selectedPage.title,
+        content: selectedPage.content || {},
+        meta_description: selectedPage.meta_description || '',
+        is_published: selectedPage.is_published
+      });
+    }
+  }, [selectedPage]);
+
   if (loading) {
-    return <div>Loading website content editor...</div>;
+    return <div>Loading website content management...</div>;
   }
 
+  const academySubdomain = profile?.academy_id ? 'academy-' + profile.academy_id.slice(0, 8) : 'academy';
+  const previewUrl = `${window.location.origin}/academy/${academySubdomain}`;
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Website Content</h1>
-          <Button type="submit" disabled={saving}>
-            {saving ? 'Saving...' : 'Save All Changes'}
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Website Content Management</h1>
+          <p className="text-muted-foreground">
+            Manage your academy's public website content, theme, and settings
+          </p>
         </div>
+        <Button asChild variant="outline">
+          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+            <Eye className="w-4 h-4 mr-2" />
+            Preview Website
+          </a>
+        </Button>
+      </div>
 
-        <Tabs defaultValue="homepage">
-          <TabsList>
-            <TabsTrigger value="homepage">Homepage</TabsTrigger>
-            <TabsTrigger value="about-page">About Us Page</TabsTrigger>
-            <TabsTrigger value="team-members">Team Members</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="content" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="content">
+            <Layout className="w-4 h-4 mr-1" />
+            Content
+          </TabsTrigger>
+          <TabsTrigger value="theme">
+            <Palette className="w-4 h-4 mr-1" />
+            Theme
+          </TabsTrigger>
+          <TabsTrigger value="pages">Pages</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="preview">
+            <Eye className="w-4 h-4 mr-2" />
+            Preview
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="homepage">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Homepage</CardTitle>
-                <CardDescription>Set the main title and subtitle for your academy's public homepage.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="homePage.title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Homepage Title</FormLabel>
-                      <FormControl><Input {...field} placeholder="Welcome to Our Academy" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="homePage.content.subtitle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Homepage Subtitle</FormLabel>
-                      <FormControl><Textarea {...field} placeholder="Your home for football excellence." /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        <TabsContent value="content">
+          <ContentManagement
+            academyId={profile?.academy_id || ''}
+            pageSlug="homepage"
+            onContentUpdate={(content) => {
+              toast.success('Content updated successfully!');
+              loadPages();
+            }}
+          />
+        </TabsContent>
 
-          <TabsContent value="about-page">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit "About Us" Page</CardTitle>
-                <CardDescription>This content will be displayed on your public website.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="aboutPage.title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Page Title</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="aboutPage.hero_image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hero Image URL</FormLabel>
-                      <FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="aboutPage.content.introduction"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Introduction</FormLabel>
-                      <FormControl><Textarea {...field} rows={5} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="aboutPage.content.mission"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Our Mission</FormLabel>
-                      <FormControl><Textarea {...field} rows={3} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="aboutPage.content.vision"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Our Vision</FormLabel>
-                      <FormControl><Textarea {...field} rows={3} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        <TabsContent value="theme">
+          <ThemeCustomization
+            academyId={profile?.academy_id || ''}
+            currentSettings={websiteSettings}
+            onSettingsUpdate={(settings) => {
+              setWebsiteSettings(settings);
+              toast.success('Theme updated successfully!');
+            }}
+          />
+        </TabsContent>
 
-          <TabsContent value="team-members">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manage Team Members</CardTitle>
-                <CardDescription>Add, edit, or remove members of your staff.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {fields.map((field, index) => (
-                  <Card key={field.id} className="p-4 relative">
-                    <div className="space-y-4">
-                       <FormField
-                          control={form.control}
-                          name={`teamMembers.${index}.full_name`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`teamMembers.${index}.position`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Position</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`teamMembers.${index}.bio`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Biography</FormLabel>
-                              <FormControl><Textarea {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`teamMembers.${index}.photo_url`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Photo URL</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+        <TabsContent value="pages">
+          <div className="grid gap-6">
+            {pages.map((page) => (
+              <Card key={page.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="capitalize">{page.slug.replace('-', ' ')}</CardTitle>
+                      <CardDescription>
+                        Last updated: {new Date(page.updated_at).toLocaleDateString()}
+                      </CardDescription>
                     </div>
-                    <Button type="button" variant="destructive" size="sm" className="absolute top-4 right-4" onClick={() => remove(index)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </Card>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => append({ full_name: '', position: '' })}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Team Member
+                    <div className="flex items-center gap-2">
+                      <Badge variant={page.is_published ? "default" : "secondary"}>
+                        {page.is_published ? "Published" : "Draft"}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedPage(page)}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {page.meta_description || "No description available"}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Website Settings</CardTitle>
+              <CardDescription>Configure your academy's website settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="contact-email">Contact Email</Label>
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    value={websiteSettings?.contact_email || ''}
+                    onChange={(e) => setWebsiteSettings(prev => prev ? {...prev, contact_email: e.target.value} : null)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contact-phone">Contact Phone</Label>
+                  <Input
+                    id="contact-phone"
+                    value={websiteSettings?.contact_phone || ''}
+                    onChange={(e) => setWebsiteSettings(prev => prev ? {...prev, contact_phone: e.target.value} : null)}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  value={websiteSettings?.address || ''}
+                  onChange={(e) => setWebsiteSettings(prev => prev ? {...prev, address: e.target.value} : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="logo-url">Logo URL</Label>
+                <Input
+                  id="logo-url"
+                  value={websiteSettings?.logo_url || ''}
+                  onChange={(e) => setWebsiteSettings(prev => prev ? {...prev, logo_url: e.target.value} : null)}
+                />
+              </div>
+              <Button onClick={saveWebsiteSettings} disabled={saving}>
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Saving...' : 'Save Settings'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="seo">
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO Settings</CardTitle>
+              <CardDescription>Optimize your website for search engines</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="meta-title">Meta Title</Label>
+                <Input
+                  id="meta-title"
+                  value={websiteSettings?.seo_settings?.meta_title || ''}
+                  onChange={(e) => setWebsiteSettings(prev => prev ? {
+                    ...prev,
+                    seo_settings: { ...prev.seo_settings, meta_title: e.target.value }
+                  } : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="meta-description">Meta Description</Label>
+                <Textarea
+                  id="meta-description"
+                  value={websiteSettings?.seo_settings?.meta_description || ''}
+                  onChange={(e) => setWebsiteSettings(prev => prev ? {
+                    ...prev,
+                    seo_settings: { ...prev.seo_settings, meta_description: e.target.value }
+                  } : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="meta-keywords">Meta Keywords (comma separated)</Label>
+                <Input
+                  id="meta-keywords"
+                  value={websiteSettings?.seo_settings?.meta_keywords || ''}
+                  onChange={(e) => setWebsiteSettings(prev => prev ? {
+                    ...prev,
+                    seo_settings: { ...prev.seo_settings, meta_keywords: e.target.value }
+                  } : null)}
+                />
+              </div>
+              <Button onClick={saveWebsiteSettings} disabled={saving}>
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Saving...' : 'Save SEO Settings'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preview">
+          <Card>
+            <CardHeader>
+              <CardTitle>Website Preview</CardTitle>
+              <CardDescription>Preview how your website looks to visitors</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-full"
+                  title="Website Preview"
+                />
+              </div>
+              <div className="mt-4 flex justify-center">
+                <Button asChild>
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                    Open in New Tab
+                  </a>
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </form>
-    </Form>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Page Editor Modal */}
+      {selectedPage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle>Edit Page: {selectedPage.title}</CardTitle>
+              <CardDescription>Update the content for this page</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="page-title">Page Title</Label>
+                <Input
+                  id="page-title"
+                  value={pageContent.title}
+                  onChange={(e) => setPageContent(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="meta-desc">Meta Description</Label>
+                <Textarea
+                  id="meta-desc"
+                  value={pageContent.meta_description}
+                  onChange={(e) => setPageContent(prev => ({ ...prev, meta_description: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Published Status</Label>
+                <div className="flex items-center space-x-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={pageContent.is_published}
+                    onChange={(e) => setPageContent(prev => ({ ...prev, is_published: e.target.checked }))}
+                  />
+                  <span>Published</span>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelectedPage(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={savePageContent} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Page'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 };
 

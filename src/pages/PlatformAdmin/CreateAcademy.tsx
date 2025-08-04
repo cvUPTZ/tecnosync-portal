@@ -225,33 +225,38 @@ const CreateAcademyPage = () => {
         return acc;
       }, {} as Record<string, boolean>);
 
-      // First create the academy directly
-      const { data: newAcademyData, error: academyError } = await supabase
-        .from('academies')
-        .insert({
-          name: values.academyName,
-          subdomain: values.academySubdomain,
-          modules: modulesObject,
-        })
-        .select()
-        .single();
+      // Use the edge function to create academy with admin user
+      const { data: result, error } = await supabase.functions.invoke('create-academy-admin', {
+        body: {
+          academy_name: values.academyName,
+          academy_subdomain: values.academySubdomain,
+          admin_full_name: values.adminFullName,
+          admin_email: values.adminEmail,
+          admin_password: values.adminPassword,
+          modules_config: modulesObject
+        }
+      });
 
-      if (academyError) throw academyError;
+      if (error) {
+        throw new Error(error.message);
+      }
 
-      await createDefaultContent(newAcademyData.id, values);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       const createdAcademyInfo: CreatedAcademyInfo = {
-        id: newAcademyData.id,
+        id: result.data.academy_id,
         name: values.academyName,
         subdomain: values.academySubdomain,
         adminEmail: values.adminEmail,
-        publicUrl: `${window.location.origin}/site/${values.academySubdomain}`,
-        adminUrl: `${window.location.origin}/login`,
+        publicUrl: result.data.public_url,
+        adminUrl: result.data.admin_url,
       };
 
       toast({
         title: 'Success!',
-        description: `Academy "${values.academyName}" created successfully with public website!`,
+        description: `Academy "${values.academyName}" created successfully! Admin user can now login.`,
       });
 
       setLastCreatedAcademy(createdAcademyInfo);
