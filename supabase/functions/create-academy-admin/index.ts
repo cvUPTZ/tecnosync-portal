@@ -47,7 +47,6 @@ serve(async (req) => {
       academy_subdomain,
       admin_full_name,
       admin_email,
-      admin_password,
       modules_config: modules_config || {},
       user_id: authUser.user.id
     })

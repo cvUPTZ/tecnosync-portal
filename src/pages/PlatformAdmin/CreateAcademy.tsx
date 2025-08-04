@@ -245,6 +245,8 @@ const CreateAcademyPage = () => {
         throw new Error(result.error);
       }
 
+      await createDefaultContent(result.data.academy_id, values);
+
       const createdAcademyInfo: CreatedAcademyInfo = {
         id: result.data.academy_id,
         name: values.academyName,
