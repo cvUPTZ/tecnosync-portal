@@ -1,5 +1,5 @@
 // src/components/academy/AcademyRegistration.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,29 +12,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateRegistrationPDF } from './RegistrationPDF';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 const arabicNameRegex = /^[\u0600-\u06FF\s]+$/;
 
 const registrationSchema = z.object({
   full_name: z.string().min(2, "الاسم مطلوب").regex(arabicNameRegex, "يجب أن يكون الاسم باللغة العربية"),
   date_of_birth: z.string().min(1, "تاريخ الميلاد مطلوب"),
-  nationality: z.string().min(1, "الجنسية مطلوبة"),
+  nationality: z.string().min(1, "الجنسية مطلوبة").regex(arabicNameRegex, "يجب أن تكون الجنسية باللغة العربية"),
   phone: z.string().min(10, "رقم الهاتف مطلوب"),
   email: z.string().email("بريد إلكتروني غير صالح"),
-  address: z.string().min(1, "العنوان مطلوب"),
+  address: z.string().min(5, "العنوان مطلوب"),
   parent_name: z.string().min(2, "اسم ولي الأمر مطلوب").regex(arabicNameRegex, "يجب أن يكون الاسم باللغة العربية"),
   parent_phone: z.string().min(10, "رقم ولي الأمر مطلوب"),
   parent_email: z.string().email("بريد إلكتروني لولي الأمر غير صالح").optional(),
   parent_id_number: z.string().min(1, "رقم هوية ولي الأمر مطلوب"),
-  parent_profession: z.string().min(1, "مهنة ولي الأمر مطلوبة"),
+  parent_profession: z.string().min(1, "مهنة ولي الأمر مطلوبة").regex(arabicNameRegex, "يجب أن تكون المهنة باللغة العربية"),
   position: z.string().min(1, "المركز المفضل مطلوب"),
   previous_experience: z.string().optional(),
   medical_conditions: z.string().optional(),
   preferred_foot: z.string().min(1, "القدم المفضلة مطلوبة"),
   program_preference: z.string().min(1, "البرنامج المفضل مطلوب"),
-  emergency_contact_name: z.string().min(2, "اسم جهة الاتصال في حالات الطوارئ مطلوب"),
+  emergency_contact_name: z.string().min(2, "اسم جهة الاتصال في حالات الطوارئ مطلوب").regex(arabicNameRegex, "يجب أن يكون الاسم باللغة العربية"),
   emergency_contact_phone: z.string().min(10, "رقم جهة الاتصال في حالات الطوارئ مطلوب"),
-  emergency_contact_relation: z.string().min(1, "علاقة جهة الاتصال في حالات الطوارئ مطلوبة"),
+  emergency_contact_relation: z.string().min(1, "علاقة جهة الاتصال في حالات الطوارئ مطلوبة").regex(arabicNameRegex, "يجب أن تكون العلاقة باللغة العربية"),
   how_did_you_hear: z.string().optional(),
   additional_notes: z.string().optional(),
 });
@@ -177,38 +178,14 @@ const AcademyRegistration = () => {
       if (error) throw error;
 
       // Generate PDF
-      const pdfData = {
-        full_name: data.full_name,
-        date_of_birth: data.date_of_birth,
-        nationality: data.nationality,
-        phone: data.phone,
-        email: data.email,
-        address: data.address,
-        parent_name: data.parent_name,
-        parent_phone: data.parent_phone,
-        parent_email: data.parent_email || "",
-        parent_id_number: data.parent_id_number,
-        parent_profession: data.parent_profession || "",
-        position: data.position || "",
-        previous_experience: data.previous_experience || "",
-        medical_conditions: data.medical_conditions || "",
-        preferred_foot: data.preferred_foot || "",
-        program_preference: data.program_preference || "",
-        emergency_contact_name: data.emergency_contact_name,
-        emergency_contact_phone: data.emergency_contact_phone,
-        emergency_contact_relation: data.emergency_contact_relation,
-        how_did_you_hear: data.how_did_you_hear || "",
-        additional_notes: data.additional_notes || "",
-      };
-
-      await generateRegistrationPDF({ data: pdfData });
+      await generateRegistrationPDF({ data });
 
       toast({
         title: "تم التسجيل بنجاح",
         description: "تم حفظ طلب التسجيل الخاص بك. سيتواصل معك فريق الأكاديمية قريبًا.",
       });
 
-      // Redirect to thank you page or academy home
+      // Redirect after 3 seconds
       setTimeout(() => {
         navigate(`/site/${subdomain}`);
       }, 3000);
@@ -252,20 +229,22 @@ const AcademyRegistration = () => {
           <CardContent>
             {/* Progress Steps */}
             <div className="flex justify-between mb-8">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                    currentStep === step.id 
-                      ? 'bg-blue-600 text-white' 
-                      : currentStep > step.id 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {currentStep > step.id ? '✓' : step.icon}
+              {steps.map((step) => {
+                const isCompleted = currentStep > step.id;
+                const isActive = currentStep === step.id;
+                return (
+                  <div key={step.id} className="flex flex-col items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                      isActive ? 'bg-blue-600 text-white' : 
+                      isCompleted ? 'bg-green-600 text-white' : 
+                      'bg-gray-200 text-gray-600'
+                    }`}>
+                      {isCompleted ? <Check className="w-5 h-5" /> : step.icon}
+                    </div>
+                    <span className="text-xs text-center">{step.title}</span>
                   </div>
-                  <span className="text-xs text-center">{step.title}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -275,7 +254,7 @@ const AcademyRegistration = () => {
                   <h3 className="text-lg font-semibold">المعلومات الشخصية</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="full_name">الاسم الكامل</Label>
+                      <Label htmlFor="full_name">الاسم الكامل *</Label>
                       <Input
                         id="full_name"
                         {...form.register("full_name")}
@@ -286,7 +265,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
+                      <Label htmlFor="date_of_birth">تاريخ الميلاد *</Label>
                       <Input
                         id="date_of_birth"
                         type="date"
@@ -299,7 +278,7 @@ const AcademyRegistration = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="nationality">الجنسية</Label>
+                      <Label htmlFor="nationality">الجنسية *</Label>
                       <Input
                         id="nationality"
                         {...form.register("nationality")}
@@ -310,7 +289,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="phone">رقم الهاتف</Label>
+                      <Label htmlFor="phone">رقم الهاتف *</Label>
                       <Input
                         id="phone"
                         {...form.register("phone")}
@@ -322,7 +301,7 @@ const AcademyRegistration = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">البريد الإلكتروني</Label>
+                    <Label htmlFor="email">البريد الإلكتروني *</Label>
                     <Input
                       id="email"
                       type="email"
@@ -334,7 +313,7 @@ const AcademyRegistration = () => {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="address">العنوان</Label>
+                    <Label htmlFor="address">العنوان *</Label>
                     <Textarea
                       id="address"
                       {...form.register("address")}
@@ -354,7 +333,7 @@ const AcademyRegistration = () => {
                   <h3 className="text-lg font-semibold">معلومات ولي الأمر</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="parent_name">اسم ولي الأمر</Label>
+                      <Label htmlFor="parent_name">اسم ولي الأمر *</Label>
                       <Input
                         id="parent_name"
                         {...form.register("parent_name")}
@@ -365,7 +344,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="parent_phone">رقم ولي الأمر</Label>
+                      <Label htmlFor="parent_phone">رقم ولي الأمر *</Label>
                       <Input
                         id="parent_phone"
                         {...form.register("parent_phone")}
@@ -390,7 +369,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="parent_id_number">رقم هوية ولي الأمر</Label>
+                      <Label htmlFor="parent_id_number">رقم هوية ولي الأمر *</Label>
                       <Input
                         id="parent_id_number"
                         {...form.register("parent_id_number")}
@@ -402,7 +381,7 @@ const AcademyRegistration = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="parent_profession">مهنة ولي الأمر</Label>
+                    <Label htmlFor="parent_profession">مهنة ولي الأمر *</Label>
                     <Input
                       id="parent_profession"
                       {...form.register("parent_profession")}
@@ -421,7 +400,7 @@ const AcademyRegistration = () => {
                   <h3 className="text-lg font-semibold">المعلومات الرياضية</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="position">المركز المفضل</Label>
+                      <Label htmlFor="position">المركز المفضل *</Label>
                       <select
                         id="position"
                         className="w-full p-2 border border-gray-300 rounded-md"
@@ -438,7 +417,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="preferred_foot">القدم المفضلة</Label>
+                      <Label htmlFor="preferred_foot">القدم المفضلة *</Label>
                       <select
                         id="preferred_foot"
                         className="w-full p-2 border border-gray-300 rounded-md"
@@ -455,7 +434,7 @@ const AcademyRegistration = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="program_preference">البرنامج المفضل</Label>
+                    <Label htmlFor="program_preference">البرنامج المفضل *</Label>
                     <select
                       id="program_preference"
                       className="w-full p-2 border border-gray-300 rounded-md"
@@ -502,7 +481,7 @@ const AcademyRegistration = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">معلومات الطوارئ</h3>
                   <div>
-                    <Label htmlFor="emergency_contact_name">اسم جهة الاتصال في حالات الطوارئ</Label>
+                    <Label htmlFor="emergency_contact_name">اسم جهة الاتصال في حالات الطوارئ *</Label>
                     <Input
                       id="emergency_contact_name"
                       {...form.register("emergency_contact_name")}
@@ -514,7 +493,7 @@ const AcademyRegistration = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="emergency_contact_phone">رقم جهة الاتصال في حالات الطوارئ</Label>
+                      <Label htmlFor="emergency_contact_phone">رقم جهة الاتصال في حالات الطوارئ *</Label>
                       <Input
                         id="emergency_contact_phone"
                         {...form.register("emergency_contact_phone")}
@@ -525,7 +504,7 @@ const AcademyRegistration = () => {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="emergency_contact_relation">علاقة جهة الاتصال</Label>
+                      <Label htmlFor="emergency_contact_relation">علاقة جهة الاتصال *</Label>
                       <Input
                         id="emergency_contact_relation"
                         {...form.register("emergency_contact_relation")}
@@ -582,16 +561,18 @@ const AcademyRegistration = () => {
 
               <div className="flex justify-between pt-6">
                 {currentStep > 1 && (
-                  <Button type="button" variant="outline" onClick={prevStep}>
+                  <Button type="button" variant="outline" onClick={prevStep} className="flex items-center">
+                    <ChevronLeft className="w-4 h-4 mr-1" />
                     العودة
                   </Button>
                 )}
                 {currentStep < 5 ? (
-                  <Button type="button" onClick={nextStep} className="ml-auto">
+                  <Button type="button" onClick={nextStep} className="flex items-center ml-auto">
                     التالي
+                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting} className="ml-auto">
                     {isSubmitting ? 'جاري الإرسال...' : 'إرسال التسجيل'}
                   </Button>
                 )}
