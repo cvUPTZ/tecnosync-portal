@@ -7,6 +7,8 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('Function called with method:', req.method);
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -24,8 +26,10 @@ serve(async (req) => {
     )
 
     const { academy_name, academy_subdomain, admin_full_name, admin_email, admin_password, modules_config } = await req.json()
+    console.log('Received payload:', { academy_name, academy_subdomain, admin_full_name, admin_email });
 
     // Create the auth user first
+    console.log('Creating auth user...');
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: admin_email,
       password: admin_password,
@@ -38,10 +42,13 @@ serve(async (req) => {
     })
 
     if (authError) {
+      console.error('Auth user creation failed:', authError);
       throw authError
     }
+    console.log('Auth user created successfully:', authUser.user.id);
 
     // Now call the database function with the real user_id
+    console.log('Calling database function create_new_academy_with_user...');
     const { data: result, error: dbError } = await supabaseAdmin.rpc('create_new_academy_with_user', {
       academy_name,
       academy_subdomain,
@@ -53,10 +60,12 @@ serve(async (req) => {
     })
 
     if (dbError) {
+      console.error('Database function failed:', dbError);
       // If database creation fails, clean up the auth user
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       throw dbError
     }
+    console.log('Database function succeeded:', result);
 
     return new Response(
       JSON.stringify({
