@@ -1,138 +1,236 @@
+// src/components/AdminSidebar.tsx
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  UserCheck, 
-  Calendar,
-  Calculator,
-  MessageSquare,
-  FileText,
-  BarChart3,
-  Camera,
-  Settings,
-  GraduationCap
-} from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
+import {
+  LayoutDashboard,
+  Users,
+  UserCheck,
+  DollarSign,
+  FileText,
+  Calendar,
+  MessageSquare,
+  Image,
+  Settings,
+  UserCog,
+  ClipboardList,
+  Globe,
+  Palette,
+  BarChart3,
+  GraduationCap,
+} from 'lucide-react';
+
+interface MenuItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  moduleId?: string;
+}
 
 const AdminSidebar = () => {
-  const { t } = useTranslation();
-  const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
   const location = useLocation();
-  const { profile, isModuleEnabled } = useAuth();
+  const { profile, academy } = useAuth();
 
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'bg-tfa-blue/10 text-tfa-blue font-medium border-r-2 border-tfa-blue' : 'hover:bg-muted/50';
+  // Function to check if a module is enabled
+  const isModuleEnabled = (moduleId: string): boolean => {
+    if (!academy?.modules) return true; // If no modules config, show all
+    return academy.modules[moduleId] === true;
+  };
 
-  // Define menu items based on roles and enabled modules
-  const getMenuItems = () => {
-    const allItems = [
-      // Always visible
-      { titleKey: 'sidebar.dashboard', url: '/admin', icon: LayoutDashboard, roles: ['director', 'comptabilite_chief', 'coach'], module: 'dashboard' },
+  // Define all menu items with their module requirements
+  const allMenuItems: MenuItem[] = [
+    {
+      id: 'dashboard',
+      label: 'لوحة التحكم',
+      href: '/admin/dashboard',
+      icon: LayoutDashboard,
+    },
+    {
+      id: 'registrations',
+      label: 'طلبات التسجيل',
+      href: '/admin/registrations',
+      icon: ClipboardList,
+      moduleId: 'student-management',
+    },
+    {
+      id: 'students',
+      label: 'إدارة الطلاب',
+      href: '/admin/students',
+      icon: GraduationCap,
+      moduleId: 'student-management',
+    },
+    {
+      id: 'users',
+      label: 'المستخدمين',
+      href: '/admin/users',
+      icon: Users,
+    },
+    {
+      id: 'attendance',
+      label: 'الحضور والغياب',
+      href: '/admin/attendance',
+      icon: UserCheck,
+      moduleId: 'attendance',
+    },
+    {
+      id: 'coaches',
+      label: 'المدربين',
+      href: '/admin/coaches',
+      icon: UserCog,
+      moduleId: 'student-management',
+    },
+    {
+      id: 'finance',
+      label: 'الإدارة المالية',
+      href: '/admin/finance',
+      icon: DollarSign,
+      moduleId: 'finance',
+    },
+    {
+      id: 'reports',
+      label: 'التقارير المالية',
+      href: '/admin/reports',
+      icon: BarChart3,
+      moduleId: 'finance',
+    },
+    {
+      id: 'documents',
+      label: 'إدارة المستندات',
+      href: '/admin/documents',
+      icon: FileText,
+      moduleId: 'documents',
+    },
+    {
+      id: 'schedule',
+      label: 'الجداول والمواعيد',
+      href: '/admin/schedule',
+      icon: Calendar,
+      moduleId: 'schedule',
+    },
+    {
+      id: 'messages',
+      label: 'مركز الرسائل',
+      href: '/admin/messages',
+      icon: MessageSquare,
+      moduleId: 'messages',
+    },
+    {
+      id: 'gallery',
+      label: 'إدارة المعرض',
+      href: '/admin/gallery',
+      icon: Image,
+      moduleId: 'gallery',
+    },
+    {
+      id: 'website',
+      label: 'محتوى الموقع',
+      href: '/admin/website',
+      icon: Globe,
+      moduleId: 'website',
+    },
+    {
+      id: 'theme',
+      label: 'تخصيص التصميم',
+      href: '/admin/theme',
+      icon: Palette,
+      moduleId: 'website',
+    },
+    {
+      id: 'settings',
+      label: 'إعدادات الأكاديمية',
+      href: '/admin/settings',
+      icon: Settings,
+    },
+  ];
 
-      // Module-based items
-      { titleKey: 'sidebar.registrations', url: '/admin/registrations', icon: Users, roles: ['director', 'comptabilite_chief', 'coach'], module: 'registrations' },
-      { titleKey: 'sidebar.students', url: '/admin/students', icon: GraduationCap, roles: ['director', 'comptabilite_chief', 'coach'], module: 'students' },
-      { titleKey: 'sidebar.users', url: '/admin/users', icon: UserCheck, roles: ['director'], module: 'users' },
-      { titleKey: 'sidebar.attendance', url: '/admin/attendance', icon: UserCheck, roles: ['director', 'comptabilite_chief', 'coach'], module: 'attendance' },
-      { titleKey: 'sidebar.schedule', url: '/admin/schedule', icon: Calendar, roles: ['director', 'comptabilite_chief', 'coach'], module: 'schedule' },
-      { titleKey: 'sidebar.finance', url: '/admin/finance', icon: Calculator, roles: ['director', 'comptabilite_chief'], module: 'finance' },
-      { titleKey: 'sidebar.reports', url: '/admin/reports', icon: BarChart3, roles: ['director', 'comptabilite_chief'], module: 'reports' },
-      { titleKey: 'sidebar.coaches', url: '/admin/coaches', icon: Users, roles: ['director'], module: 'coaches' },
-      { titleKey: 'sidebar.messages', url: '/admin/messages', icon: MessageSquare, roles: ['director', 'comptabilite_chief', 'coach'], module: 'messages' },
-      { titleKey: 'sidebar.documents', url: '/admin/documents', icon: FileText, roles: ['director', 'comptabilite_chief'], module: 'documents' },
-      { titleKey: 'sidebar.gallery', url: '/admin/gallery', icon: Camera, roles: ['director', 'comptabilite_chief', 'coach'], module: 'gallery' },
-
-      // Always visible
-      { titleKey: 'sidebar.website', url: '/admin/website', icon: FileText, roles: ['director'], module: 'website' },
-      { titleKey: 'sidebar.settings', url: '/admin/settings', icon: Settings, roles: ['director'], module: 'settings' },
-    ];
-
-    return allItems.filter(item => {
-      const roleMatch = item.roles.includes(profile?.role || '');
-      // Dashboard and settings are always enabled for logged-in users.
-      // For other modules, check if they are enabled in the academy's config.
-      const moduleMatch = item.module === 'dashboard' || item.module === 'settings' || isModuleEnabled(item.module);
-      return roleMatch && moduleMatch;
+  // Filter menu items based on enabled modules
+  const getMenuItems = (): MenuItem[] => {
+    return allMenuItems.filter(item => {
+      // If item has no moduleId, always show it
+      if (!item.moduleId) return true;
+      
+      // Check if the module is enabled
+      return isModuleEnabled(item.moduleId);
     });
   };
 
   const menuItems = getMenuItems();
 
-  if (!profile) return null;
+  const isActive = (href: string) => {
+    if (href === '/admin/dashboard' && location.pathname === '/admin') {
+      return true;
+    }
+    return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
 
   return (
-    <Sidebar
-      side="right"
-      className={collapsed ? 'w-14' : 'w-64'}
-      collapsible="icon"
-      variant="sidebar"
-    >
-      
-      <SidebarContent>
-        {/* Header */}
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png" 
-              alt="TFA Logo" 
-              className="w-8 h-8 flex-shrink-0"
-            />
-            {!collapsed && (
-              <div>
-                <h2 className="font-bold text-tfa-blue text-sm">{profile.academies?.name || t('academy.name')}</h2>
-                <p className="text-xs text-muted-foreground">{t('academyInfo.managementSystem')}</p>
-              </div>
-            )}
-          </div>
+    <div className="h-full bg-white border-r border-gray-200 w-64 fixed left-0 top-0 z-40 overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center">
+          <GraduationCap className="h-8 w-8 text-blue-600" />
+          <span className="mr-3 text-xl font-bold text-gray-900">
+            {academy?.name || 'أكاديمية'}
+          </span>
         </div>
+      </div>
 
-        {/* User Info */}
-        {!collapsed && (
-          <div className="p-4 border-b bg-muted/50">
-            <div className="text-sm">
-              <p className="font-medium text-tfa-blue">{profile.full_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {t(`userRoles.${profile.role}`)}
-              </p>
+      {/* Navigation */}
+      <nav className="mt-6 px-3">
+        <div className="space-y-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.id}
+                to={item.href}
+                className={cn(
+                  'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                  isActive(item.href)
+                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <Icon
+                  className={cn(
+                    'ml-3 h-5 w-5 flex-shrink-0',
+                    isActive(item.href)
+                      ? 'text-blue-500'
+                      : 'text-gray-400 group-hover:text-gray-500'
+                  )}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* User Info */}
+      <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <span className="text-sm font-medium text-blue-700">
+                {profile?.full_name?.charAt(0) || 'A'}
+              </span>
             </div>
           </div>
-        )}
-
-        {/* Navigation Menu */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('sidebar.mainMenu')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      {!collapsed && <span>{t(item.titleKey)}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+          <div className="mr-3 min-w-0 flex-1">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {profile?.full_name || 'المستخدم'}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {profile?.role === 'director' ? 'مدير الأكاديمية' : 
+               profile?.role === 'admin' ? 'مشرف' : 
+               profile?.role || 'مستخدم'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
