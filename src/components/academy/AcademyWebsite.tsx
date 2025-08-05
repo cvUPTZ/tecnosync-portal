@@ -17,7 +17,7 @@ const AcademyWebsite = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from('academies')
-          .select('*')
+          .select('id, name, contact_phone, contact_email')
           .eq('subdomain', subdomain)
           .single();
 
