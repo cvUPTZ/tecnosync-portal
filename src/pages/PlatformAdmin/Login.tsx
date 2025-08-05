@@ -110,7 +110,7 @@ const PlatformAdminLogin = () => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="superadmin@example.com"
+                          placeholder="superadmin@creator.com"
                           {...field}
                           className="bg-gray-700 border-gray-600 text-white"
                         />
