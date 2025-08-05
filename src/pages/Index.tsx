@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const Index = () => {
   const navigate = useNavigate();

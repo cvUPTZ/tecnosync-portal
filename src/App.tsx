@@ -19,48 +19,50 @@ const AcademyWebsite = React.lazy(() => import("./components/public/AcademyWebsi
 const AcademyRegistration = React.lazy(() => import("./components/academy/AcademyRegistration"));
 
 // Platform Admin Routes
-const PlatformAdminLogin = React.lazy(() => import("./components/PlatformAdmin/Login"));
-const PlatformAdminDashboard = React.lazy(() => import("./components/PlatformAdmin/Dashboard"));
-const AcademyManagement = React.lazy(() => import("./components/PlatformAdmin/AcademyManagement"));
-const PlatformUserManagement = React.lazy(() => import("./components/PlatformAdmin/UserManagement"));
-const PlatformSettings = React.lazy(() => import("./components/PlatformAdmin/Settings"));
-const PlatformAnalytics = React.lazy(() => import("./components/PlatformAdmin/Analytics"));
+const PlatformAdminLogin = React.lazy(() => import("./pages/PlatformAdmin/Login"));
+const PlatformAdminDashboard = React.lazy(() => import("./pages/PlatformAdmin/Dashboard"));
+const AcademyManagement = React.lazy(() => import("./pages/PlatformAdmin/AcademyManagement"));
+const PlatformUserManagement = React.lazy(() => import("./pages/UserManagement"));
+const PlatformSettings = React.lazy(() => import("./pages/PlatformAdmin/Settings"));
+const PlatformAnalytics = React.lazy(() => import("./pages/PlatformAdmin/Analytics"));
+const CreateAcademyForm = React.lazy(() => import("./pages/PlatformAdmin/CreateAcademy"));
+const EditAcademyForm = React.lazy(() => import("./components/PlatformAdmin/EditAcademyForm"));
 
 // Academy Admin Routes
 const AdminLayout = React.lazy(() => import("./components/AdminLayout"));
-const Dashboard = React.lazy(() => import("./components/academy/Dashboard"));
-const RegistrationManagement = React.lazy(() => import("./components/academy/RegistrationManagement"));
-const RegistrationDetails = React.lazy(() => import("./components/academy/RegistrationDetails"));
-const StudentManagement = React.lazy(() => import("./components/academy/StudentManagement"));
-const StudentProfile = React.lazy(() => import("./components/academy/StudentProfile"));
-const EditStudent = React.lazy(() => import("./components/academy/EditStudent"));
-const UserManagement = React.lazy(() => import("./components/academy/UserManagement"));
-const UserProfile = React.lazy(() => import("./components/academy/UserProfile"));
-const Attendance = React.lazy(() => import("./components/academy/Attendance"));
-const CoachManagement = React.lazy(() => import("./components/academy/CoachManagement"));
-const CoachProfile = React.lazy(() => import("./components/academy/CoachProfile"));
-const FinanceManagement = React.lazy(() => import("./components/academy/FinanceManagement"));
-const InvoiceDetails = React.lazy(() => import("./components/academy/InvoiceDetails"));
-const PaymentDetails = React.lazy(() => import("./components/academy/PaymentDetails"));
-const FinancialReports = React.lazy(() => import("./components/academy/FinancialReports"));
-const DocumentManagement = React.lazy(() => import("./components/academy/DocumentManagement"));
-const DocumentViewer = React.lazy(() => import("./components/academy/DocumentViewer"));
-const ScheduleManagement = React.lazy(() => import("./components/academy/ScheduleManagement"));
-const MessageCenter = React.lazy(() => import("./components/academy/MessageCenter"));
-const GalleryManagement = React.lazy(() => import("./components/academy/GalleryManagement"));
-const AcademySettings = React.lazy(() => import("./components/academy/AcademySettings"));
-const AcademySetupWizard = React.lazy(() => import("./components/academy/AcademySetupWizard"));
+const Dashboard = React.lazy(() => import("./pages/AdminDashboard"));
+const RegistrationManagement = React.lazy(() => import("./pages/RegistrationManagement"));
+const RegistrationDetails = React.lazy(() => import("./pages/academy/RegistrationDetails"));
+const StudentManagement = React.lazy(() => import("./pages/StudentManagement"));
+const StudentProfile = React.lazy(() => import("./pages/academy/StudentProfile"));
+const EditStudent = React.lazy(() => import("./pages/academy/EditStudent"));
+const UserManagement = React.lazy(() => import("./pages/UserManagement"));
+const UserProfile = React.lazy(() => import("./pages/academy/UserProfile"));
+const Attendance = React.lazy(() => import("./pages/Attendance"));
+const CoachManagement = React.lazy(() => import("./pages/CoachManagement"));
+const CoachProfile = React.lazy(() => import("./pages/academy/CoachProfile"));
+const FinanceManagement = React.lazy(() => import("./pages/FinanceManagement"));
+const InvoiceDetails = React.lazy(() => import("./pages/academy/InvoiceDetails"));
+const PaymentDetails = React.lazy(() => import("./pages/academy/PaymentDetails"));
+const FinancialReports = React.lazy(() => import("./pages/FinancialReports"));
+const DocumentManagement = React.lazy(() => import("./pages/DocumentManagement"));
+const DocumentViewer = React.lazy(() => import("./pages/academy/DocumentViewer"));
+const ScheduleManagement = React.lazy(() => import("./pages/academy/ScheduleManagement"));
+const MessageCenter = React.lazy(() => import("./pages/academy/MessageCenter"));
+const GalleryManagement = React.lazy(() => import("./pages/academy/GalleryManagement"));
+const AcademySettings = React.lazy(() => import("./pages/academy/AcademySettings"));
+const AcademySetupWizard = React.lazy(() => import("./pages/academy/AcademySetupWizard"));
 
 // Website Management Routes
-const WebsiteContentManagement = React.lazy(() => import("./components/academy/WebsiteContentManagement"));
+const WebsiteContentManagement = React.lazy(() => import("./pages/WebsiteContentManagement"));
 const ThemeCustomization = React.lazy(() => import("./components/academy/ThemeCustomization"));
 const WebsitePreview = React.lazy(() => import("./components/academy/WebsitePreview"));
 
 // Public Content Routes
-const PrivacyPolicy = React.lazy(() => import("./components/public/PrivacyPolicy"));
-const TermsOfService = React.lazy(() => import("./components/public/TermsOfService"));
-const HelpCenter = React.lazy(() => import("./components/public/HelpCenter"));
-const SystemStatus = React.lazy(() => import("./components/public/SystemStatus"));
+const PrivacyPolicy = React.lazy(() => import("./pages/legal/PrivacyPolicy"));
+const TermsOfService = React.lazy(() => import("./pages/legal/TermsOfService"));
+const HelpCenter = React.lazy(() => import("./pages/legal/HelpCenter"));
+const SystemStatus = React.lazy(() => import("./pages/legal/SystemStatus"));
 
 const queryClient = new QueryClient();
 

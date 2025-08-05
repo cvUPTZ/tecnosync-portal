@@ -4,15 +4,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HeroSection } from './public/HeroSection';
-import { AboutSection } from './public/AboutSection';
-import { FeaturesSection } from './public/FeaturesSection';
-import { TeamSection } from './public/TeamSection';
-import { ProgramsSection } from './public/ProgramsSection';
-import { GallerySection } from './public/GallerySection';
-import { ContactSection } from './public/ContactSection';
-import { PublicHeader } from './public/PublicHeader';
-import { PublicFooter } from './public/PublicFooter';
+import HeroSection from './HeroSection';
+import AboutSection from './AboutSection';
+import FeaturesSection from './FeaturesSection';
+import TeamSection from './TeamSection';
+import ProgramsSection from './ProgramsSection';
+import GallerySection from './GallerySection';
+import ContactSection from './ContactSection';
+import PublicHeader from './PlatformHeader';
+import PublicFooter from './PlatformFooter';
 
 const AcademyWebsite = ({ section }: { section?: string }) => {
   const { subdomain } = useParams();

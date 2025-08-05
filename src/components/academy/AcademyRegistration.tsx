@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { generateRegistrationPDF } from './RegistrationPDF';
+import { generateRegistrationPDF } from '../RegistrationPDF';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 const arabicNameRegex = /^[\u0600-\u06FF\s]+$/;
