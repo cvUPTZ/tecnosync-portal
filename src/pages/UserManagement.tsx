@@ -93,7 +93,7 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
+  const { isAdmin, profile } = useAuth();
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -169,6 +169,7 @@ const UserManagement = () => {
           data: {
             full_name: data.full_name,
             role: data.role,
+            academy_id: profile?.academy_id,
             admin_created: true, // Flag to indicate admin creation
           },
           emailRedirectTo: undefined, // Disable email redirect
