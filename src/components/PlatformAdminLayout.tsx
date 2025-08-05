@@ -1,78 +1,59 @@
-import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { LogOut, User, PlusCircle, List, LayoutDashboard } from 'lucide-react';
+// src/components/PlatformAdminLayout.tsx
+import React, { Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
+import PlatformAdminSidebar from './PlatformAdminSidebar';
+import PlatformAdminHeader from './PlatformAdminHeader';
 import { useAuth } from '@/contexts/AuthContext';
-import LanguageSwitcher from './ui/LanguageSwitcher';
-
-const PlatformAdminSidebar = () => {
-  return (
-    <div className="w-64 bg-gray-900 text-white flex flex-col">
-      <div className="p-4 border-b border-gray-700">
-        <h2 className="text-xl font-bold">Academy Creator</h2>
-        <p className="text-sm text-gray-400">Platform Control</p>
-      </div>
-      <nav className="flex-grow p-2">
-        <NavLink
-          to="/platform-admin"
-          end
-          className={({ isActive }) =>
-            `flex items-center px-4 py-2 rounded-md hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`
-          }
-        >
-          <LayoutDashboard className="mr-3 h-5 w-5" />
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/platform-admin/create-academy"
-          className={({ isActive }) =>
-            `flex items-center px-4 py-2 mt-2 rounded-md hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`
-          }
-        >
-          <PlusCircle className="mr-3 h-5 w-5" />
-          Create Academy
-        </NavLink>
-        <NavLink
-          to="/platform-admin/academies"
-          className={({ isActive }) =>
-            `flex items-center px-4 py-2 mt-2 rounded-md hover:bg-gray-700 ${isActive ? 'bg-gray-700' : ''}`
-          }
-        >
-          <List className="mr-3 h-5 w-5" />
-          Manage Academies
-        </NavLink>
-      </nav>
-    </div>
-  );
-};
 
 const PlatformAdminLayout = () => {
-  const { profile, signOut } = useAuth();
+  const { loading, isPlatformAdmin } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!isPlatformAdmin()) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            غير مصرح لك بالوصول
+          </h2>
+          <p className="text-gray-600">
+            يرجى تسجيل الدخول كمشرف عام للمنصة
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex w-full">
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
       <PlatformAdminSidebar />
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 border-b bg-white flex items-center justify-end px-6">
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher />
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{profile?.full_name}</span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={signOut}
-              className="flex items-center gap-2"
+      
+      {/* Main Content Area */}
+      <div className="pl-64">
+        {/* Header */}
+        <PlatformAdminHeader />
+        
+        {/* Page Content */}
+        <main className="flex-1">
+          <div className="p-6">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              }
             >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </Button>
+              <Outlet />
+            </Suspense>
           </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
         </main>
       </div>
     </div>
