@@ -28,9 +28,20 @@ serve(async (req) => {
     const { academy_name, academy_subdomain, admin_full_name, admin_email, admin_password, modules_config } = await req.json()
     console.log('Received payload:', { academy_name, academy_subdomain, admin_full_name, admin_email });
 
+    // Check if user with this email already exists
+    const { data: existingUsers, error: userListError } = await supabaseAdmin.auth.admin.listUsers();
+    if (userListError) {
+      throw new Error(`Failed to list users: ${userListError.message}`);
+    }
+
+    const userExists = existingUsers.users.some(u => u.email === admin_email);
+    if (userExists) {
+      throw new Error(`User with email ${admin_email} already exists.`);
+    }
+
     // Create the auth user first
     console.log('Creating auth user...');
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: admin_email,
       password: admin_password,
       email_confirm: true,
@@ -44,7 +55,14 @@ serve(async (req) => {
       console.error('Auth user creation failed:', authError);
       throw authError
     }
-    console.log('Auth user created successfully:', authUser.user.id);
+
+    if (!authData || !authData.user) {
+      console.error('Auth user creation response is invalid:', authData);
+      throw new Error('Failed to create user: Invalid response from authentication service.');
+    }
+
+    const authUser = authData.user;
+    console.log('Auth user created successfully:', authUser.id);
 
     // Now call the database function with the real user_id
     console.log('Calling database function create_new_academy_with_user...');
@@ -53,9 +71,9 @@ serve(async (req) => {
       academy_subdomain,
       admin_full_name,
       admin_email,
-      admin_password,
+      admin_password, // Note: consider if you need to pass this to the DB function
       modules_config: modules_config || {},
-      user_id: authUser.user.id
+      user_id: authUser.id
     })
 
     if (dbError) {
