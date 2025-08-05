@@ -116,7 +116,7 @@ const AdminDashboard = () => {
             {getGreeting()}، {profile?.full_name}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {getRoleTitle(profile?.role || '')} - أكاديمية تكنو لكرة القدم
+            {getRoleTitle(profile?.role || '')} - {profile?.academies?.name || 'الأكاديمية'}
           </p>
         </div>
         <div className="text-left">

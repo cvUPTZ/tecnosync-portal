@@ -54,7 +54,7 @@ const AdminLayout = () => {
             <div className="flex items-center gap-2 md:gap-4">
               <SidebarTrigger />
               <h1 className="text-sm md:text-lg font-semibold text-tfa-blue truncate">
-                أكاديمية تكنو - نظام الإدارة
+                {profile?.academies?.name || 'الأكاديمية'} - نظام الإدارة
               </h1>
             </div>
             

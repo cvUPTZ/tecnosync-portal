@@ -348,7 +348,7 @@ const CoachManagement = () => {
         <div>
           <h1 className="text-3xl font-bold text-tfa-blue">إدارة المدربين</h1>
           <p className="text-muted-foreground mt-1">
-            إدارة فريق التدريب في أكاديمية تكنو
+            إدارة فريق التدريب في {profile?.academies?.name || 'الأكاديمية'}
           </p>
         </div>
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

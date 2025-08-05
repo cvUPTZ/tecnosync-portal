@@ -94,7 +94,7 @@ const AdminSidebar = () => {
             />
             {!collapsed && (
               <div>
-                <h2 className="font-bold text-tfa-blue text-sm">أكاديمية تكنو</h2>
+                <h2 className="font-bold text-tfa-blue text-sm">{profile.academies?.name || t('academy.name')}</h2>
                 <p className="text-xs text-muted-foreground">{t('academyInfo.managementSystem')}</p>
               </div>
             )}

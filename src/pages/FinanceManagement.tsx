@@ -914,11 +914,11 @@ const FinanceManagement = () => {
             </DialogTitle>
           </DialogHeader>
           {selectedPayment && (
-            <div className="space-y-4 py-4">
-              <div className="text-center border-b pb-4">
-                <h3 className="font-bold text-lg">أكاديمية تكنو لكرة القدم</h3>
-                <p className="text-sm text-muted-foreground">إيصال دفع</p>
-              </div>
+              <div className="space-y-4 py-4">
+                <div className="text-center border-b pb-4">
+                  <h3 className="font-bold text-lg">{profile?.academies?.name || 'الأكاديمية'}</h3>
+                  <p className="text-sm text-muted-foreground">إيصال دفع</p>
+                </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">الطالب:</span>
