@@ -24,6 +24,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard = () => {
+  // isAdmin is likely a boolean, not a function
   const { profile, isAdmin } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     totalRegistrations: 0,
@@ -56,7 +57,8 @@ const AdminDashboard = () => {
 
         // Fetch active coaches count if admin, filtered by academy
         let activeCoaches = 0;
-        if (isAdmin()) {
+        // Use isAdmin directly as a boolean, not isAdmin()
+        if (isAdmin) {
           const { count } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
@@ -81,7 +83,7 @@ const AdminDashboard = () => {
     };
 
     fetchStats();
-  }, [isAdmin, profile?.academy_id]);
+  }, [isAdmin, profile?.academy_id]); // Keep isAdmin in dependency array
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -153,7 +155,6 @@ const AdminDashboard = () => {
             </p>
           </CardContent>
         </Card>
-
         <Card className="border-tfa-gold/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">طلبات معلقة</CardTitle>
@@ -166,8 +167,8 @@ const AdminDashboard = () => {
             </p>
           </CardContent>
         </Card>
-
-        {isAdmin() && (
+        {/* Use isAdmin directly as a boolean, not isAdmin() */}
+        {isAdmin && (
           <Card className="border-tfa-green/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">المدربين النشطين</CardTitle>
@@ -181,7 +182,6 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         )}
-
         <Card className="border-tfa-red/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">جلسات اليوم</CardTitle>
@@ -215,15 +215,14 @@ const AdminDashboard = () => {
                 إدارة الطلاب
               </Button>
             </Link>
-            
             <Link to="/admin/registrations">
               <Button variant="outline" className="w-full justify-start">
                 <CheckCircle className="ml-2 h-4 w-4" />
                 مراجعة طلبات التسجيل
               </Button>
             </Link>
-            
-            {isAdmin() && (
+            {/* Use isAdmin directly as a boolean, not isAdmin() */}
+            {isAdmin && (
               <Link to="/admin/finance">
                 <Button variant="outline" className="w-full justify-start">
                   <DollarSign className="ml-2 h-4 w-4" />
@@ -233,7 +232,6 @@ const AdminDashboard = () => {
             )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -249,12 +247,10 @@ const AdminDashboard = () => {
               <span className="text-sm">معدل قبول الطلبات</span>
               <span className="text-lg font-bold text-tfa-green">85%</span>
             </div>
-            
             <div className="flex items-center justify-between">
               <span className="text-sm">متوسط الحضور</span>
               <span className="text-lg font-bold text-tfa-blue">92%</span>
             </div>
-            
             <div className="flex items-center justify-between">
               <span className="text-sm">عدد اللاعبين النشطين</span>
               <span className="text-lg font-bold text-tfa-gold">156</span>
@@ -283,7 +279,6 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground">منذ 5 دقائق</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <div className="w-2 h-2 bg-tfa-blue rounded-full"></div>
               <div className="flex-1">
@@ -291,7 +286,6 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground">منذ 30 دقيقة</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <div className="w-2 h-2 bg-tfa-gold rounded-full"></div>
               <div className="flex-1">
