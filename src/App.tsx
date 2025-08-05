@@ -73,9 +73,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
+          <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -165,7 +166,8 @@ const App = () => {
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+            </Routes>
+          </React.Suspense>
           <Toaster />
           <Sonner />
         </BrowserRouter>
