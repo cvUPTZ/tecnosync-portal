@@ -32,7 +32,7 @@ const AcademyWebsite = ({ section }: { section?: string }) => {
         // Fetch academy
         const { data: academyData, error: academyError } = await supabase
           .from('academies')
-          .select('*')
+          .select('id, name, contact_phone, contact_email')
           .eq('subdomain', subdomain)
           .single();
 
