@@ -1,3 +1,4 @@
+// StudentManagement.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,6 +85,7 @@ const StudentManagement = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const { toast } = useToast();
+  // isAdmin is likely a boolean, not a function
   const { profile, isAdmin } = useAuth();
 
   // Fetch students
@@ -95,9 +97,7 @@ const StudentManagement = () => {
         .from('students')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
-
       setStudents(data as any || []);
       setFilteredStudents(data as any || []);
     } catch (error) {
@@ -121,9 +121,7 @@ const StudentManagement = () => {
         .select('*')
         .eq('is_active', true)
         .order('min_age', { ascending: true });
-
       if (error) throw error;
-
       setGroups(data || []);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -138,7 +136,6 @@ const StudentManagement = () => {
   // Filter students
   useEffect(() => {
     let filtered = students;
-
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(student =>
@@ -148,17 +145,14 @@ const StudentManagement = () => {
         student.phone?.includes(searchTerm)
       );
     }
-
     // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(student => student.status === statusFilter);
     }
-
     // Filter by group
     if (groupFilter !== 'all') {
       filtered = filtered.filter(student => student.group_id === groupFilter);
     }
-
     setFilteredStudents(filtered);
   }, [students, searchTerm, statusFilter, groupFilter]);
 
@@ -168,11 +162,9 @@ const StudentManagement = () => {
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
     return age;
   };
 
@@ -258,7 +250,8 @@ const StudentManagement = () => {
             <RefreshCw className="w-4 h-4 ml-2" />
             تحديث
           </Button>
-          {(isAdmin() || profile?.role === 'coach') && (
+          {/* Use isAdmin directly as a boolean, not isAdmin() */}
+          {(isAdmin || profile?.role === 'coach') && (
             <Button onClick={() => setShowAddForm(true)}>
               <UserPlus className="w-4 h-4 ml-2" />
               إضافة طالب
@@ -272,7 +265,7 @@ const StudentManagement = () => {
           <TabsTrigger value="students">الطلاب</TabsTrigger>
           <TabsTrigger value="groups">المجموعات</TabsTrigger>
         </TabsList>
-
+        
         <TabsContent value="students" className="space-y-6">
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -287,7 +280,6 @@ const StudentManagement = () => {
                 </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center">
@@ -299,7 +291,6 @@ const StudentManagement = () => {
                 </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center">
@@ -311,7 +302,6 @@ const StudentManagement = () => {
                 </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center">
@@ -425,10 +415,12 @@ const StudentManagement = () => {
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            {(isAdmin() || profile?.role === 'coach') && (
+                            {/* Use isAdmin directly as a boolean, not isAdmin() */}
+                            {(isAdmin || profile?.role === 'coach') && (
                               <Button
                                 variant="outline"
                                 size="sm"
+                                // Add onClick handler or other props as needed
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
@@ -443,7 +435,7 @@ const StudentManagement = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
+        
         <TabsContent value="groups" className="space-y-6">
           {/* Groups Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
