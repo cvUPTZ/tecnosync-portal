@@ -38,42 +38,18 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      console.log('Attempting login with:', data.email);
-      
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (error) {
-        console.error('Login error:', error);
-        toast({
-          title: 'Login Failed',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Invalid email or password.'
-            : error.message,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      console.log('Login successful:', authData);
-      
+      await signIn(data.email, data.password);
       toast({
         title: 'Login Successful',
         description: 'Welcome to your dashboard.',
       });
-
-      // Force navigation after successful login
-      setTimeout(() => {
-        navigate('/admin');
-      }, 100);
-      
-    } catch (error) {
-      console.error('Login error:', error);
+      navigate('/admin');
+    } catch (error: any) {
       toast({
-        title: 'Login Error',
-        description: 'An unexpected error occurred.',
+        title: 'Login Failed',
+        description: error.message === 'Invalid login credentials'
+          ? 'Invalid email or password.'
+          : error.message,
         variant: 'destructive',
       });
     } finally {

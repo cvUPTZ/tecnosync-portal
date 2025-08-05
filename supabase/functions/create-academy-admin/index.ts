@@ -36,7 +36,6 @@ serve(async (req) => {
       email_confirm: true,
       user_metadata: {
         full_name: admin_full_name,
-        role: 'director',
         admin_created: true
       }
     })
