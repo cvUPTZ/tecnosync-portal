@@ -444,6 +444,7 @@ export type Database = {
       }
       registrations: {
         Row: {
+          academy_id: string
           additional_notes: string | null
           address: string
           application_date: string
@@ -472,6 +473,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          academy_id: string
           additional_notes?: string | null
           address: string
           application_date?: string
@@ -500,6 +502,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          academy_id?: string
           additional_notes?: string | null
           address?: string
           application_date?: string
@@ -527,7 +530,15 @@ export type Database = {
           status?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "registrations_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_enrollments: {
         Row: {

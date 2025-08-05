@@ -154,9 +154,21 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose }) =
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
     try {
+      // For now, get the first academy. Later this should be passed as a prop or from URL
+      const { data: academyData } = await supabase
+        .from('academies')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (!academyData) {
+        throw new Error('No academy found');
+      }
+
       const { error } = await supabase
         .from('registrations')
         .insert([{
+          academy_id: academyData.id,
           full_name: data.full_name,
           date_of_birth: data.date_of_birth,
           nationality: data.nationality,

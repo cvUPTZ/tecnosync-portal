@@ -45,12 +45,14 @@ const AdminDashboard = () => {
         // Fetch registrations count filtered by academy
         const { count: totalRegistrations } = await supabase
           .from('registrations')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('academy_id', profile.academy_id);
 
         const { count: pendingRegistrations } = await supabase
           .from('registrations')
           .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending');
+          .eq('status', 'pending')
+          .eq('academy_id', profile.academy_id);
 
         // Fetch active coaches count if admin, filtered by academy
         let activeCoaches = 0;
