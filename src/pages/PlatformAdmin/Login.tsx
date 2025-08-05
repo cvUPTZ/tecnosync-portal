@@ -34,28 +34,39 @@ const PlatformAdminLogin = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      if (error) {
+      if (signInError) {
         toast({
           title: 'Login Failed',
-          description: error.message,
+          description: signInError.message,
           variant: 'destructive',
         });
+        setIsLoading(false);
         return;
       }
 
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome, Platform Administrator.',
-      });
+      // After successful sign-in, get the user to check their role from the session
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Redirect to the platform admin dashboard
-      navigate('/platform-admin');
-
+      if (session && session.user.user_metadata?.role === 'platform_admin') {
+        toast({
+          title: 'Login Successful',
+          description: 'Welcome, Platform Administrator.',
+        });
+        navigate('/platform-admin');
+      } else {
+        // If not a platform admin, sign them out and show an error
+        await supabase.auth.signOut();
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to access this area.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Login Error',
