@@ -37,7 +37,12 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch registrations count
+        if (!profile?.academy_id) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch registrations count filtered by academy
         const { count: totalRegistrations } = await supabase
           .from('registrations')
           .select('*', { count: 'exact', head: true });
@@ -47,14 +52,15 @@ const AdminDashboard = () => {
           .select('*', { count: 'exact', head: true })
           .eq('status', 'pending');
 
-        // Fetch active coaches count if admin
+        // Fetch active coaches count if admin, filtered by academy
         let activeCoaches = 0;
         if (isAdmin()) {
           const { count } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
             .eq('role', 'coach')
-            .eq('is_active', true);
+            .eq('is_active', true)
+            .eq('academy_id', profile.academy_id);
           activeCoaches = count || 0;
         }
 
@@ -73,7 +79,7 @@ const AdminDashboard = () => {
     };
 
     fetchStats();
-  }, [isAdmin]);
+  }, [isAdmin, profile?.academy_id]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
