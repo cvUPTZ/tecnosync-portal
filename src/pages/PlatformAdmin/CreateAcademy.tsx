@@ -227,14 +227,12 @@ const CreateAcademyPage = () => {
 
       // Use the edge function to create academy with admin user
       const { data: result, error } = await supabase.functions.invoke('create-academy-admin', {
-        body: {
-          academy_name: values.academyName,
-          academy_subdomain: values.academySubdomain,
-          admin_full_name: values.adminFullName,
-          admin_email: values.adminEmail,
-          admin_password: values.adminPassword,
-          modules_config: modulesObject
-        }
+        academy_name: values.academyName,
+        academy_subdomain: values.academySubdomain,
+        admin_full_name: values.adminFullName,
+        admin_email: values.adminEmail,
+        admin_password: values.adminPassword,
+        modules_config: modulesObject
       });
 
       if (error) {
