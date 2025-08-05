@@ -28,20 +28,12 @@ const Index = () => {
     { id: 'documents', label: 'المستندات', enabled: true },
   ]);
 
-  // Public Academy Creation Schema
+  // Simplified Academy Creation Schema (removed async validation)
   const academyCreationSchema = z.object({
     academyName: z.string().min(2, "اسم الأكاديمية مطلوب"),
     subdomain: z.string()
       .min(3, "النطاق الفرعي يجب أن يكون 3 أحرف على الأقل")
-      .regex(/^[a-zA-Z0-9-]+$/, "يجب أن يحتوي النطاق الفرعي على أحرف وأرقام وواصلات فقط")
-      .refine(async (subdomain) => {
-        const { data, error } = await supabase
-          .from('academies')
-          .select('subdomain')
-          .eq('subdomain', subdomain)
-          .single();
-        return !data;
-      }, "هذا النطاق الفرعي غير متاح"),
+      .regex(/^[a-zA-Z0-9-]+$/, "يجب أن يحتوي النطاق الفرعي على أحرف وأرقام وواصلات فقط"),
     contactEmail: z.string().email("بريد إلكتروني غير صالح"),
     contactPhone: z.string().min(10, "رقم الهاتف مطلوب"),
     selectedTemplate: z.string().min(1, "يرجى اختيار قالب للموقع"),
@@ -63,13 +55,24 @@ const Index = () => {
   const checkSubdomainAvailability = async (subdomain: string) => {
     if (subdomain.length < 3) return false;
     
-    const { data, error } = await supabase
-      .from('academies')
-      .select('subdomain')
-      .eq('subdomain', subdomain)
-      .single();
-    
-    return !data;
+    try {
+      const { data, error } = await supabase
+        .from('academies')
+        .select('subdomain')
+        .eq('subdomain', subdomain)
+        .single();
+      
+      if (error && error.code === 'PGRST116') {
+        // No rows returned, subdomain is available
+        return true;
+      }
+      
+      // If data exists, subdomain is taken
+      return !data;
+    } catch (error) {
+      console.error('Error checking subdomain:', error);
+      return false;
+    }
   };
 
   const onSubdomainChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,8 +93,19 @@ const Index = () => {
     try {
       setIsCreatingAcademy(true);
       
-      // Create academy
-      const {  academy, error: academyError } = await supabase
+      // Check subdomain availability before creating
+      const isSubdomainAvailable = await checkSubdomainAvailability(data.subdomain);
+      if (!isSubdomainAvailable) {
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          description: "النطاق الفرعي غير متاح، يرجى اختيار نطاق آخر",
+        });
+        return;
+      }
+      
+      // Create academy - Fixed destructuring
+      const { data: academy, error: academyError } = await supabase
         .from('academies')
         .insert([{
           name: data.academyName,
@@ -103,13 +117,21 @@ const Index = () => {
             acc[moduleId] = true;
             return acc;
           }, {}),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          is_active: true
         }])
         .select()
         .single();
 
-      if (academyError) throw academyError;
+      if (academyError) {
+        console.error('Academy creation error:', academyError);
+        throw new Error(`فشل في إنشاء الأكاديمية: ${academyError.message}`);
+      }
+
+      if (!academy) {
+        throw new Error('فشل في إنشاء الأكاديمية - لم يتم إرجاع البيانات');
+      }
+
+      console.log('Academy created successfully:', academy);
 
       // Create director profile
       const { error: profileError } = await supabase
@@ -119,11 +141,14 @@ const Index = () => {
           email: data.contactEmail,
           role: 'director',
           academy_id: academy.id,
-          phone: data.contactPhone,
-          created_at: new Date().toISOString()
+          phone: data.contactPhone
         }]);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't throw here, academy is already created
+        console.warn('Academy created but failed to create director profile');
+      }
 
       // Create default website content
       const defaultContent = {
@@ -155,24 +180,29 @@ const Index = () => {
         .from('website_content')
         .insert([{
           academy_id: academy.id,
-          content: defaultContent,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          content: defaultContent
         }]);
 
-      if (contentError) console.error('Error creating default content:', contentError);
+      if (contentError) {
+        console.error('Error creating default content:', contentError);
+        // Don't throw here since this is not critical
+      }
 
       toast({
         title: "تم إنشاء الأكاديمية بنجاح",
         description: `تم إنشاء أكاديميتك ${data.academyName}. يمكنك الآن تسجيل الدخول للوحة التحكم.`,
       });
 
+      // Reset form
+      form.reset();
+      
       navigate('/login');
     } catch (error: any) {
+      console.error('Full error:', error);
       toast({
         variant: "destructive",
         title: "خطأ في إنشاء الأكاديمية",
-        description: error.message,
+        description: error.message || 'حدث خطأ غير متوقع',
       });
     } finally {
       setIsCreatingAcademy(false);
