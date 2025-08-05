@@ -1,3 +1,5 @@
+
+
 // src/App.tsx
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -78,7 +80,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
-            
+
             {/* Public Academy Websites */}
             <Route path="/site/:subdomain" element={<AcademyWebsite />} />
             <Route path="/site/:subdomain/register" element={<AcademyRegistration />} />
@@ -87,7 +89,7 @@ const App = () => {
             <Route path="/site/:subdomain/programs" element={<AcademyWebsite section="programs" />} />
             <Route path="/site/:subdomain/contact" element={<AcademyWebsite section="contact" />} />
             <Route path="/site/:subdomain/gallery" element={<AcademyWebsite section="gallery" />} />
-            
+
             {/* Platform Admin Routes */}
             <Route path="/platform-admin" element={<PlatformAdminRoute />}>
               <Route index element={<PlatformAdminDashboard />} />
@@ -99,7 +101,7 @@ const App = () => {
               <Route path="settings" element={<PlatformSettings />} />
               <Route path="analytics" element={<PlatformAnalytics />} />
             </Route>
-            
+
             {/* Academy Admin Routes */}
             <Route path="/admin" element={<AcademyAdminRoute />}>
               <Route index element={<Dashboard />} />
@@ -153,7 +155,7 @@ const App = () => {
               <Route path="settings" element={<AcademySettings />} />
               <Route path="setup-wizard" element={<AcademySetupWizard />} />
             </Route>
-            
+
             {/* Legal and Utility Routes */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
@@ -173,11 +175,13 @@ const App = () => {
 
 // Protected routes
 const PlatformAdminRoute = () => {
+  // isPlatformAdmin is likely a boolean, not a function
   const { isPlatformAdmin, loading } = useAuth();
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  return isPlatformAdmin() ? <PlatformAdminLayout /> : <Navigate to="/platform-admin/login" />;
+  // Use isPlatformAdmin directly as a boolean, not isPlatformAdmin()
+  return isPlatformAdmin ? <PlatformAdminLayout /> : <Navigate to="/platform-admin/login" />;
 };
 
 const AcademyAdminRoute = () => {
