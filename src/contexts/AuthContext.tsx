@@ -35,51 +35,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        setIsPlatformAdmin(currentUser.user_metadata?.role === 'platform_admin');
-
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .single();
-
-        if (error && error.code !== 'PGRST116') { // Ignore 'not found' errors
-          console.error('Error fetching profile:', error);
-        } else {
-          setProfile(profileData);
-        }
-      } else {
-        setIsPlatformAdmin(false);
-        setProfile(null);
-      }
-      setLoading(false);
-    };
-
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      try {
         setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
           setIsPlatformAdmin(currentUser.user_metadata?.role === 'platform_admin');
-
           const { data: profileData, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', currentUser.id)
             .single();
 
-          if (error && error.code !== 'PGRST116') { // Ignore 'not found' errors
-            console.error('Error fetching profile on auth change:', error);
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile:', error);
+            setProfile(null);
           } else {
             setProfile(profileData);
           }
@@ -87,7 +59,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setIsPlatformAdmin(false);
           setProfile(null);
         }
+      } catch (e) {
+        console.error("Error in initAuth:", e);
+        setUser(null);
+        setProfile(null);
+        setIsPlatformAdmin(false);
+      } finally {
         setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          setLoading(true);
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+
+          if (currentUser) {
+            setIsPlatformAdmin(currentUser.user_metadata?.role === 'platform_admin');
+            const { data: profileData, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', currentUser.id)
+              .single();
+
+            if (error && error.code !== 'PGRST116') {
+              console.error('Error fetching profile on auth change:', error);
+              setProfile(null);
+            } else {
+              setProfile(profileData);
+            }
+          } else {
+            setIsPlatformAdmin(false);
+            setProfile(null);
+          }
+        } catch (e) {
+            console.error("Error in onAuthStateChange handler:", e);
+            setUser(null);
+            setProfile(null);
+            setIsPlatformAdmin(false);
+        } finally {
+            setLoading(false);
+        }
       }
     );
 
