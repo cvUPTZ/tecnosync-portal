@@ -24,7 +24,7 @@ BEGIN
 
     -- Insert the academy first
     INSERT INTO public.academies (name, subdomain, modules, is_active)
-    VALUES (academy_name, academy_subdomain, modules_config, true)
+    VALUES (academy_name, academy_subdomain, modules_config::jsonb, true)
     RETURNING id INTO new_academy_id;
 
     -- Insert the profile for the admin user with the real user_id
