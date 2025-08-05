@@ -11,18 +11,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreatingAcademy, setIsCreatingAcademy] = useState(false);
   const [availableModules, setAvailableModules] = useState([
-    { id: 'student-management', label: 'Student Management', enabled: true },
-    { id: 'attendance', label: 'Attendance Tracking', enabled: true },
-    { id: 'finance', label: 'Finance Management', enabled: true },
-    { id: 'website', label: 'Website Content Management', enabled: true },
-    { id: 'schedule', label: 'Schedule & Events', enabled: false },
-    { id: 'messages', label: 'Messages', enabled: false },
+    { id: 'student-management', label: 'إدارة الطلاب', enabled: true },
+    { id: 'attendance', label: 'الحضور والانصراف', enabled: true },
+    { id: 'finance', label: 'الإدارة المالية', enabled: true },
+    { id: 'website', label: 'محتوى الموقع', enabled: true },
+    { id: 'schedule', label: 'الجداول والمواعيد', enabled: true },
+    { id: 'messages', label: 'الرسائل', enabled: true },
+    { id: 'gallery', label: 'المعرض', enabled: true },
+    { id: 'documents', label: 'المستندات', enabled: true },
   ]);
 
   // Public Academy Creation Schema
@@ -88,7 +91,7 @@ const Index = () => {
       setIsCreatingAcademy(true);
       
       // Create academy
-      const { data: academy, error: academyError } = await supabase
+      const {  academy, error: academyError } = await supabase
         .from('academies')
         .insert([{
           name: data.academyName,
@@ -122,6 +125,43 @@ const Index = () => {
 
       if (profileError) throw profileError;
 
+      // Create default website content
+      const defaultContent = {
+        hero: {
+          title: `مرحباً بأكاديمية ${data.academyName}`,
+          subtitle: 'التميز في التدريب الرياضي',
+          description: 'انضم إلينا للحصول على تدريب عالمي المستوى والتطوير',
+          background_image: '',
+          cta_text: 'ابدأ الآن',
+          cta_link: '#contact'
+        },
+        about: {
+          introduction: `مرحباً بأكاديمية ${data.academyName}...`,
+          mission: 'مهمتنا هي...',
+          vision: 'رؤيتنا هي...',
+          values: ['التميز', 'النزاهة', 'العمل الجماعي']
+        },
+        features: {
+          title: 'لماذا تختارنا',
+          features: [
+            { title: 'تدريب عالمي المستوى', description: 'مدربون معتمدون وخبرات دولية' },
+            { title: 'برامج متكاملة', description: 'من البراعم إلى الناشئين' },
+            { title: 'مرافق متطورة', description: 'ملعب عشبي طبيعي ومعدات حديثة' }
+          ]
+        }
+      };
+
+      const { error: contentError } = await supabase
+        .from('website_content')
+        .insert([{
+          academy_id: academy.id,
+          content: defaultContent,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]);
+
+      if (contentError) console.error('Error creating default content:', contentError);
+
       toast({
         title: "تم إنشاء الأكاديمية بنجاح",
         description: `تم إنشاء أكاديميتك ${data.academyName}. يمكنك الآن تسجيل الدخول للوحة التحكم.`,
@@ -150,11 +190,12 @@ const Index = () => {
               </svg>
               <span className="ml-2 text-xl font-bold text-gray-900">TecnoFootball</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#features" className="text-gray-700 hover:text-blue-600">الميزات</a>
-              <a href="#pricing" className="text-gray-700 hover:text-blue-600">الأسعار</a>
-              <a href="#contact" className="text-gray-700 hover:text-blue-600">اتصل بنا</a>
-            </nav>
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher />
+              <Button variant="outline" asChild>
+                <Link to="/login">تسجيل الدخول</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -440,7 +481,6 @@ const Index = () => {
                   </ul>
                   <Button 
                     className={plan.popular ? "w-full bg-blue-600 hover:bg-blue-700" : "w-full"}
-                    onClick={() => form.setValue('selectedTemplate', 'default')}
                   >
                     البدء
                   </Button>
