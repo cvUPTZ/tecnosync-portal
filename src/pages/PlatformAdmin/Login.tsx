@@ -46,19 +46,25 @@ const PlatformAdminLogin = () => {
           variant: 'destructive',
         });
         setIsLoading(false);
+        return;
       }
 
-      // After successful sign-in, get the user to check their role from the session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check if user exists in platform_admins table
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data: adminData, error: adminError } = await supabase
+        .from('platform_admins')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-      if (session && session.user.user_metadata?.role === 'platform_admin') {
+      if (adminData) {
         toast({
           title: 'Login Successful',
           description: 'Welcome, Platform Administrator.',
         });
         navigate('/platform-admin');
       } else {
-        // If not a platform admin, sign them out and show an error
         await supabase.auth.signOut();
         toast({
           title: 'Access Denied',
