@@ -46,7 +46,6 @@ const PlatformAdminLogin = () => {
           variant: 'destructive',
         });
         setIsLoading(false);
-        return;
       }
 
       // After successful sign-in, get the user to check their role from the session
