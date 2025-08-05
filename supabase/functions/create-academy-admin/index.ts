@@ -25,8 +25,8 @@ serve(async (req) => {
       }
     )
 
-    const { academy_name, academy_subdomain, admin_full_name, admin_email, admin_password, modules_config } = await req.json()
-    console.log('Received payload:', { academy_name, academy_subdomain, admin_full_name, admin_email });
+    const { academy_name, academy_subdomain, admin_full_name, admin_email, admin_password, modules_config } = (await req.json()).body
+    console.log('Received payload:', { academy_name, academy_subdomain, admin_full_name, admin_email, modules_config });
 
     // Create the auth user first
     console.log('Creating auth user...');
