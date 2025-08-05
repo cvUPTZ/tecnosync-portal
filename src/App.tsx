@@ -91,9 +91,10 @@ const App = () => {
             <Route path="/site/:subdomain/gallery" element={<AcademyWebsite section="gallery" />} />
 
             {/* Platform Admin Routes */}
+            <Route path="/platform-admin/login" element={<PlatformAdminLogin />} />
             <Route path="/platform-admin" element={<PlatformAdminRoute />}>
-              <Route index element={<PlatformAdminDashboard />} />
-              <Route path="login" element={<PlatformAdminLogin />} />
+              <Route index element={<Navigate to="/platform-admin/dashboard" replace />} />
+              <Route path="dashboard" element={<PlatformAdminDashboard />} />
               <Route path="academies" element={<AcademyManagement />} />
               <Route path="academies/create" element={<CreateAcademyForm />} />
               <Route path="academies/:id/edit" element={<EditAcademyForm />} />
