@@ -30,6 +30,7 @@ serve(async (req) => {
 
     // Check if user with this email already exists
     const { data: existingUsers, error: userListError } = await supabaseAdmin.auth.admin.listUsers();
+    console.log('existingUsers:', JSON.stringify(existingUsers, null, 2));
     if (userListError) {
       throw new Error(`Failed to list users: ${userListError.message}`);
     }
@@ -55,6 +56,8 @@ serve(async (req) => {
       console.error('Auth user creation failed:', authError);
       throw authError
     }
+
+    console.log('authData:', JSON.stringify(authData, null, 2));
 
     if (!authData || !authData.user) {
       console.error('Auth user creation response is invalid:', authData);
