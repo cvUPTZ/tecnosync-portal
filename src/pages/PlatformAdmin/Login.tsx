@@ -1,4 +1,3 @@
-// Enhanced Debug Version - Platform Admin Login
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +38,16 @@ const PlatformAdminLogin = () => {
     const logMessage = `[${timestamp}] ${message}`;
     console.log(logMessage);
     setDebugInfo(prev => [...prev, logMessage]);
+  };
+
+  // Helper function to create timeout promise
+  const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+      )
+    ]);
   };
 
   // Test connection on component mount
@@ -94,61 +103,76 @@ const PlatformAdminLogin = () => {
         throw new Error(`Network connectivity failed: ${fetchError.message}`);
       }
 
-      // Test 3: Supabase client initialization
+      // Test 3: Supabase client initialization (with timeout)
       addDebugLog('🧪 Test 3: Testing Supabase client');
       
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        addDebugLog(`⚠️ Session check warning: ${sessionError.message}`);
-      } else {
-        addDebugLog(`✅ Session check: ${session ? 'Active session found' : 'No active session'}`);
+      try {
+        const sessionPromise = supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await withTimeout(sessionPromise, 15000);
+        
+        if (sessionError) {
+          addDebugLog(`⚠️ Session check warning: ${sessionError.message}`);
+        } else {
+          addDebugLog(`✅ Session check: ${session ? 'Active session found' : 'No active session'}`);
+        }
+      } catch (sessionTimeout) {
+        addDebugLog(`⚠️ Session check timed out - continuing with other tests`);
       }
 
-      // Test 4: Database connectivity
+      // Test 4: Database connectivity (with timeout)
       addDebugLog('🧪 Test 4: Testing database connectivity');
       
       try {
-        const { data, error, count } = await supabase
+        const dbPromise = supabase
           .from('platform_admins')
           .select('*', { count: 'exact', head: true });
+          
+        const { data, error, count } = await withTimeout(dbPromise, 10000);
 
         if (error) {
           addDebugLog(`❌ Database query failed: ${error.message}`);
           addDebugLog(`❌ Error code: ${error.code}`);
-          addDebugLog(`❌ Error hint: ${error.hint}`);
-          addDebugLog(`❌ Full error: ${JSON.stringify(error)}`);
+          addDebugLog(`❌ Error hint: ${error.hint || 'No hint available'}`);
           
-          // Don't throw error yet, let's try other tests
           if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
-            addDebugLog('⚠️ Table "platform_admins" might not exist - this is the main issue');
+            addDebugLog('⚠️ Table "platform_admins" does not exist - use "Create Table" button');
           }
         } else {
-          addDebugLog(`✅ Database query successful. Records found: ${count}`);
+          addDebugLog(`✅ Database query successful. Records found: ${count || 0}`);
         }
       } catch (dbError: any) {
-        addDebugLog(`❌ Database test exception: ${dbError.message}`);
+        if (dbError.message.includes('timed out')) {
+          addDebugLog(`❌ Database test timed out: ${dbError.message}`);
+        } else {
+          addDebugLog(`❌ Database test exception: ${dbError.message}`);
+        }
       }
 
-      // Test 5: Auth service
+      // Test 5: Auth service (with timeout)
       addDebugLog('🧪 Test 5: Testing auth service');
       
       try {
-        // This might fail if we don't have admin privileges, but that's expected
-        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+        const authPromise = supabase.auth.admin.listUsers();
+        const { data: { users }, error: usersError } = await withTimeout(authPromise, 5000);
+        
         if (usersError) {
           addDebugLog(`⚠️ Admin user list (expected to fail): ${usersError.message}`);
         } else {
           addDebugLog(`✅ Auth service accessible. Users found: ${users?.length || 0}`);
         }
       } catch (adminError: any) {
-        addDebugLog(`⚠️ Admin functions not accessible (expected): ${adminError.message}`);
+        if (adminError.message.includes('timed out')) {
+          addDebugLog(`⚠️ Auth admin functions timed out (this is normal)`);
+        } else {
+          addDebugLog(`⚠️ Admin functions not accessible (expected): ${adminError.message}`);
+        }
       }
 
       setConnectionStatus({
         status: 'success',
-        message: 'All connectivity tests passed'
+        message: 'Connection tests completed'
       });
-      addDebugLog('🎉 All connection tests completed successfully');
+      addDebugLog('🎉 All connection tests completed');
 
     } catch (error: any) {
       addDebugLog(`💥 Connection test failed: ${error.message}`);
@@ -163,17 +187,9 @@ const PlatformAdminLogin = () => {
     addDebugLog('🔧 Creating platform_admins table...');
     
     try {
-      // First, let's check what tables exist
-      const { data: tables, error: tablesError } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public');
-        
-      addDebugLog(`📋 Existing tables: ${JSON.stringify(tables?.map(t => t.table_name))}`);
-      
-      // Create the table using SQL
-      const { data, error } = await supabase.rpc('exec_sql', {
-        sql: `
+      // Direct SQL execution via edge function or RPC
+      const { data, error } = await supabase.rpc('sql', {
+        query: `
           CREATE TABLE IF NOT EXISTS platform_admins (
             id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
             email TEXT UNIQUE NOT NULL,
@@ -181,15 +197,12 @@ const PlatformAdminLogin = () => {
             updated_at TIMESTAMPTZ DEFAULT NOW()
           );
           
-          -- Enable RLS
           ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
           
-          -- Create policy for authenticated users to read their own record
-          CREATE POLICY "Users can read own platform_admin record" ON platform_admins
+          CREATE POLICY IF NOT EXISTS "Users can read own platform_admin record" ON platform_admins
             FOR SELECT USING (auth.uid() = id);
             
-          -- Create policy for platform admins to read all records
-          CREATE POLICY "Platform admins can read all records" ON platform_admins
+          CREATE POLICY IF NOT EXISTS "Platform admins can read all records" ON platform_admins
             FOR ALL USING (EXISTS (
               SELECT 1 FROM platform_admins WHERE id = auth.uid()
             ));
@@ -198,32 +211,29 @@ const PlatformAdminLogin = () => {
       
       if (error) {
         addDebugLog(`❌ Failed to create table via RPC: ${error.message}`);
-        
-        // Fallback: Try direct SQL execution if RPC doesn't work
-        addDebugLog('🔄 Trying alternative table creation method...');
-        
-        // You'll need to create this table manually in Supabase SQL Editor
-        addDebugLog('📝 Please run this SQL in your Supabase SQL Editor:');
+        addDebugLog('📝 Please run this SQL manually in your Supabase SQL Editor:');
         addDebugLog(`
-          CREATE TABLE IF NOT EXISTS platform_admins (
-            id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-            email TEXT UNIQUE NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            updated_at TIMESTAMPTZ DEFAULT NOW()
-          );
-          
-          ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
-          
-          CREATE POLICY "Users can read own platform_admin record" ON platform_admins
-            FOR SELECT USING (auth.uid() = id);
-            
-          CREATE POLICY "Platform admins can read all records" ON platform_admins
-            FOR ALL USING (EXISTS (
-              SELECT 1 FROM platform_admins WHERE id = auth.uid()
-            ));
+CREATE TABLE IF NOT EXISTS platform_admins (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Users can read own platform_admin record" ON platform_admins
+  FOR SELECT USING (auth.uid() = id);
+  
+CREATE POLICY IF NOT EXISTS "Platform admins can read all records" ON platform_admins
+  FOR ALL USING (EXISTS (
+    SELECT 1 FROM platform_admins WHERE id = auth.uid()
+  ));
         `);
       } else {
         addDebugLog('✅ Table created successfully');
+        // Re-test connection to verify table creation
+        setTimeout(() => testFullConnection(), 1000);
       }
       
     } catch (error: any) {
@@ -235,19 +245,25 @@ const PlatformAdminLogin = () => {
     addDebugLog('👤 Adding test admin user...');
     
     try {
-      // First create an auth user (this requires admin privileges)
       const testEmail = 'admin@techconsync.com';
       const testPassword = 'admin123456';
       
       addDebugLog(`🔑 Creating auth user: ${testEmail}`);
       
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const signUpPromise = supabase.auth.signUp({
         email: testEmail,
         password: testPassword,
       });
       
+      const { data: signUpData, error: signUpError } = await withTimeout(signUpPromise, 15000);
+      
       if (signUpError) {
-        addDebugLog(`❌ Failed to create auth user: ${signUpError.message}`);
+        if (signUpError.message.includes('already registered')) {
+          addDebugLog(`⚠️ User already exists: ${testEmail}`);
+          addDebugLog(`📧 Try logging in with: ${testEmail} / ${testPassword}`);
+        } else {
+          addDebugLog(`❌ Failed to create auth user: ${signUpError.message}`);
+        }
         return;
       }
       
@@ -259,12 +275,14 @@ const PlatformAdminLogin = () => {
       addDebugLog(`✅ Auth user created with ID: ${signUpData.user.id}`);
       
       // Add to platform_admins table
-      const { data: adminData, error: adminError } = await supabase
+      const insertPromise = supabase
         .from('platform_admins')
         .insert({
           id: signUpData.user.id,
           email: testEmail
         });
+        
+      const { error: adminError } = await withTimeout(insertPromise, 10000);
         
       if (adminError) {
         addDebugLog(`❌ Failed to add to platform_admins: ${adminError.message}`);
@@ -274,14 +292,17 @@ const PlatformAdminLogin = () => {
       }
       
     } catch (error: any) {
-      addDebugLog(`❌ Add test admin error: ${error.message}`);
+      if (error.message.includes('timed out')) {
+        addDebugLog(`❌ Add test admin timed out: ${error.message}`);
+      } else {
+        addDebugLog(`❌ Add test admin error: ${error.message}`);
+      }
     }
   };
 
   const checkEnvironmentVariables = () => {
     addDebugLog('🧪 Environment Variables Check:');
     
-    // These would be your actual env var names
     const envVars = [
       'VITE_SUPABASE_URL',
       'VITE_SUPABASE_ANON_KEY',
@@ -298,7 +319,6 @@ const PlatformAdminLogin = () => {
       }
     });
 
-    // Also log what's actually being used by the client
     addDebugLog(`🔧 Client using URL: ${supabase.supabaseUrl}`);
     addDebugLog(`🔧 Client using key: ${supabase.supabaseKey?.substring(0, 20)}...`);
   };
@@ -312,26 +332,19 @@ const PlatformAdminLogin = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    if (connectionStatus.status === 'error') {
-      toast({
-        title: 'Connection Error',
-        description: 'Please fix connection issues before attempting login.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     addDebugLog('🚀 Starting enhanced login process');
     setIsLoading(true);
     
     try {
       addDebugLog(`👤 Attempting login for: ${data.email}`);
 
-      // Enhanced authentication with better error handling
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Enhanced authentication with timeout
+      const authPromise = supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
+      
+      const { data: authData, error: signInError } = await withTimeout(authPromise, 15000);
 
       addDebugLog(`🔐 Auth result: ${JSON.stringify({
         userExists: !!authData.user,
@@ -342,7 +355,6 @@ const PlatformAdminLogin = () => {
       if (signInError) {
         addDebugLog(`❌ Authentication failed: ${signInError.message}`);
         
-        // Provide more specific error messages
         let userMessage = signInError.message;
         if (signInError.message.includes('Invalid login credentials')) {
           userMessage = 'Invalid email or password. Please check your credentials.';
@@ -371,38 +383,22 @@ const PlatformAdminLogin = () => {
       const userId = authData.user.id;
       addDebugLog(`👑 Checking admin privileges for user: ${userId}`);
 
-      // Enhanced admin check with multiple strategies
-      const adminChecks = await Promise.allSettled([
-        // Strategy 1: Check by id
-        supabase.from('platform_admins').select('*').eq('id', userId).single(),
-        // Strategy 2: Check by user_id
-        supabase.from('platform_admins').select('*').eq('user_id', userId).single(),
-        // Strategy 3: Check by email
-        supabase.from('platform_admins').select('*').eq('email', data.email).single(),
-        // Strategy 4: Get all admins for debugging
-        supabase.from('platform_admins').select('*')
-      ]);
+      // Enhanced admin check with timeout
+      const adminCheckPromise = supabase
+        .from('platform_admins')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      const { data: adminData, error: adminError } = await withTimeout(adminCheckPromise, 10000);
 
-      adminChecks.forEach((result, index) => {
-        const strategy = ['by id', 'by user_id', 'by email', 'all admins'][index];
-        if (result.status === 'fulfilled') {
-          addDebugLog(`✅ Admin check ${strategy}: ${JSON.stringify(result.value.data)}`);
-        } else {
-          addDebugLog(`❌ Admin check ${strategy}: ${result.reason.message}`);
-        }
-      });
+      if (adminError && adminError.code !== 'PGRST116') {
+        addDebugLog(`❌ Admin check failed: ${adminError.message}`);
+      }
 
-      // Determine if user is admin
-      const adminData = adminChecks.find((result, index) => 
-        result.status === 'fulfilled' && 
-        result.value.data && 
-        index < 3 // Only consider the first 3 specific user checks
-      );
-
-      if (!adminData || adminData.status === 'rejected') {
+      if (!adminData) {
         addDebugLog('❌ User is not a platform administrator');
         
-        // Sign out the user
         await supabase.auth.signOut();
         addDebugLog('🚪 User signed out due to lack of admin privileges');
         
@@ -421,20 +417,27 @@ const PlatformAdminLogin = () => {
         description: 'Welcome, Platform Administrator.',
       });
 
-      // Navigate to admin panel
       setTimeout(() => {
         addDebugLog('🏃 Navigating to platform admin panel');
         navigate('/platform-admin', { replace: true });
       }, 1000);
 
     } catch (error: any) {
-      addDebugLog(`💥 Unexpected error during login: ${error.message}`);
-      console.error('Login error:', error);
-      toast({
-        title: 'Login Error',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+      if (error.message.includes('timed out')) {
+        addDebugLog(`💥 Login timed out: ${error.message}`);
+        toast({
+          title: 'Login Timeout',
+          description: 'The login process timed out. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        addDebugLog(`💥 Unexpected error during login: ${error.message}`);
+        toast({
+          title: 'Login Error',
+          description: error.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -499,7 +502,7 @@ const PlatformAdminLogin = () => {
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="admin@example.com"
+                            placeholder="admin@techconsync.com"
                             {...field}
                             className="bg-gray-700 border-gray-600 text-white"
                             disabled={isLoading}
@@ -533,7 +536,7 @@ const PlatformAdminLogin = () => {
                   <Button
                     type="submit"
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    disabled={isLoading || connectionStatus.status === 'error'}
+                    disabled={isLoading}
                   >
                     {isLoading ? 'Signing In...' : 'Sign In'}
                   </Button>
@@ -589,7 +592,7 @@ const PlatformAdminLogin = () => {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-sm flex items-center justify-between">
-                Enhanced Debug Console
+                Enhanced Debug Console (With Timeout Protection)
                 <Button 
                   onClick={() => setDebugInfo([])} 
                   variant="outline" 
@@ -604,13 +607,13 @@ const PlatformAdminLogin = () => {
               <div className="bg-gray-900 p-4 rounded text-xs font-mono max-h-96 overflow-y-auto">
                 {debugInfo.length === 0 ? (
                   <div className="text-gray-500">
-                    Enhanced debug info will appear here...
+                    Enhanced debug info with timeout protection...
                     <br />
                     🔄 Connection test runs automatically on load
                     <br />
-                    🧪 Use "Test Connection" to re-run diagnostics
+                    ⏱️ All operations now have timeouts to prevent hanging
                     <br />
-                    🔧 Use "Check Config" to verify environment setup
+                    🧪 Use buttons below to test specific functionality
                   </div>
                 ) : (
                   debugInfo.map((log, index) => (
