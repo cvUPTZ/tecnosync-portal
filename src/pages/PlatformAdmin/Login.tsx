@@ -23,7 +23,7 @@ interface ConnectionStatus {
   message: string;
 }
 
-const AuthDebugTool = () => {
+const PlatformAdminLogin = () => {
   // State for login component
   const [isLoading, setIsLoading] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
