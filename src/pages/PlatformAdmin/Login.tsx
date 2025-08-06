@@ -1,5 +1,5 @@
-// src/pages/PlatformAdmin/Login.tsx - Fixed Version
-import React, { useState } from 'react';
+// Enhanced Debug Version - Platform Admin Login
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, Shield } from 'lucide-react';
+import { LogIn, Shield, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,43 +19,159 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+interface ConnectionStatus {
+  status: 'idle' | 'testing' | 'success' | 'error';
+  message: string;
+}
+
 const PlatformAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
+    status: 'idle',
+    message: 'Not tested'
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const addDebugLog = (message: string) => {
-    console.log(message);
-    setDebugInfo(prev => [...prev, message]);
+    const timestamp = new Date().toLocaleTimeString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage);
+    setDebugInfo(prev => [...prev, logMessage]);
   };
 
-  const checkSupabaseConnection = async () => {
+  // Test connection on component mount
+  useEffect(() => {
+    testFullConnection();
+  }, []);
+
+  const testFullConnection = async () => {
+    setConnectionStatus({ status: 'testing', message: 'Testing connection...' });
+    addDebugLog('🔄 Starting comprehensive connection test...');
+
     try {
-      addDebugLog('🟡 Testing Supabase connection...');
-      addDebugLog(`🟡 Supabase URL: ${supabase.supabaseUrl}`);
-      addDebugLog(`🟡 Supabase Key: ${supabase.supabaseKey?.substring(0, 20)}...`);
+      // Test 1: Basic URL validation
+      addDebugLog('🧪 Test 1: Validating Supabase configuration');
       
-      // Test a simple query
-      const { data, error } = await supabase.from('platform_admins').select('*').limit(1);
-      addDebugLog(`🟡 Test query result: ${JSON.stringify({ data, error })}`);
+      if (!supabase.supabaseUrl) {
+        throw new Error('Supabase URL not configured');
+      }
       
-      // Test auth status
-      const { data: { session } } = await supabase.auth.getSession();
-      addDebugLog(`🟡 Current session: ${session ? 'Active' : 'None'}`);
+      if (!supabase.supabaseKey) {
+        throw new Error('Supabase key not configured');
+      }
+
+      addDebugLog(`✅ Supabase URL: ${supabase.supabaseUrl}`);
+      addDebugLog(`✅ Supabase Key: ${supabase.supabaseKey.substring(0, 20)}...`);
+
+      // Test 2: Network connectivity to Supabase
+      addDebugLog('🧪 Test 2: Testing network connectivity');
+      
+      const healthCheckUrl = `${supabase.supabaseUrl}/rest/v1/`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      try {
+        const response = await fetch(healthCheckUrl, {
+          method: 'GET',
+          headers: {
+            'apikey': supabase.supabaseKey,
+            'Authorization': `Bearer ${supabase.supabaseKey}`
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        addDebugLog(`✅ Network response status: ${response.status}`);
+        
+        if (!response.ok) {
+          addDebugLog(`⚠️ Non-200 response: ${response.statusText}`);
+        }
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        addDebugLog(`❌ Network connectivity failed: ${fetchError.message}`);
+        throw new Error(`Network connectivity failed: ${fetchError.message}`);
+      }
+
+      // Test 3: Supabase client initialization
+      addDebugLog('🧪 Test 3: Testing Supabase client');
+      
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        addDebugLog(`⚠️ Session check warning: ${sessionError.message}`);
+      } else {
+        addDebugLog(`✅ Session check: ${session ? 'Active session found' : 'No active session'}`);
+      }
+
+      // Test 4: Database connectivity
+      addDebugLog('🧪 Test 4: Testing database connectivity');
+      
+      const { data, error, count } = await supabase
+        .from('platform_admins')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        addDebugLog(`❌ Database query failed: ${error.message}`);
+        addDebugLog(`❌ Error details: ${JSON.stringify(error)}`);
+        throw new Error(`Database connectivity failed: ${error.message}`);
+      }
+
+      addDebugLog(`✅ Database query successful. Records found: ${count}`);
+
+      // Test 5: Auth service
+      addDebugLog('🧪 Test 5: Testing auth service');
+      
+      try {
+        // This might fail if we don't have admin privileges, but that's expected
+        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+        if (usersError) {
+          addDebugLog(`⚠️ Admin user list (expected to fail): ${usersError.message}`);
+        } else {
+          addDebugLog(`✅ Auth service accessible. Users found: ${users?.length || 0}`);
+        }
+      } catch (adminError: any) {
+        addDebugLog(`⚠️ Admin functions not accessible (expected): ${adminError.message}`);
+      }
+
+      setConnectionStatus({
+        status: 'success',
+        message: 'All connectivity tests passed'
+      });
+      addDebugLog('🎉 All connection tests completed successfully');
+
     } catch (error: any) {
-      addDebugLog(`🔴 Supabase connection error: ${error.message}`);
+      addDebugLog(`💥 Connection test failed: ${error.message}`);
+      setConnectionStatus({
+        status: 'error',
+        message: error.message
+      });
     }
   };
 
-  const checkExistingUsers = async () => {
-    try {
-      // This requires admin privileges, so it might not work from client-side
-      const { data: { users }, error } = await supabase.auth.admin.listUsers();
-      addDebugLog(`🟡 Available users: ${JSON.stringify(users?.map(u => u.email))}`);
-    } catch (error) {
-      addDebugLog(`🟠 Could not list users: ${error}`);
-    }
+  const checkEnvironmentVariables = () => {
+    addDebugLog('🧪 Environment Variables Check:');
+    
+    // These would be your actual env var names
+    const envVars = [
+      'VITE_SUPABASE_URL',
+      'VITE_SUPABASE_ANON_KEY',
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY'
+    ];
+
+    envVars.forEach(varName => {
+      const value = (import.meta.env as any)[varName];
+      if (value) {
+        addDebugLog(`✅ ${varName}: ${value.substring(0, 20)}...`);
+      } else {
+        addDebugLog(`❌ ${varName}: Not found`);
+      }
+    });
+
+    // Also log what's actually being used by the client
+    addDebugLog(`🔧 Client using URL: ${supabase.supabaseUrl}`);
+    addDebugLog(`🔧 Client using key: ${supabase.supabaseKey?.substring(0, 20)}...`);
   };
 
   const form = useForm<LoginFormData>({
@@ -67,99 +183,99 @@ const PlatformAdminLogin = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    addDebugLog('🟡 Login process started');
+    if (connectionStatus.status === 'error') {
+      toast({
+        title: 'Connection Error',
+        description: 'Please fix connection issues before attempting login.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    addDebugLog('🚀 Starting enhanced login process');
     setIsLoading(true);
     
     try {
-      addDebugLog(`🟡 Step 1: Attempting login for: ${data.email}`);
+      addDebugLog(`👤 Attempting login for: ${data.email}`);
 
-      // Step 1: Authenticate user with Supabase (with timeout)
-      const authPromise = supabase.auth.signInWithPassword({
+      // Enhanced authentication with better error handling
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Authentication timeout after 10 seconds')), 10000)
-      );
-
-      let authData, signInError;
-      try {
-        const result = await Promise.race([authPromise, timeoutPromise]);
-        authData = (result as any).data;
-        signInError = (result as any).error;
-        addDebugLog(`🟡 Step 1: Authentication call completed`);
-      } catch (timeoutError: any) {
-        addDebugLog(`🔴 Step 1: Authentication timed out - ${timeoutError.message}`);
-        signInError = timeoutError;
-      }
-
-      addDebugLog(`🟡 Step 1 Result - User ID: ${authData.user?.id || 'null'}, Error: ${signInError?.message || 'none'}`);
+      addDebugLog(`🔐 Auth result: ${JSON.stringify({
+        userExists: !!authData.user,
+        userId: authData.user?.id,
+        error: signInError?.message
+      })}`);
 
       if (signInError) {
-        addDebugLog(`🔴 Authentication failed: ${signInError.message}`);
+        addDebugLog(`❌ Authentication failed: ${signInError.message}`);
+        
+        // Provide more specific error messages
+        let userMessage = signInError.message;
+        if (signInError.message.includes('Invalid login credentials')) {
+          userMessage = 'Invalid email or password. Please check your credentials.';
+        } else if (signInError.message.includes('Email not confirmed')) {
+          userMessage = 'Please confirm your email address before logging in.';
+        }
+
         toast({
           title: 'Login Failed',
-          description: signInError.message || 'Authentication failed',
+          description: userMessage,
           variant: 'destructive',
         });
         return;
       }
 
       if (!authData.user) {
-        addDebugLog('🔴 No user returned after authentication');
+        addDebugLog('❌ No user returned after authentication');
         toast({
           title: 'Login Failed',
-          description: 'No user returned after login.',
+          description: 'Authentication succeeded but no user data returned.',
           variant: 'destructive',
         });
         return;
       }
 
       const userId = authData.user.id;
-      addDebugLog(`🟡 Step 2: Checking platform admin status for user ID: ${userId}`);
+      addDebugLog(`👑 Checking admin privileges for user: ${userId}`);
 
-      // Step 2: Check platform_admins table
-      // First, let's try with 'id' column
-      const { data: platformAdminById, error: platformAdminByIdError } = await supabase
-        .from('platform_admins')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Enhanced admin check with multiple strategies
+      const adminChecks = await Promise.allSettled([
+        // Strategy 1: Check by id
+        supabase.from('platform_admins').select('*').eq('id', userId).single(),
+        // Strategy 2: Check by user_id
+        supabase.from('platform_admins').select('*').eq('user_id', userId).single(),
+        // Strategy 3: Check by email
+        supabase.from('platform_admins').select('*').eq('email', data.email).single(),
+        // Strategy 4: Get all admins for debugging
+        supabase.from('platform_admins').select('*')
+      ]);
 
-      addDebugLog(`🟡 Step 2a Result (id column) - Platform admin data: ${JSON.stringify(platformAdminById)}`);
-      addDebugLog(`🟡 Step 2a Result (id column) - Platform admin error: ${JSON.stringify(platformAdminByIdError)}`);
+      adminChecks.forEach((result, index) => {
+        const strategy = ['by id', 'by user_id', 'by email', 'all admins'][index];
+        if (result.status === 'fulfilled') {
+          addDebugLog(`✅ Admin check ${strategy}: ${JSON.stringify(result.value.data)}`);
+        } else {
+          addDebugLog(`❌ Admin check ${strategy}: ${result.reason.message}`);
+        }
+      });
 
-      // Also try with 'user_id' column in case that's the correct column name
-      const { data: platformAdminByUserId, error: platformAdminByUserIdError } = await supabase
-        .from('platform_admins')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      // Determine if user is admin
+      const adminData = adminChecks.find((result, index) => 
+        result.status === 'fulfilled' && 
+        result.value.data && 
+        index < 3 // Only consider the first 3 specific user checks
+      );
 
-      addDebugLog(`🟡 Step 2b Result (user_id column) - Platform admin data: ${JSON.stringify(platformAdminByUserId)}`);
-      addDebugLog(`🟡 Step 2b Result (user_id column) - Platform admin error: ${JSON.stringify(platformAdminByUserIdError)}`);
-
-      // Let's also try a broader query to see what's in the table
-      const { data: allPlatformAdmins, error: allError } = await supabase
-        .from('platform_admins')
-        .select('*');
-      
-      addDebugLog(`🟡 Debug: All platform admins: ${JSON.stringify(allPlatformAdmins)}`);
-      addDebugLog(`🟡 Debug: All platform admins error: ${JSON.stringify(allError)}`);
-
-      // Determine which query succeeded
-      const platformAdmin = platformAdminById || platformAdminByUserId;
-      const platformAdminError = platformAdminById ? platformAdminByIdError : platformAdminByUserIdError;
-
-      if (platformAdminError || !platformAdmin) {
-        const errorMsg = platformAdminError?.message || 'User not found in platform_admins table.';
-        addDebugLog(`🔴 Platform admin check failed: ${errorMsg}`);
+      if (!adminData || adminData.status === 'rejected') {
+        addDebugLog('❌ User is not a platform administrator');
         
-        // Sign out the user since they don't have platform admin access
+        // Sign out the user
         await supabase.auth.signOut();
-        addDebugLog('🟡 User signed out due to lack of platform admin privileges');
+        addDebugLog('🚪 User signed out due to lack of admin privileges');
         
         toast({
           title: 'Access Denied',
@@ -169,51 +285,48 @@ const PlatformAdminLogin = () => {
         return;
       }
 
-      addDebugLog('🟡 Step 3: Checking user profile');
-      
-      // Step 3: Fetch user profile (optional, for additional info)
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      addDebugLog(`🟡 Step 3 Result - Profile: ${JSON.stringify(profile)}, Error: ${JSON.stringify(profileError)}`);
-
-      if (profileError) {
-        addDebugLog(`🟠 Profile fetch warning: ${profileError.message}`);
-      }
-
-      addDebugLog('🟢 All checks passed - Login successful');
+      addDebugLog('🎉 Login successful - User is a platform administrator');
       
       toast({
         title: 'Login Successful',
         description: 'Welcome, Platform Administrator.',
       });
 
-      // Small delay to ensure all state updates complete
+      // Navigate to admin panel
       setTimeout(() => {
-        addDebugLog('🟡 Navigating to /platform-admin');
+        addDebugLog('🏃 Navigating to platform admin panel');
         navigate('/platform-admin', { replace: true });
-      }, 500);
+      }, 1000);
 
     } catch (error: any) {
-      addDebugLog(`🔴 Unexpected error: ${error.message}`);
-      console.error('Unexpected Login error:', error);
+      addDebugLog(`💥 Unexpected error during login: ${error.message}`);
+      console.error('Login error:', error);
       toast({
         title: 'Login Error',
-        description: error.message || 'An unexpected error occurred during login.',
+        description: error.message || 'An unexpected error occurred.',
         variant: 'destructive',
       });
     } finally {
-      addDebugLog('🟡 Login process finished');
       setIsLoading(false);
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (connectionStatus.status) {
+      case 'testing':
+        return <AlertCircle className="w-4 h-4 text-yellow-500 animate-pulse" />;
+      case 'success':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'error':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      default:
+        return <AlertCircle className="w-4 h-4 text-gray-500" />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl flex gap-8">
+      <div className="w-full max-w-6xl flex gap-8">
         {/* Login Form */}
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
@@ -221,6 +334,18 @@ const PlatformAdminLogin = () => {
             <h1 className="text-3xl font-bold">Academy Creator</h1>
             <p className="text-muted-foreground">Platform Administration</p>
           </div>
+
+          {/* Connection Status */}
+          <Card className="bg-gray-800 border-gray-700 mb-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                {getStatusIcon()}
+                <span className="text-sm">
+                  Connection Status: {connectionStatus.message}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader className="text-center">
@@ -235,11 +360,7 @@ const PlatformAdminLogin = () => {
 
             <CardContent>
               <Form {...form}>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  addDebugLog("🟡 Form submit handler triggered");
-                  form.handleSubmit(onSubmit)(e);
-                }} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="email"
@@ -249,7 +370,7 @@ const PlatformAdminLogin = () => {
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="superadmin@creator.com"
+                            placeholder="admin@example.com"
                             {...field}
                             className="bg-gray-700 border-gray-600 text-white"
                             disabled={isLoading}
@@ -283,62 +404,79 @@ const PlatformAdminLogin = () => {
                   <Button
                     type="submit"
                     className="w-full bg-tfa-blue hover:bg-tfa-blue/90"
-                    disabled={isLoading}
+                    disabled={isLoading || connectionStatus.status === 'error'}
                   >
                     {isLoading ? 'Signing In...' : 'Sign In'}
                   </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mt-2"
-                    onClick={checkExistingUsers}
-                  >
-                    Debug: Check Users
-                  </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mt-2"
-                    onClick={checkSupabaseConnection}
-                  >
-                    Debug: Test Connection
-                  </Button>
+
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={testFullConnection}
+                      disabled={connectionStatus.status === 'testing'}
+                    >
+                      Test Connection
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={checkEnvironmentVariables}
+                    >
+                      Check Config
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
           </Card>
         </div>
 
-        {/* Debug Panel */}
-        <div className="w-full max-w-md">
+        {/* Enhanced Debug Panel */}
+        <div className="w-full max-w-2xl">
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-sm">Debug Console</CardTitle>
+              <CardTitle className="text-sm flex items-center justify-between">
+                Enhanced Debug Console
+                <Button 
+                  onClick={() => setDebugInfo([])} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={debugInfo.length === 0}
+                >
+                  Clear
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-gray-900 p-4 rounded text-xs font-mono max-h-96 overflow-y-auto">
                 {debugInfo.length === 0 ? (
-                  <div className="text-gray-500">Debug info will appear here...</div>
+                  <div className="text-gray-500">
+                    Enhanced debug info will appear here...
+                    <br />
+                    🔄 Connection test runs automatically on load
+                    <br />
+                    🧪 Use "Test Connection" to re-run diagnostics
+                    <br />
+                    🔧 Use "Check Config" to verify environment setup
+                  </div>
                 ) : (
                   debugInfo.map((log, index) => (
-                    <div key={index} className="mb-1 text-green-400">
+                    <div key={index} className={`mb-1 ${
+                      log.includes('❌') ? 'text-red-400' :
+                      log.includes('✅') ? 'text-green-400' :
+                      log.includes('⚠️') ? 'text-yellow-400' :
+                      log.includes('🎉') ? 'text-blue-400' :
+                      'text-gray-300'
+                    }`}>
                       {log}
                     </div>
                   ))
                 )}
               </div>
-              {debugInfo.length > 0 && (
-                <Button 
-                  onClick={() => setDebugInfo([])} 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2"
-                >
-                  Clear
-                </Button>
-              )}
             </CardContent>
           </Card>
         </div>
