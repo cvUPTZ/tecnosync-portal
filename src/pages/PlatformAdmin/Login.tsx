@@ -107,17 +107,27 @@ const PlatformAdminLogin = () => {
       // Test 4: Database connectivity
       addDebugLog('🧪 Test 4: Testing database connectivity');
       
-      const { data, error, count } = await supabase
-        .from('platform_admins')
-        .select('*', { count: 'exact', head: true });
+      try {
+        const { data, error, count } = await supabase
+          .from('platform_admins')
+          .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        addDebugLog(`❌ Database query failed: ${error.message}`);
-        addDebugLog(`❌ Error details: ${JSON.stringify(error)}`);
-        throw new Error(`Database connectivity failed: ${error.message}`);
+        if (error) {
+          addDebugLog(`❌ Database query failed: ${error.message}`);
+          addDebugLog(`❌ Error code: ${error.code}`);
+          addDebugLog(`❌ Error hint: ${error.hint}`);
+          addDebugLog(`❌ Full error: ${JSON.stringify(error)}`);
+          
+          // Don't throw error yet, let's try other tests
+          if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
+            addDebugLog('⚠️ Table "platform_admins" might not exist - this is the main issue');
+          }
+        } else {
+          addDebugLog(`✅ Database query successful. Records found: ${count}`);
+        }
+      } catch (dbError: any) {
+        addDebugLog(`❌ Database test exception: ${dbError.message}`);
       }
-
-      addDebugLog(`✅ Database query successful. Records found: ${count}`);
 
       // Test 5: Auth service
       addDebugLog('🧪 Test 5: Testing auth service');
@@ -149,7 +159,124 @@ const PlatformAdminLogin = () => {
     }
   };
 
-  const checkEnvironmentVariables = () => {
+  const createPlatformAdminsTable = async () => {
+    addDebugLog('🔧 Creating platform_admins table...');
+    
+    try {
+      // First, let's check what tables exist
+      const { data: tables, error: tablesError } = await supabase
+        .from('information_schema.tables')
+        .select('table_name')
+        .eq('table_schema', 'public');
+        
+      addDebugLog(`📋 Existing tables: ${JSON.stringify(tables?.map(t => t.table_name))}`);
+      
+      // Create the table using SQL
+      const { data, error } = await supabase.rpc('exec_sql', {
+        sql: `
+          CREATE TABLE IF NOT EXISTS platform_admins (
+            id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+          );
+          
+          -- Enable RLS
+          ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
+          
+          -- Create policy for authenticated users to read their own record
+          CREATE POLICY "Users can read own platform_admin record" ON platform_admins
+            FOR SELECT USING (auth.uid() = id);
+            
+          -- Create policy for platform admins to read all records
+          CREATE POLICY "Platform admins can read all records" ON platform_admins
+            FOR ALL USING (EXISTS (
+              SELECT 1 FROM platform_admins WHERE id = auth.uid()
+            ));
+        `
+      });
+      
+      if (error) {
+        addDebugLog(`❌ Failed to create table via RPC: ${error.message}`);
+        
+        // Fallback: Try direct SQL execution if RPC doesn't work
+        addDebugLog('🔄 Trying alternative table creation method...');
+        
+        // You'll need to create this table manually in Supabase SQL Editor
+        addDebugLog('📝 Please run this SQL in your Supabase SQL Editor:');
+        addDebugLog(`
+          CREATE TABLE IF NOT EXISTS platform_admins (
+            id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+          );
+          
+          ALTER TABLE platform_admins ENABLE ROW LEVEL SECURITY;
+          
+          CREATE POLICY "Users can read own platform_admin record" ON platform_admins
+            FOR SELECT USING (auth.uid() = id);
+            
+          CREATE POLICY "Platform admins can read all records" ON platform_admins
+            FOR ALL USING (EXISTS (
+              SELECT 1 FROM platform_admins WHERE id = auth.uid()
+            ));
+        `);
+      } else {
+        addDebugLog('✅ Table created successfully');
+      }
+      
+    } catch (error: any) {
+      addDebugLog(`❌ Table creation error: ${error.message}`);
+    }
+  };
+
+  const addTestAdmin = async () => {
+    addDebugLog('👤 Adding test admin user...');
+    
+    try {
+      // First create an auth user (this requires admin privileges)
+      const testEmail = 'admin@techconsync.com';
+      const testPassword = 'admin123456';
+      
+      addDebugLog(`🔑 Creating auth user: ${testEmail}`);
+      
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: testEmail,
+        password: testPassword,
+      });
+      
+      if (signUpError) {
+        addDebugLog(`❌ Failed to create auth user: ${signUpError.message}`);
+        return;
+      }
+      
+      if (!signUpData.user) {
+        addDebugLog('❌ No user returned from signup');
+        return;
+      }
+      
+      addDebugLog(`✅ Auth user created with ID: ${signUpData.user.id}`);
+      
+      // Add to platform_admins table
+      const { data: adminData, error: adminError } = await supabase
+        .from('platform_admins')
+        .insert({
+          id: signUpData.user.id,
+          email: testEmail
+        });
+        
+      if (adminError) {
+        addDebugLog(`❌ Failed to add to platform_admins: ${adminError.message}`);
+      } else {
+        addDebugLog('✅ Test admin added successfully');
+        addDebugLog(`📧 Test credentials: ${testEmail} / ${testPassword}`);
+      }
+      
+    } catch (error: any) {
+      addDebugLog(`❌ Add test admin error: ${error.message}`);
+    }
+  };
     addDebugLog('🧪 Environment Variables Check:');
     
     // These would be your actual env var names
@@ -427,6 +554,26 @@ const PlatformAdminLogin = () => {
                       onClick={checkEnvironmentVariables}
                     >
                       Check Config
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={createPlatformAdminsTable}
+                      className="text-yellow-400 border-yellow-400 hover:bg-yellow-400 hover:text-black"
+                    >
+                      Create Table
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addTestAdmin}
+                      className="text-green-400 border-green-400 hover:bg-green-400 hover:text-black"
+                    >
+                      Add Test Admin
                     </Button>
                   </div>
                 </form>
