@@ -35,17 +35,38 @@ const PlatformAdminLogin = () => {
     setIsLoading(true);
     try {
       console.log('Starting login attempt for:', data.email);
+      console.log('Password length:', data.password.length);
       
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
+        email: data.email.trim(),
         password: data.password,
       });
 
+      console.log('Auth response received');
+      console.log('Auth data:', authData);
+      console.log('Sign in error:', signInError);
+
       if (signInError) {
-        console.error('Sign in error:', signInError);
+        console.error('Sign in error details:', {
+          message: signInError.message,
+          status: signInError.status,
+          statusText: signInError.statusText,
+          name: signInError.name
+        });
         toast({
           title: 'Login Failed',
-          description: signInError.message,
+          description: signInError.message || 'Authentication failed',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!authData || !authData.user) {
+        console.error('No user data returned despite no error');
+        toast({
+          title: 'Login Failed',
+          description: 'No user data received',
           variant: 'destructive',
         });
         setIsLoading(false);
