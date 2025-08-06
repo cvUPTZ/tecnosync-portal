@@ -17,7 +17,7 @@ interface AuthContextType {
   user: SupabaseUser | null;
   profile: Profile | null;
   loading: boolean;
-  isPlatformAdmin: boolean;
+  isPlatformAdmin: () => boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isDirector: () => boolean;
@@ -30,7 +30,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,7 +41,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentUser);
 
         if (currentUser) {
-          setIsPlatformAdmin(currentUser.user_metadata?.role === 'platform_admin');
           const { data: profileData, error } = await supabase
             .from('profiles')
             .select('*')
@@ -56,14 +54,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setProfile(profileData);
           }
         } else {
-          setIsPlatformAdmin(false);
           setProfile(null);
         }
       } catch (e) {
         console.error("Error in initAuth:", e);
         setUser(null);
         setProfile(null);
-        setIsPlatformAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -79,7 +75,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(currentUser);
 
           if (currentUser) {
-            setIsPlatformAdmin(currentUser.user_metadata?.role === 'platform_admin');
             const { data: profileData, error } = await supabase
               .from('profiles')
               .select('*')
@@ -93,14 +88,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               setProfile(profileData);
             }
           } else {
-            setIsPlatformAdmin(false);
             setProfile(null);
           }
         } catch (e) {
             console.error("Error in onAuthStateChange handler:", e);
             setUser(null);
             setProfile(null);
-            setIsPlatformAdmin(false);
         } finally {
             setLoading(false);
         }
@@ -126,18 +119,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-    setIsPlatformAdmin(false);
   };
 
   const isDirector = () => {
     return profile?.role === 'director';
   };
 
+  const isPlatformAdmin = () => {
+    // Check if user exists in platform_admins table through profile role
+    // The database RLS policies will enforce proper access control
+    return profile?.role === 'platform_admin' || user?.user_metadata?.role === 'platform_admin';
+  };
+
   const hasModuleAccess = (module: string) => {
-    if (!profile && !isPlatformAdmin) return false;
+    if (!profile && !isPlatformAdmin()) return false;
     
     // Platform admin has access to all modules
-    if (isPlatformAdmin) return true;
+    if (isPlatformAdmin()) return true;
     
     // Director has access to certain modules
     if (isDirector()) {

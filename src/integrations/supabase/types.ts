@@ -27,6 +27,7 @@ export type Database = {
           name: string
           settings: Json | null
           subdomain: string
+          template: string
           updated_at: string | null
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           name: string
           settings?: Json | null
           subdomain: string
+          template?: string
           updated_at?: string | null
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           name?: string
           settings?: Json | null
           subdomain?: string
+          template?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -344,6 +347,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_admins: {
+        Row: {
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -975,6 +993,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_platform_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
