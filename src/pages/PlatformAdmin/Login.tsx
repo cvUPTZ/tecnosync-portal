@@ -52,11 +52,34 @@ const PlatformAdminLogin = () => {
       // Check if user exists in platform_admins table
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        await supabase.auth.signOut();
+        toast({
+          title: 'Login Failed',
+          description: 'Authentication failed.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { data: adminData, error: adminError } = await supabase
         .from('platform_admins')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (adminError) {
+        console.error('Error checking platform admin:', adminError);
+        await supabase.auth.signOut();
+        toast({
+          title: 'Access Denied',
+          description: 'Error verifying platform admin access.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
 
       if (adminData) {
         toast({
@@ -73,6 +96,7 @@ const PlatformAdminLogin = () => {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Login Error',
         description: 'An unexpected error occurred.',
