@@ -104,7 +104,7 @@ const PlatformAdminLogin = () => {
       // Check multiple ways for platform admin status
       const isPlatformAdminByMetadata = user.user_metadata?.role === 'platform_admin';
       const isPlatformAdminByAppMetadata = user.app_metadata?.role === 'platform_admin';
-      const isPlatformAdminByEmail = user.email === 'superadmin@creator.com';
+      const isPlatformAdminByEmail = user.email === 'superadmin2@creator.com';
       
       // Try RPC call to check database directly
       let isPlatformAdminByRPC = false;
