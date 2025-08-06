@@ -4,7 +4,6 @@ CREATE OR REPLACE FUNCTION public.create_new_academy_with_user(
     academy_subdomain text, 
     admin_full_name text, 
     admin_email text, 
-    admin_password text,
     user_id uuid,
     modules_config jsonb DEFAULT '{}'::jsonb
 )
