@@ -1,3 +1,4 @@
+// src/pages/PlatformAdmin/Login.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,14 +33,17 @@ const PlatformAdminLogin = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    console.log('Login onSubmit started');
     setIsLoading(true);
     try {
-      console.log('Starting login attempt for:', data.email);
+      console.log('Step 1: Starting login attempt for:', data.email);
 
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email.trim(),
         password: data.password,
       });
+
+      console.log('Step 1 Result - Auth Data:', !!authData, 'Auth Error:', signInError);
 
       if (signInError) {
         console.error('Sign in error:', signInError);
@@ -48,20 +52,21 @@ const PlatformAdminLogin = () => {
           description: signInError.message || 'Authentication failed',
           variant: 'destructive',
         });
-        setIsLoading(false);
-        return;
+        return; // Exit early on auth error
       }
 
       if (!authData.user) {
+        const errorMsg = 'No user returned after login.';
+        console.error('Login Error:', errorMsg);
         toast({
           title: 'Login Failed',
-          description: 'No user returned after login.',
+          description: errorMsg,
           variant: 'destructive',
         });
-        setIsLoading(false);
-        return;
+        return; // Exit early if no user
       }
 
+      console.log('Step 2: Checking platform admin status for user ID:', authData.user.id);
       // Check if user exists in platform_admins table
       const { data: platformAdmin, error: platformAdminError } = await supabase
         .from('platform_admins')
@@ -69,18 +74,22 @@ const PlatformAdminLogin = () => {
         .eq('id', authData.user.id)
         .single();
 
+      console.log('Step 2 Result - Platform Admin Data:', platformAdmin, 'Platform Admin Error:', platformAdminError);
+
       if (platformAdminError || !platformAdmin) {
-        console.error('Platform admin check error:', platformAdminError);
+        const errorMsg = platformAdminError?.message || 'User not found in platform_admins table.';
+        console.error('Platform admin check error:', errorMsg);
+        // Important: Await the signOut to ensure it completes before proceeding
         await supabase.auth.signOut();
         toast({
           title: 'Access Denied',
           description: 'You do not have platform administrator privileges.',
           variant: 'destructive',
         });
-        setIsLoading(false);
-        return;
+        return; // Exit early if not platform admin
       }
 
+      console.log('Step 3: Fetching user profile for user ID:', authData.user.id);
       // Optionally, also fetch user profile for additional info
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -88,27 +97,42 @@ const PlatformAdminLogin = () => {
         .eq('user_id', authData.user.id)
         .single();
 
+      console.log('Step 3 Result - Profile Data:', profile, 'Profile Error:', profileError);
+
       if (profileError) {
+        // Log profile error but don't fail login necessarily
         console.warn('Profile fetch error (non-critical):', profileError);
+        // You might choose to show a warning toast here instead of failing
+        // toast({
+        //   title: 'Notice',
+        //   description: 'Profile information could not be loaded.',
+        //   variant: 'default', // or a warning variant if you have one
+        // });
       }
 
-      console.log('Platform admin verified:', platformAdmin);
-      console.log('User profile:', profile);
-
+      console.log('Step 4: All checks passed. Preparing success toast and navigation.');
       toast({
         title: 'Login Successful',
         description: 'Welcome, Platform Administrator.',
       });
 
-      navigate('/platform-admin');
-    } catch (error) {
-      console.error('Login error:', error);
+      // Use setTimeout to ensure state updates and toast are processed
+      // before navigation, which might trigger context changes
+      setTimeout(() => {
+        console.log('Step 5: Navigating to /platform-admin');
+        navigate('/platform-admin', { replace: true }); // Use replace to avoid back button issues
+      }, 100); // Small delay
+
+    } catch (error: any) {
+      console.error('Unexpected Login error:', error);
       toast({
         title: 'Login Error',
-        description: 'An unexpected error occurred.',
+        description: error.message || 'An unexpected error occurred during login.',
         variant: 'destructive',
       });
     } finally {
+      console.log('Login process finished (finally block)');
+      // Ensure loading state is always reset
       setIsLoading(false);
     }
   };
@@ -135,7 +159,11 @@ const PlatformAdminLogin = () => {
 
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault(); // Prevent default form submission
+                console.log("Form submit handler triggered");
+                form.handleSubmit(onSubmit)(e); // Call the onSubmit handler
+              }} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="email"
@@ -148,6 +176,7 @@ const PlatformAdminLogin = () => {
                           placeholder="superadmin@creator.com"
                           {...field}
                           className="bg-gray-700 border-gray-600 text-white"
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -167,6 +196,7 @@ const PlatformAdminLogin = () => {
                           placeholder="••••••••"
                           {...field}
                           className="bg-gray-700 border-gray-600 text-white"
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <FormMessage />
