@@ -74,7 +74,6 @@ serve(async (req) => {
       academy_subdomain,
       admin_full_name,
       admin_email,
-      admin_password, // Note: consider if you need to pass this to the DB function
       modules_config: modules_config || {},
       user_id: authUser.id
     })
