@@ -16,9 +16,6 @@ const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
 
-
-const PlatformAdminLayout = React.lazy(() => import("./components/PlatformAdminLayout"));
-
 // Public Academy Website Routes
 const AcademyWebsite = React.lazy(() => import("./components/public/AcademyWebsite"));
 const AcademyRegistration = React.lazy(() => import("./components/academy/AcademyRegistration"));
@@ -179,17 +176,17 @@ const App = () => {
   );
 };
 
-// Update the PlatformAdminRoute component
+// Protected routes
 const PlatformAdminRoute = () => {
-  const { isPlatformAdmin, loading } = useAuth(); // isPlatformAdmin is now boolean
-  
+  // isPlatformAdmin is likely a boolean, not a function
+  const { isPlatformAdmin, loading } = useAuth();
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  
-  // Use isPlatformAdmin directly as a boolean (not as a function call)
+  // Use isPlatformAdmin directly as a boolean, not isPlatformAdmin()
   return isPlatformAdmin ? <PlatformAdminLayout /> : <Navigate to="/platform-admin/login" />;
 };
+
 const AcademyAdminRoute = () => {
   const { user, profile, loading } = useAuth();
   if (loading) {
