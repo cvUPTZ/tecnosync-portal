@@ -44,12 +44,12 @@ const PlatformAdminLogin = () => {
     
     try {
       addDebugLog(`🟡 Step 1: Attempting login for: ${data.email}`);
-addDebugLog(`🟡 Step 1.1: Attempting login for: ${data}`);
-      // Step 1: Authenticate user
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email.trim(),
-        password: data.password,
-      });
+
+      // // Step 1: Authenticate user
+      // const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      //   email: data.email.trim(),
+      //   password: data.password,
+      // });
 
       addDebugLog(`🟡 Step 1 Result - User ID: ${authData.user?.id || 'null'}, Error: ${signInError?.message || 'none'}`);
 
