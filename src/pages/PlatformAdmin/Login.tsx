@@ -34,12 +34,15 @@ const PlatformAdminLogin = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      console.log('Starting login attempt for:', data.email);
+      
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
       if (signInError) {
+        console.error('Sign in error:', signInError);
         toast({
           title: 'Login Failed',
           description: signInError.message,
@@ -49,10 +52,14 @@ const PlatformAdminLogin = () => {
         return;
       }
 
+      console.log('Sign in successful, checking user...');
+      
       // Check if user exists in platform_admins table
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user);
       
       if (!user) {
+        console.error('No user found after sign in');
         await supabase.auth.signOut();
         toast({
           title: 'Login Failed',
@@ -63,14 +70,44 @@ const PlatformAdminLogin = () => {
         return;
       }
 
+      console.log('Checking platform admin status for user ID:', user.id);
+      
+      // Temporarily check if user is platform admin by user metadata OR platform_admins table
+      const isPlatformAdminByMetadata = user.user_metadata?.role === 'platform_admin';
+      console.log('Is platform admin by metadata:', isPlatformAdminByMetadata);
+
+      if (isPlatformAdminByMetadata) {
+        console.log('User is platform admin by metadata, allowing access');
+        toast({
+          title: 'Login Successful',
+          description: 'Welcome, Platform Administrator.',
+        });
+        navigate('/platform-admin');
+        return;
+      }
+
+      // Also check platform_admins table
       const { data: adminData, error: adminError } = await supabase
         .from('platform_admins')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
+      console.log('Platform admin query result:', { adminData, adminError });
+
       if (adminError) {
         console.error('Error checking platform admin:', adminError);
+        // Still allow access if user metadata says they're platform admin
+        if (isPlatformAdminByMetadata) {
+          console.log('Allowing access despite admin check error due to metadata');
+          toast({
+            title: 'Login Successful',
+            description: 'Welcome, Platform Administrator.',
+          });
+          navigate('/platform-admin');
+          return;
+        }
+        
         await supabase.auth.signOut();
         toast({
           title: 'Access Denied',
@@ -82,12 +119,14 @@ const PlatformAdminLogin = () => {
       }
 
       if (adminData) {
+        console.log('User found in platform_admins table, allowing access');
         toast({
           title: 'Login Successful',
           description: 'Welcome, Platform Administrator.',
         });
         navigate('/platform-admin');
       } else {
+        console.log('User not found in platform_admins table and no metadata role');
         await supabase.auth.signOut();
         toast({
           title: 'Access Denied',
