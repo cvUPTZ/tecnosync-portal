@@ -1,4 +1,4 @@
-// src/pages/PlatformAdmin/Login.tsx
+// src/pages/PlatformAdmin/Login.tsx - Debug Version
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,8 +21,14 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const PlatformAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const addDebugLog = (message: string) => {
+    console.log(message);
+    setDebugInfo(prev => [...prev, message]);
+  };
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -33,97 +39,107 @@ const PlatformAdminLogin = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('Login onSubmit started');
+    addDebugLog('🟡 Login process started');
     setIsLoading(true);
+    
     try {
-      console.log('Step 1: Starting login attempt for:', data.email);
+      addDebugLog(`🟡 Step 1: Attempting login for: ${data.email}`);
 
+      // Step 1: Authenticate user
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email.trim(),
         password: data.password,
       });
 
-      console.log('Step 1 Result - Auth Data:', !!authData, 'Auth Error:', signInError);
+      addDebugLog(`🟡 Step 1 Result - User ID: ${authData.user?.id || 'null'}, Error: ${signInError?.message || 'none'}`);
 
       if (signInError) {
-        console.error('Sign in error:', signInError);
+        addDebugLog(`🔴 Authentication failed: ${signInError.message}`);
         toast({
           title: 'Login Failed',
           description: signInError.message || 'Authentication failed',
           variant: 'destructive',
         });
-        return; // Exit early on auth error
+        return;
       }
 
       if (!authData.user) {
-        const errorMsg = 'No user returned after login.';
-        console.error('Login Error:', errorMsg);
+        addDebugLog('🔴 No user returned after authentication');
         toast({
           title: 'Login Failed',
-          description: errorMsg,
+          description: 'No user returned after login.',
           variant: 'destructive',
         });
-        return; // Exit early if no user
+        return;
       }
 
-      console.log('Step 2: Checking platform admin status for user ID:', authData.user.id);
-      // Check if user exists in platform_admins table
+      const userId = authData.user.id;
+      addDebugLog(`🟡 Step 2: Checking platform admin status for user ID: ${userId}`);
+
+      // Step 2: Check platform_admins table
       const { data: platformAdmin, error: platformAdminError } = await supabase
         .from('platform_admins')
         .select('*')
-        .eq('id', authData.user.id)
+        .eq('id', userId)
         .single();
 
-      console.log('Step 2 Result - Platform Admin Data:', platformAdmin, 'Platform Admin Error:', platformAdminError);
+      addDebugLog(`🟡 Step 2 Result - Platform admin data: ${JSON.stringify(platformAdmin)}`);
+      addDebugLog(`🟡 Step 2 Result - Platform admin error: ${JSON.stringify(platformAdminError)}`);
+
+      // Let's also try a broader query to see what's in the table
+      const { data: allPlatformAdmins, error: allError } = await supabase
+        .from('platform_admins')
+        .select('*');
+      
+      addDebugLog(`🟡 Debug: All platform admins: ${JSON.stringify(allPlatformAdmins)}`);
+      addDebugLog(`🟡 Debug: All platform admins error: ${JSON.stringify(allError)}`);
 
       if (platformAdminError || !platformAdmin) {
         const errorMsg = platformAdminError?.message || 'User not found in platform_admins table.';
-        console.error('Platform admin check error:', errorMsg);
-        // Important: Await the signOut to ensure it completes before proceeding
+        addDebugLog(`🔴 Platform admin check failed: ${errorMsg}`);
+        
+        // Sign out the user since they don't have platform admin access
         await supabase.auth.signOut();
+        addDebugLog('🟡 User signed out due to lack of platform admin privileges');
+        
         toast({
           title: 'Access Denied',
           description: 'You do not have platform administrator privileges.',
           variant: 'destructive',
         });
-        return; // Exit early if not platform admin
+        return;
       }
 
-      console.log('Step 3: Fetching user profile for user ID:', authData.user.id);
-      // Optionally, also fetch user profile for additional info
+      addDebugLog('🟡 Step 3: Checking user profile');
+      
+      // Step 3: Fetch user profile (optional, for additional info)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', authData.user.id)
+        .eq('user_id', userId)
         .single();
 
-      console.log('Step 3 Result - Profile Data:', profile, 'Profile Error:', profileError);
+      addDebugLog(`🟡 Step 3 Result - Profile: ${JSON.stringify(profile)}, Error: ${JSON.stringify(profileError)}`);
 
       if (profileError) {
-        // Log profile error but don't fail login necessarily
-        console.warn('Profile fetch error (non-critical):', profileError);
-        // You might choose to show a warning toast here instead of failing
-        // toast({
-        //   title: 'Notice',
-        //   description: 'Profile information could not be loaded.',
-        //   variant: 'default', // or a warning variant if you have one
-        // });
+        addDebugLog(`🟠 Profile fetch warning: ${profileError.message}`);
       }
 
-      console.log('Step 4: All checks passed. Preparing success toast and navigation.');
+      addDebugLog('🟢 All checks passed - Login successful');
+      
       toast({
         title: 'Login Successful',
         description: 'Welcome, Platform Administrator.',
       });
 
-      // Use setTimeout to ensure state updates and toast are processed
-      // before navigation, which might trigger context changes
+      // Small delay to ensure all state updates complete
       setTimeout(() => {
-        console.log('Step 5: Navigating to /platform-admin');
-        navigate('/platform-admin', { replace: true }); // Use replace to avoid back button issues
-      }, 100); // Small delay
+        addDebugLog('🟡 Navigating to /platform-admin');
+        navigate('/platform-admin', { replace: true });
+      }, 500);
 
     } catch (error: any) {
+      addDebugLog(`🔴 Unexpected error: ${error.message}`);
       console.error('Unexpected Login error:', error);
       toast({
         title: 'Login Error',
@@ -131,90 +147,124 @@ const PlatformAdminLogin = () => {
         variant: 'destructive',
       });
     } finally {
-      console.log('Login process finished (finally block)');
-      // Ensure loading state is always reset
+      addDebugLog('🟡 Login process finished');
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Shield className="w-20 h-20 mx-auto mb-4 text-tfa-blue" />
-          <h1 className="text-3xl font-bold">Academy Creator</h1>
-          <p className="text-muted-foreground">Platform Administration</p>
+      <div className="w-full max-w-4xl flex gap-8">
+        {/* Login Form */}
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Shield className="w-20 h-20 mx-auto mb-4 text-tfa-blue" />
+            <h1 className="text-3xl font-bold">Academy Creator</h1>
+            <p className="text-muted-foreground">Platform Administration</p>
+          </div>
+
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <LogIn className="w-5 h-5" />
+                Super Admin Login
+              </CardTitle>
+              <CardDescription>
+                Enter your credentials to access the platform panel.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  addDebugLog("🟡 Form submit handler triggered");
+                  form.handleSubmit(onSubmit)(e);
+                }} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="superadmin@creator.com"
+                            {...field}
+                            className="bg-gray-700 border-gray-600 text-white"
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            {...field}
+                            className="bg-gray-700 border-gray-600 text-white"
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-tfa-blue hover:bg-tfa-blue/90"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Signing In...' : 'Sign In'}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
 
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2">
-              <LogIn className="w-5 h-5" />
-              Super Admin Login
-            </CardTitle>
-            <CardDescription>
-              Enter your credentials to access the platform panel.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={(e) => {
-                e.preventDefault(); // Prevent default form submission
-                console.log("Form submit handler triggered");
-                form.handleSubmit(onSubmit)(e); // Call the onSubmit handler
-              }} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="superadmin@creator.com"
-                          {...field}
-                          className="bg-gray-700 border-gray-600 text-white"
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                          className="bg-gray-700 border-gray-600 text-white"
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-tfa-blue hover:bg-tfa-blue/90"
-                  disabled={isLoading}
+        {/* Debug Panel */}
+        <div className="w-full max-w-md">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-sm">Debug Console</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gray-900 p-4 rounded text-xs font-mono max-h-96 overflow-y-auto">
+                {debugInfo.length === 0 ? (
+                  <div className="text-gray-500">Debug info will appear here...</div>
+                ) : (
+                  debugInfo.map((log, index) => (
+                    <div key={index} className="mb-1 text-green-400">
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+              {debugInfo.length > 0 && (
+                <Button 
+                  onClick={() => setDebugInfo([])} 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
                 >
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  Clear
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
