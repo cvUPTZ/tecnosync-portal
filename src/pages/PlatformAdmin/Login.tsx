@@ -54,12 +54,11 @@ const PlatformAdminLogin = () => {
 
       console.log('Sign in successful, checking user...');
       
-      // Check if user exists in platform_admins table
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user);
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      if (!user) {
-        console.error('No user found after sign in');
+      if (userError || !user) {
+        console.error('Error getting user:', userError);
         await supabase.auth.signOut();
         toast({
           title: 'Login Failed',
@@ -70,10 +69,29 @@ const PlatformAdminLogin = () => {
         return;
       }
 
-      console.log('Checking platform admin status for user ID:', user.id);
+      console.log('Current user:', user);
+      console.log('User metadata:', user.user_metadata);
 
-      const isPlatformAdmin = user.user_metadata?.role === 'platform_admin';
-      console.log('Is platform admin by metadata:', isPlatformAdmin);
+      // Check multiple ways for platform admin status
+      const isPlatformAdminByMetadata = user.user_metadata?.role === 'platform_admin';
+      const isPlatformAdminByAppMetadata = user.app_metadata?.role === 'platform_admin';
+      
+      // You can also check if there's a custom claim or use RPC
+      let isPlatformAdminByRPC = false;
+      try {
+        const { data: adminCheck } = await supabase.rpc('is_platform_admin');
+        isPlatformAdminByRPC = adminCheck === true;
+      } catch (rpcError) {
+        console.log('RPC check failed (function may not exist):', rpcError);
+      }
+
+      console.log('Platform admin checks:', {
+        byMetadata: isPlatformAdminByMetadata,
+        byAppMetadata: isPlatformAdminByAppMetadata,
+        byRPC: isPlatformAdminByRPC
+      });
+
+      const isPlatformAdmin = isPlatformAdminByMetadata || isPlatformAdminByAppMetadata || isPlatformAdminByRPC;
 
       if (isPlatformAdmin) {
         toast({
