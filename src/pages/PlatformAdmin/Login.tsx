@@ -748,4 +748,3 @@ CREATE POLICY IF NOT EXISTS "Platform admins can read all records" ON platform_a
 };
 
 export default PlatformAdminLogin;
-```
