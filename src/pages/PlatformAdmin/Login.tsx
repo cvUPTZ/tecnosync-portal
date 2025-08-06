@@ -30,6 +30,34 @@ const PlatformAdminLogin = () => {
     setDebugInfo(prev => [...prev, message]);
   };
 
+  const checkSupabaseConnection = async () => {
+    try {
+      addDebugLog('🟡 Testing Supabase connection...');
+      addDebugLog(`🟡 Supabase URL: ${supabase.supabaseUrl}`);
+      addDebugLog(`🟡 Supabase Key: ${supabase.supabaseKey?.substring(0, 20)}...`);
+      
+      // Test a simple query
+      const { data, error } = await supabase.from('platform_admins').select('*').limit(1);
+      addDebugLog(`🟡 Test query result: ${JSON.stringify({ data, error })}`);
+      
+      // Test auth status
+      const { data: { session } } = await supabase.auth.getSession();
+      addDebugLog(`🟡 Current session: ${session ? 'Active' : 'None'}`);
+    } catch (error: any) {
+      addDebugLog(`🔴 Supabase connection error: ${error.message}`);
+    }
+  };
+
+  const checkExistingUsers = async () => {
+    try {
+      // This requires admin privileges, so it might not work from client-side
+      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      addDebugLog(`🟡 Available users: ${JSON.stringify(users?.map(u => u.email))}`);
+    } catch (error) {
+      addDebugLog(`🟠 Could not list users: ${error}`);
+    }
+  };
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,11 +73,27 @@ const PlatformAdminLogin = () => {
     try {
       addDebugLog(`🟡 Step 1: Attempting login for: ${data.email}`);
 
-      // MISSING CODE: Supabase authentication call
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Step 1: Authenticate user with Supabase (with timeout)
+      const authPromise = supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Authentication timeout after 10 seconds')), 10000)
+      );
+
+      let authData, signInError;
+      try {
+        const result = await Promise.race([authPromise, timeoutPromise]);
+        authData = (result as any).data;
+        signInError = (result as any).error;
+        addDebugLog(`🟡 Step 1: Authentication call completed`);
+      } catch (timeoutError: any) {
+        addDebugLog(`🔴 Step 1: Authentication timed out - ${timeoutError.message}`);
+        signInError = timeoutError;
+      }
 
       addDebugLog(`🟡 Step 1 Result - User ID: ${authData.user?.id || 'null'}, Error: ${signInError?.message || 'none'}`);
 
@@ -77,14 +121,25 @@ const PlatformAdminLogin = () => {
       addDebugLog(`🟡 Step 2: Checking platform admin status for user ID: ${userId}`);
 
       // Step 2: Check platform_admins table
-      const { data: platformAdmin, error: platformAdminError } = await supabase
+      // First, let's try with 'id' column
+      const { data: platformAdminById, error: platformAdminByIdError } = await supabase
         .from('platform_admins')
         .select('*')
         .eq('id', userId)
         .single();
 
-      addDebugLog(`🟡 Step 2 Result - Platform admin data: ${JSON.stringify(platformAdmin)}`);
-      addDebugLog(`🟡 Step 2 Result - Platform admin error: ${JSON.stringify(platformAdminError)}`);
+      addDebugLog(`🟡 Step 2a Result (id column) - Platform admin data: ${JSON.stringify(platformAdminById)}`);
+      addDebugLog(`🟡 Step 2a Result (id column) - Platform admin error: ${JSON.stringify(platformAdminByIdError)}`);
+
+      // Also try with 'user_id' column in case that's the correct column name
+      const { data: platformAdminByUserId, error: platformAdminByUserIdError } = await supabase
+        .from('platform_admins')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      addDebugLog(`🟡 Step 2b Result (user_id column) - Platform admin data: ${JSON.stringify(platformAdminByUserId)}`);
+      addDebugLog(`🟡 Step 2b Result (user_id column) - Platform admin error: ${JSON.stringify(platformAdminByUserIdError)}`);
 
       // Let's also try a broader query to see what's in the table
       const { data: allPlatformAdmins, error: allError } = await supabase
@@ -93,6 +148,10 @@ const PlatformAdminLogin = () => {
       
       addDebugLog(`🟡 Debug: All platform admins: ${JSON.stringify(allPlatformAdmins)}`);
       addDebugLog(`🟡 Debug: All platform admins error: ${JSON.stringify(allError)}`);
+
+      // Determine which query succeeded
+      const platformAdmin = platformAdminById || platformAdminByUserId;
+      const platformAdminError = platformAdminById ? platformAdminByIdError : platformAdminByUserIdError;
 
       if (platformAdminError || !platformAdmin) {
         const errorMsg = platformAdminError?.message || 'User not found in platform_admins table.';
@@ -227,6 +286,24 @@ const PlatformAdminLogin = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? 'Signing In...' : 'Sign In'}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full mt-2"
+                    onClick={checkExistingUsers}
+                  >
+                    Debug: Check Users
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full mt-2"
+                    onClick={checkSupabaseConnection}
+                  >
+                    Debug: Test Connection
                   </Button>
                 </form>
               </Form>
