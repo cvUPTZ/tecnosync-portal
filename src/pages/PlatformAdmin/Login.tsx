@@ -62,50 +62,38 @@ const PlatformAdminLogin = () => {
         return;
       }
 
-      // Fetch user profile from the profiles table
+      // Check if user exists in platform_admins table
+      const { data: platformAdmin, error: platformAdminError } = await supabase
+        .from('platform_admins')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (platformAdminError || !platformAdmin) {
+        console.error('Platform admin check error:', platformAdminError);
+        await supabase.auth.signOut();
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have platform administrator privileges.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Optionally, also fetch user profile for additional info
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', authData.user.id)
         .single();
 
-      if (profileError || !profile) {
-        console.error('Profile fetch error:', profileError);
-        await supabase.auth.signOut();
-        toast({
-          title: 'Login Failed',
-          description: 'User profile not found.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
+      if (profileError) {
+        console.warn('Profile fetch error (non-critical):', profileError);
       }
 
+      console.log('Platform admin verified:', platformAdmin);
       console.log('User profile:', profile);
-
-      // Check if user is active
-      if (!profile.is_active) {
-        await supabase.auth.signOut();
-        toast({
-          title: 'Access Denied',
-          description: 'Your account is inactive.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if user is platform admin
-      if (profile.role !== 'platform_admin') {
-        await supabase.auth.signOut();
-        toast({
-          title: 'Access Denied',
-          description: 'You do not have permission to access this area.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
 
       toast({
         title: 'Login Successful',
