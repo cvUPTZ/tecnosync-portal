@@ -277,6 +277,8 @@ const PlatformAdminLogin = () => {
       addDebugLog(`❌ Add test admin error: ${error.message}`);
     }
   };
+
+  const checkEnvironmentVariables = () => {
     addDebugLog('🧪 Environment Variables Check:');
     
     // These would be your actual env var names
@@ -457,9 +459,9 @@ const PlatformAdminLogin = () => {
         {/* Login Form */}
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Shield className="w-20 h-20 mx-auto mb-4 text-tfa-blue" />
+            <Shield className="w-20 h-20 mx-auto mb-4 text-blue-500" />
             <h1 className="text-3xl font-bold">Academy Creator</h1>
-            <p className="text-muted-foreground">Platform Administration</p>
+            <p className="text-gray-400">Platform Administration</p>
           </div>
 
           {/* Connection Status */}
@@ -530,7 +532,7 @@ const PlatformAdminLogin = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-tfa-blue hover:bg-tfa-blue/90"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
                     disabled={isLoading || connectionStatus.status === 'error'}
                   >
                     {isLoading ? 'Signing In...' : 'Sign In'}
