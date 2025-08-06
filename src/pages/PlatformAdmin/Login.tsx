@@ -71,62 +71,17 @@ const PlatformAdminLogin = () => {
       }
 
       console.log('Checking platform admin status for user ID:', user.id);
-      
-      // Temporarily check if user is platform admin by user metadata OR platform_admins table
-      const isPlatformAdminByMetadata = user.user_metadata?.role === 'platform_admin';
-      console.log('Is platform admin by metadata:', isPlatformAdminByMetadata);
 
-      if (isPlatformAdminByMetadata) {
-        console.log('User is platform admin by metadata, allowing access');
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome, Platform Administrator.',
-        });
-        navigate('/platform-admin');
-        return;
-      }
+      const isPlatformAdmin = user.user_metadata?.role === 'platform_admin';
+      console.log('Is platform admin by metadata:', isPlatformAdmin);
 
-      // Also check platform_admins table
-      const { data: adminData, error: adminError } = await supabase
-        .from('platform_admins')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      console.log('Platform admin query result:', { adminData, adminError });
-
-      if (adminError) {
-        console.error('Error checking platform admin:', adminError);
-        // Still allow access if user metadata says they're platform admin
-        if (isPlatformAdminByMetadata) {
-          console.log('Allowing access despite admin check error due to metadata');
-          toast({
-            title: 'Login Successful',
-            description: 'Welcome, Platform Administrator.',
-          });
-          navigate('/platform-admin');
-          return;
-        }
-        
-        await supabase.auth.signOut();
-        toast({
-          title: 'Access Denied',
-          description: 'Error verifying platform admin access.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (adminData) {
-        console.log('User found in platform_admins table, allowing access');
+      if (isPlatformAdmin) {
         toast({
           title: 'Login Successful',
           description: 'Welcome, Platform Administrator.',
         });
         navigate('/platform-admin');
       } else {
-        console.log('User not found in platform_admins table and no metadata role');
         await supabase.auth.signOut();
         toast({
           title: 'Access Denied',
