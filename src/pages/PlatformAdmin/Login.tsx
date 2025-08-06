@@ -1,4 +1,4 @@
-// src/pages/PlatformAdmin/Login.tsx - Debug Version
+// src/pages/PlatformAdmin/Login.tsx - Fixed Version
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,11 +45,11 @@ const PlatformAdminLogin = () => {
     try {
       addDebugLog(`🟡 Step 1: Attempting login for: ${data.email}`);
 
-      // // Step 1: Authenticate user
-      // const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-      //   email: data.email.trim(),
-      //   password: data.password,
-      // });
+      // MISSING CODE: Supabase authentication call
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
       addDebugLog(`🟡 Step 1 Result - User ID: ${authData.user?.id || 'null'}, Error: ${signInError?.message || 'none'}`);
 
