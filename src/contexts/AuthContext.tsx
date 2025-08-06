@@ -1,7 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface Profile {
@@ -17,7 +16,7 @@ interface AuthContextType {
   user: SupabaseUser | null;
   profile: Profile | null;
   loading: boolean;
-  isPlatformAdmin: () => boolean;
+  isPlatformAdmin: boolean; // Changed from function to boolean
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isDirector: () => boolean;
@@ -30,7 +29,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Function to check platform admin status
+  const checkPlatformAdminStatus = async (userId: string) => {
+    try {
+      const { data: platformAdmin, error } = await supabase
+        .from('platform_admins')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      return !error && !!platformAdmin;
+    } catch (error) {
+      console.error('Error checking platform admin status:', error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -41,6 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(currentUser);
 
         if (currentUser) {
+          // Check platform admin status
+          const platformAdminStatus = await checkPlatformAdminStatus(currentUser.id);
+          setIsPlatformAdmin(platformAdminStatus);
+
+          // Fetch profile
           const { data: profileData, error } = await supabase
             .from('profiles')
             .select('*')
@@ -55,11 +76,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else {
           setProfile(null);
+          setIsPlatformAdmin(false);
         }
       } catch (e) {
         console.error("Error in initAuth:", e);
         setUser(null);
         setProfile(null);
+        setIsPlatformAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -75,6 +98,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(currentUser);
 
           if (currentUser) {
+            // Check platform admin status
+            const platformAdminStatus = await checkPlatformAdminStatus(currentUser.id);
+            setIsPlatformAdmin(platformAdminStatus);
+
+            // Fetch profile
             const { data: profileData, error } = await supabase
               .from('profiles')
               .select('*')
@@ -89,13 +117,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           } else {
             setProfile(null);
+            setIsPlatformAdmin(false);
           }
         } catch (e) {
-            console.error("Error in onAuthStateChange handler:", e);
-            setUser(null);
-            setProfile(null);
+          console.error("Error in onAuthStateChange handler:", e);
+          setUser(null);
+          setProfile(null);
+          setIsPlatformAdmin(false);
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
       }
     );
@@ -119,23 +149,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
+    setIsPlatformAdmin(false);
   };
 
   const isDirector = () => {
     return profile?.role === 'director';
   };
 
-  const isPlatformAdmin = () => {
-    // Check if user exists in platform_admins table through profile role
-    // The database RLS policies will enforce proper access control
-    return profile?.role === 'platform_admin' || user?.user_metadata?.role === 'platform_admin';
-  };
-
   const hasModuleAccess = (module: string) => {
-    if (!profile && !isPlatformAdmin()) return false;
+    if (!profile && !isPlatformAdmin) return false;
     
     // Platform admin has access to all modules
-    if (isPlatformAdmin()) return true;
+    if (isPlatformAdmin) return true;
     
     // Director has access to certain modules
     if (isDirector()) {
@@ -159,7 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     signIn,
     signOut,
-    isPlatformAdmin,
+    isPlatformAdmin, // Now a boolean, not a function
     isDirector,
     hasModuleAccess,
     getAcademyId
