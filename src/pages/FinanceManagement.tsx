@@ -99,6 +99,7 @@ const FinanceManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+  const [academyName, setAcademyName] = useState('');
   const [formData, setFormData] = useState<PaymentFormData>({
     student_id: '',
     amount: '',
@@ -116,6 +117,17 @@ const FinanceManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+
+      if (profile?.academy_id) {
+        const { data: academyData, error: academyError } = await supabase
+          .from('academies')
+          .select('name')
+          .eq('id', profile.academy_id)
+          .single();
+        if (academyData) setAcademyName(academyData.name);
+        else if (academyError) console.error('Error fetching academy name:', academyError);
+      }
+
       await Promise.all([
         fetchPayments(),
         fetchFeeStructures(),
@@ -165,7 +177,7 @@ const FinanceManagement = () => {
         id: payment.students.id,
         full_name: payment.students.full_name,
         student_code: payment.students.student_code,
-        group_name: payment.students.student_groups?.name
+        group_name: Array.isArray(payment.students.student_groups) ? payment.students.student_groups[0]?.name : payment.students.student_groups?.name
       } : undefined
     })) || [];
 
@@ -186,7 +198,7 @@ const FinanceManagement = () => {
 
     const formattedFees = feeData?.map(fee => ({
       ...fee,
-      group_name: fee.student_groups?.name
+      group_name: Array.isArray(fee.student_groups) ? fee.student_groups[0]?.name : fee.student_groups?.name
     })) || [];
 
     setFeeStructures(formattedFees);
@@ -208,7 +220,7 @@ const FinanceManagement = () => {
 
     const formattedStudents = studentsData?.map(student => ({
       ...student,
-      group_name: student.student_groups?.name
+      group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : student.student_groups?.name
     })) || [];
 
     setStudents(formattedStudents);
@@ -916,7 +928,7 @@ const FinanceManagement = () => {
           {selectedPayment && (
               <div className="space-y-4 py-4">
                 <div className="text-center border-b pb-4">
-                  <h3 className="font-bold text-lg">{profile?.academies?.name || 'الأكاديمية'}</h3>
+                  <h3 className="font-bold text-lg">{academyName || 'الأكاديمية'}</h3>
                   <p className="text-sm text-muted-foreground">إيصال دفع</p>
                 </div>
               <div className="space-y-2">

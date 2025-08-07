@@ -88,3 +88,5 @@ const WebsitePreview: React.FC<WebsitePreviewProps> = ({
     </Card>
   );
 };
+
+export default WebsitePreview;

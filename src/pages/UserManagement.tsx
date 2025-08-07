@@ -93,7 +93,7 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  const { isAdmin, profile } = useAuth();
+  const { isPlatformAdmin, profile } = useAuth();
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -132,10 +132,10 @@ const UserManagement = () => {
   };
 
   useEffect(() => {
-    if (isAdmin()) {
+    if (isPlatformAdmin()) {
       fetchUsers();
     }
-  }, [isAdmin]);
+  }, [isPlatformAdmin]);
 
   // Filter users
   useEffect(() => {
@@ -270,7 +270,7 @@ const UserManagement = () => {
     coaches: users.filter(u => u.role === 'coach').length,
   };
 
-  if (!isAdmin()) {
+  if (!isPlatformAdmin()) {
     return (
       <div className="space-y-6 p-6" dir="rtl">
         <Card>

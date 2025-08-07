@@ -111,13 +111,11 @@ const AcademyRegistration = () => {
     fetchAcademy();
   }, [subdomain, navigate, toast]);
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < 5) {
-      // Validate current step
-      const fieldsToValidate = getFieldsForStep(currentStep);
-      form.trigger(fieldsToValidate);
+      const fieldsToValidate = getFieldsForStep(currentStep) as (keyof RegistrationFormData)[];
+      const isValid = await form.trigger(fieldsToValidate);
       
-      const isValid = fieldsToValidate.every(field => form.getFieldState(field).isDirty && !form.getFieldState(field).error);
       if (isValid) {
         setCurrentStep(currentStep + 1);
       }
@@ -150,35 +148,26 @@ const AcademyRegistration = () => {
     
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('registrations').insert([{
+      const registrationData = {
         academy_id: academy.id,
-        full_name: data.full_name,
-        date_of_birth: data.date_of_birth,
-        nationality: data.nationality,
-        phone: data.phone,
-        email: data.email,
-        address: data.address,
-        parent_name: data.parent_name,
-        parent_phone: data.parent_phone,
+        ...data,
         parent_email: data.parent_email || null,
-        parent_id_number: data.parent_id_number,
         parent_profession: data.parent_profession || null,
         position: data.position || null,
         previous_experience: data.previous_experience || null,
         medical_conditions: data.medical_conditions || null,
         preferred_foot: data.preferred_foot || null,
         program_preference: data.program_preference || null,
-        emergency_contact_name: data.emergency_contact_name,
-        emergency_contact_phone: data.emergency_contact_phone,
-        emergency_contact_relation: data.emergency_contact_relation,
         how_did_you_hear: data.how_did_you_hear || null,
         additional_notes: data.additional_notes || null,
-      }]);
+      };
+
+      const { error } = await supabase.from('registrations').insert([registrationData]);
 
       if (error) throw error;
 
       // Generate PDF
-      await generateRegistrationPDF({ data });
+      await generateRegistrationPDF(data);
 
       toast({
         title: "تم التسجيل بنجاح",

@@ -85,8 +85,7 @@ const StudentManagement = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const { toast } = useToast();
-  // isAdmin is likely a boolean, not a function
-  const { profile, isAdmin } = useAuth();
+  const { profile, isDirector, isPlatformAdmin } = useAuth();
 
   // Fetch students
   const fetchStudents = async () => {
@@ -250,8 +249,7 @@ const StudentManagement = () => {
             <RefreshCw className="w-4 h-4 ml-2" />
             تحديث
           </Button>
-          {/* Use isAdmin directly as a boolean, not isAdmin() */}
-          {(isAdmin || profile?.role === 'coach') && (
+          {((isDirector() || isPlatformAdmin()) || profile?.role === 'coach') && (
             <Button onClick={() => setShowAddForm(true)}>
               <UserPlus className="w-4 h-4 ml-2" />
               إضافة طالب
@@ -415,8 +413,7 @@ const StudentManagement = () => {
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            {/* Use isAdmin directly as a boolean, not isAdmin() */}
-                            {(isAdmin || profile?.role === 'coach') && (
+                            {((isDirector() || isPlatformAdmin()) || profile?.role === 'coach') && (
                               <Button
                                 variant="outline"
                                 size="sm"
