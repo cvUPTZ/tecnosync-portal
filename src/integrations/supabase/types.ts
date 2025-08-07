@@ -351,14 +351,17 @@ export type Database = {
       platform_admins: {
         Row: {
           created_at: string | null
+          email: string | null
           id: string
         }
         Insert: {
           created_at?: string | null
+          email?: string | null
           id: string
         }
         Update: {
           created_at?: string | null
+          email?: string | null
           id?: string
         }
         Relationships: []
@@ -984,9 +987,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_academy_id_from_user: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
-        Returns: Database["public"]["Enums"]["app_role"]
+        Returns: string
       }
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
