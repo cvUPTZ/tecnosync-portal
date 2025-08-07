@@ -35,19 +35,10 @@ const PlatformAdminLogin = () => {
         throw new Error('Authentication failed');
       }
 
-      // Check if user is a platform admin
-      const { data: adminData, error: adminError } = await supabase
-        .from('platform_admins')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
+      // Check if user is a platform admin by inspecting their user_metadata
+      const userRole = authData.user?.user_metadata?.role;
 
-      if (adminError && adminError.code !== 'PGRST116') {
-        console.error('Error checking admin status:', adminError);
-        throw new Error('Failed to verify admin privileges');
-      }
-
-      if (!adminData) {
+      if (userRole !== 'platform_admin') {
         // User authenticated but is not a platform admin
         await supabase.auth.signOut();
         throw new Error('Access denied. You are not authorized as a platform administrator.');
