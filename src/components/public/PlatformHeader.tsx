@@ -3,32 +3,47 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
-const PlatformHeader = () => {
+interface Academy {
+  id: string;
+  name: string;
+  subdomain: string;
+  logo_url?: string;
+}
+
+interface PlatformHeaderProps {
+  academy: Academy;
+}
+
+const PlatformHeader: React.FC<PlatformHeaderProps> = ({ academy }) => {
+  const navLinks = [
+    { href: `/site/${academy.subdomain}/about`, label: 'About' },
+    { href: `/site/${academy.subdomain}/programs`, label: 'Programs' },
+    { href: `/site/${academy.subdomain}/team`, label: 'Team' },
+    { href: `/site/${academy.subdomain}/contact`, label: 'Contact' },
+  ];
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <img
-            src="/lovable-uploads/110f1368-cc3e-49a8-ba42-0e0f2e7ec6ee.png"
-            alt="Platform Logo"
-            className="w-8 h-8 mr-3"
-          />
-          <Link to="/" className="text-2xl font-bold text-gray-800">
-            Academy Creator
+          {academy.logo_url && (
+            <img src={academy.logo_url} alt={`${academy.name} Logo`} className="w-8 h-8 mr-3" />
+          )}
+          <Link to={`/site/${academy.subdomain}`} className="text-2xl font-bold text-gray-800">
+            {academy.name}
           </Link>
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-4">
-            <a href="#features" className="text-gray-600 hover:text-gray-800">Features</a>
-            <a href="#pricing" className="text-gray-600 hover:text-gray-800">Pricing</a>
-            <a href="#contact" className="text-gray-600 hover:text-gray-800">Contact</a>
+            {navLinks.map(link => (
+              <Link key={link.href} to={link.href} className="text-gray-600 hover:text-gray-800">
+                {link.label}
+              </Link>
+            ))}
           </div>
           <LanguageSwitcher />
-          <Link to="/login">
-            <Button variant="outline">Login</Button>
-          </Link>
-          <Link to="/registration">
-            <Button className="bg-tfa-blue hover:bg-tfa-blue/90">Sign Up</Button>
+          <Link to={`/site/${academy.subdomain}/register`}>
+            <Button className="bg-tfa-blue hover:bg-tfa-blue/90">Register</Button>
           </Link>
         </div>
       </nav>

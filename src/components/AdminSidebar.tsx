@@ -29,9 +29,33 @@ interface MenuItem {
   moduleId?: string;
 }
 
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+
 const AdminSidebar = () => {
   const location = useLocation();
-  const { profile, academy } = useAuth();
+  const { profile, getAcademyId } = useAuth();
+  const [academy, setAcademy] = useState<Tables<'academies'> | null>(null);
+
+  useEffect(() => {
+    const fetchAcademy = async () => {
+      const academyId = getAcademyId();
+      if (academyId) {
+        const { data, error } = await supabase
+          .from('academies')
+          .select('*')
+          .eq('id', academyId)
+          .single();
+        if (error) {
+          console.error('Error fetching academy:', error);
+        } else {
+          setAcademy(data);
+        }
+      }
+    };
+    fetchAcademy();
+  }, [getAcademyId]);
 
   // Function to check if a module is enabled
   const isModuleEnabled = (moduleId: string): boolean => {

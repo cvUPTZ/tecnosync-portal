@@ -205,10 +205,11 @@ const FinancialReports = () => {
     data?.forEach(payment => {
       const studentId = payment.student_id;
       if (!studentData[studentId]) {
+        const student = Array.isArray(payment.students) ? payment.students[0] : payment.students;
         studentData[studentId] = {
-          student_name: payment.students?.full_name || '',
-          student_code: payment.students?.student_code || '',
-          group_name: payment.students?.student_groups?.name || '',
+          student_name: student?.full_name || '',
+          student_code: student?.student_code || '',
+          group_name: Array.isArray(student?.student_groups) ? student?.student_groups[0]?.name : student?.student_groups?.name || '',
           total_due: 0,
           total_paid: 0,
           overdue_count: 0

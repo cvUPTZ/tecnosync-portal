@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+interface FormData {
+  academyName: string;
+  subdomain: string;
+  contactEmail: string;
+  contactPhone: string;
+  selectedTemplate: string;
+  selectedModules: string[];
+}
+
+interface FormErrors {
+  academyName?: string;
+  subdomain?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
 const Index = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     academyName: '',
     subdomain: '',
     contactEmail: '',
@@ -13,7 +29,7 @@ const Index = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState('create-academy');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const availableModules = [
     { id: 'student-management', label: 'إدارة الطلاب', enabled: true },
@@ -27,7 +43,7 @@ const Index = () => {
   ];
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     
     if (!formData.academyName.trim()) {
       newErrors.academyName = 'اسم الأكاديمية مطلوب';
@@ -53,17 +69,17 @@ const Index = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear error when user starts typing
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  const handleModuleChange = (moduleId) => {
+  const handleModuleChange = (moduleId: string) => {
     setFormData(prev => ({
       ...prev,
       selectedModules: prev.selectedModules.includes(moduleId)

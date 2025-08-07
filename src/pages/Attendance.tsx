@@ -119,7 +119,7 @@ const Attendance = () => {
 
       setSessions(sessionsData?.map(session => ({
         ...session,
-        group_name: session.student_groups?.name
+        group_name: Array.isArray(session.student_groups) ? session.student_groups[0]?.name : session.student_groups?.name
       })) || []);
 
     } catch (error) {
@@ -156,7 +156,7 @@ const Attendance = () => {
 
       const formattedStudents = studentsData?.map(student => ({
         ...student,
-        group_name: student.student_groups?.name
+        group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : student.student_groups?.name
       })) || [];
 
       setStudents(formattedStudents);

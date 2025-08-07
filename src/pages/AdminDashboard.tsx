@@ -24,8 +24,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard = () => {
-  // isAdmin is likely a boolean, not a function
-  const { profile, isAdmin } = useAuth();
+  const { profile, isDirector, isPlatformAdmin } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     totalRegistrations: 0,
     pendingRegistrations: 0,
@@ -34,6 +33,7 @@ const AdminDashboard = () => {
     todaySessions: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [academyName, setAcademyName] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -41,6 +41,19 @@ const AdminDashboard = () => {
         if (!profile?.academy_id) {
           setLoading(false);
           return;
+        }
+
+        // Fetch academy name
+        const { data: academyData, error: academyError } = await supabase
+          .from('academies')
+          .select('name')
+          .eq('id', profile.academy_id)
+          .single();
+
+        if (academyData) {
+          setAcademyName(academyData.name);
+        } else if (academyError) {
+          console.error('Error fetching academy name:', academyError);
         }
 
         // Fetch registrations count filtered by academy
@@ -57,8 +70,7 @@ const AdminDashboard = () => {
 
         // Fetch active coaches count if admin, filtered by academy
         let activeCoaches = 0;
-        // Use isAdmin directly as a boolean, not isAdmin()
-        if (isAdmin) {
+        if (isDirector() || isPlatformAdmin()) {
           const { count } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
@@ -83,7 +95,7 @@ const AdminDashboard = () => {
     };
 
     fetchStats();
-  }, [isAdmin, profile?.academy_id]); // Keep isAdmin in dependency array
+  }, [isDirector, isPlatformAdmin, profile?.academy_id]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -126,7 +138,7 @@ const AdminDashboard = () => {
             {getGreeting()}، {profile?.full_name}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {getRoleTitle(profile?.role || '')} - {profile?.academies?.name || 'الأكاديمية'}
+            {getRoleTitle(profile?.role || '')} - {academyName || 'الأكاديمية'}
           </p>
         </div>
         <div className="text-left">
@@ -167,8 +179,7 @@ const AdminDashboard = () => {
             </p>
           </CardContent>
         </Card>
-        {/* Use isAdmin directly as a boolean, not isAdmin() */}
-        {isAdmin && (
+        {(isDirector() || isPlatformAdmin()) && (
           <Card className="border-tfa-green/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">المدربين النشطين</CardTitle>
@@ -221,8 +232,7 @@ const AdminDashboard = () => {
                 مراجعة طلبات التسجيل
               </Button>
             </Link>
-            {/* Use isAdmin directly as a boolean, not isAdmin() */}
-            {isAdmin && (
+            {(isDirector() || isPlatformAdmin()) && (
               <Link to="/admin/finance">
                 <Button variant="outline" className="w-full justify-start">
                   <DollarSign className="ml-2 h-4 w-4" />

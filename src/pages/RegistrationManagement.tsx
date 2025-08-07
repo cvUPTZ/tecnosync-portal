@@ -88,7 +88,7 @@ const RegistrationManagement = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const { toast } = useToast();
-  const { profile, isAdmin } = useAuth();
+  const { profile, isDirector, isPlatformAdmin } = useAuth();
 
   // Fetch registrations
   const fetchRegistrations = async () => {
@@ -385,7 +385,7 @@ const RegistrationManagement = () => {
                           <Eye className="w-4 h-4" />
                         </Button>
                         
-                        {registration.status === 'pending' && (isAdmin() || profile?.role === 'coach') && (
+                        {registration.status === 'pending' && ((isDirector() || isPlatformAdmin()) || profile?.role === 'coach') && (
                           <>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -577,7 +577,7 @@ const RegistrationManagement = () => {
                   {getStatusBadge(selectedRegistration.status)}
                 </div>
                 
-                {selectedRegistration.status === 'pending' && (isAdmin() || profile?.role === 'coach') && (
+                {selectedRegistration.status === 'pending' && ((isDirector() || isPlatformAdmin()) || profile?.role === 'coach') && (
                   <div className="flex gap-2">
                     <Button
                       onClick={() => updateRegistrationStatus(selectedRegistration.id, 'approved')}

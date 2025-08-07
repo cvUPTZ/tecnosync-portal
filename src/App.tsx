@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import EditAcademyForm from "./components/PlatformAdmin/EditAcademyForm";
 
 // New Unified Login
 const UnifiedLogin = React.lazy(() => import("./pages/UnifiedLogin"));
@@ -28,7 +29,6 @@ const PlatformUserManagement = React.lazy(() => import("./pages/UserManagement")
 const PlatformSettings = React.lazy(() => import("./pages/PlatformAdmin/Settings"));
 const PlatformAnalytics = React.lazy(() => import("./pages/PlatformAdmin/Analytics"));
 const CreateAcademyForm = React.lazy(() => import("./pages/PlatformAdmin/CreateAcademy"));
-const EditAcademyForm = React.lazy(() => import("./components/PlatformAdmin/EditAcademyForm"));
 
 // Academy Admin Routes
 const AdminLayout = React.lazy(() => import("./components/AdminLayout"));
@@ -58,9 +58,7 @@ const AcademySetupWizard = React.lazy(() => import("./pages/academy/AcademySetup
 // Website Management Routes
 const WebsiteContentManagement = React.lazy(() => import("./pages/WebsiteContentManagement"));
 const ThemeCustomization = React.lazy(() => import("./components/academy/ThemeCustomization"));
-const WebsitePreview = React.lazy(() => 
-  import("./components/academy/WebsitePreview").then(module => ({ default: module.default }))
-);
+const WebsitePreview = React.lazy(() => import("./components/academy/WebsitePreview"));
 
 // Public Content Routes
 const PrivacyPolicy = React.lazy(() => import("./pages/legal/PrivacyPolicy"));

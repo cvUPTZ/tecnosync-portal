@@ -77,7 +77,7 @@ interface CoachFormData {
 }
 
 const CoachManagement = () => {
-  const { profile, isAdmin } = useAuth();
+  const { profile, isDirector, isPlatformAdmin } = useAuth();
   const { toast } = useToast();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [groups, setGroups] = useState<StudentGroup[]>([]);
@@ -85,6 +85,7 @@ const CoachManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [loading, setLoading] = useState(true);
+  const [academyName, setAcademyName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -106,6 +107,16 @@ const CoachManagement = () => {
   const fetchCoaches = async () => {
     try {
       setLoading(true);
+
+      if (profile?.academy_id) {
+        const { data: academyData, error: academyError } = await supabase
+          .from('academies')
+          .select('name')
+          .eq('id', profile.academy_id)
+          .single();
+        if (academyData) setAcademyName(academyData.name);
+        else if (academyError) console.error('Error fetching academy name:', academyError);
+      }
       
       // Fetch coaches from profiles table
       const { data: coachesData, error } = await supabase
@@ -131,8 +142,9 @@ const CoachManagement = () => {
 
           // Get unique groups
           const uniqueGroups = sessionsData?.reduce((acc, session) => {
-            if (session.student_groups && !acc.find(g => g.id === session.student_groups.id)) {
-              acc.push(session.student_groups);
+            const group = Array.isArray(session.student_groups) ? session.student_groups[0] : session.student_groups;
+            if (group && !acc.find(g => g.id === group.id)) {
+              acc.push(group);
             }
             return acc;
           }, [] as any[]) || [];
@@ -158,7 +170,7 @@ const CoachManagement = () => {
             assigned_groups: uniqueGroups,
             recent_sessions: recentSessions?.map(session => ({
               ...session,
-              group_name: session.student_groups?.name
+              group_name: Array.isArray(session.student_groups) ? session.student_groups[0]?.name : session.student_groups?.name
             })) || []
           };
         })
@@ -333,7 +345,7 @@ const CoachManagement = () => {
     );
   }
 
-  if (!isAdmin()) {
+  if (!isDirector() && !isPlatformAdmin()) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">ليس لديك صلاحية للوصول إلى هذه الصفحة</p>
@@ -348,7 +360,7 @@ const CoachManagement = () => {
         <div>
           <h1 className="text-3xl font-bold text-tfa-blue">إدارة المدربين</h1>
           <p className="text-muted-foreground mt-1">
-            إدارة فريق التدريب في {profile?.academies?.name || 'الأكاديمية'}
+            إدارة فريق التدريب في {academyName || 'الأكاديمية'}
           </p>
         </div>
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
