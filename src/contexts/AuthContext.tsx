@@ -33,44 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        setLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .single();
-
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', error);
-            setProfile(null);
-          } else {
-            setProfile(profileData);
-          }
-        } else {
-          setProfile(null);
-        }
-      } catch (e) {
-        console.error("Error in initAuth:", e);
-        setUser(null);
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initAuth();
-
+    setLoading(true);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          setLoading(true);
           const currentUser = session?.user ?? null;
           setUser(currentUser);
 
@@ -81,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .eq('user_id', currentUser.id)
               .single();
 
-            if (error && error.code !== 'PGRST116') {
+            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is not an error in this case
               console.error('Error fetching profile on auth change:', error);
               setProfile(null);
             } else {
