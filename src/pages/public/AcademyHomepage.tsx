@@ -123,10 +123,7 @@ const AcademyHomepage = () => {
       <AcademyHero pageData={homePage} />
       {aboutPage && (
         <AboutSection 
-          pageData={{
-            title: aboutPage.title || 'About Us',
-            content: aboutPage.content || { introduction: 'Welcome to our academy' }
-          }}
+          content={aboutPage.content || { introduction: 'Welcome to our academy' }}
         />
       )}
       {teamMembers && teamMembers.length > 0 && (

@@ -218,8 +218,8 @@ const App: React.FC = () => {
                 
                 {/* Website Management */}
                 <Route path="website" element={<WebsiteContentManagement />} />
-                <Route path="website/themes" element={<ThemeCustomization />} />
-                <Route path="website/preview" element={<WebsitePreview />} />
+                <Route path="website/themes" element={<ThemeCustomization academyId="" currentSettings={{}} onSettingsUpdate={() => {}} />} />
+                <Route path="website/preview" element={<WebsitePreview subdomain="" academyName="" template="" primaryColor="" />} />
               </Route>
 
               {/* Legal and Utility Routes */}

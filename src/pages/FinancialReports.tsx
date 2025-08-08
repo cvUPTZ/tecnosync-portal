@@ -209,7 +209,7 @@ const FinancialReports = () => {
         studentData[studentId] = {
           student_name: student?.full_name || '',
           student_code: student?.student_code || '',
-          group_name: Array.isArray(student?.student_groups) ? student?.student_groups[0]?.name : student?.student_groups?.name || '',
+          group_name: Array.isArray(student?.student_groups) ? student?.student_groups[0]?.name : (student?.student_groups as any)?.name || '',
           total_due: 0,
           total_paid: 0,
           overdue_count: 0

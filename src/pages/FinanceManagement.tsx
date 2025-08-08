@@ -177,7 +177,7 @@ const FinanceManagement = () => {
         id: payment.students.id,
         full_name: payment.students.full_name,
         student_code: payment.students.student_code,
-        group_name: Array.isArray(payment.students.student_groups) ? payment.students.student_groups[0]?.name : payment.students.student_groups?.name
+        group_name: Array.isArray(payment.students.student_groups) ? payment.students.student_groups[0]?.name : (payment.students.student_groups as any)?.name
       } : undefined
     })) || [];
 
@@ -198,7 +198,7 @@ const FinanceManagement = () => {
 
     const formattedFees = feeData?.map(fee => ({
       ...fee,
-      group_name: Array.isArray(fee.student_groups) ? fee.student_groups[0]?.name : fee.student_groups?.name
+      group_name: Array.isArray(fee.student_groups) ? fee.student_groups[0]?.name : (fee.student_groups as any)?.name
     })) || [];
 
     setFeeStructures(formattedFees);
@@ -220,7 +220,7 @@ const FinanceManagement = () => {
 
     const formattedStudents = studentsData?.map(student => ({
       ...student,
-      group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : student.student_groups?.name
+      group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : (student.student_groups as any)?.name
     })) || [];
 
     setStudents(formattedStudents);

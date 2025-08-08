@@ -170,7 +170,7 @@ const CoachManagement = () => {
             assigned_groups: uniqueGroups,
             recent_sessions: recentSessions?.map(session => ({
               ...session,
-              group_name: Array.isArray(session.student_groups) ? session.student_groups[0]?.name : session.student_groups?.name
+              group_name: Array.isArray(session.student_groups) ? session.student_groups[0]?.name : (session.student_groups as any)?.name
             })) || []
           };
         })

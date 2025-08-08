@@ -156,7 +156,7 @@ const Attendance = () => {
 
       const formattedStudents = studentsData?.map(student => ({
         ...student,
-        group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : student.student_groups?.name
+        group_name: Array.isArray(student.student_groups) ? student.student_groups[0]?.name : (student.student_groups as any)?.name
       })) || [];
 
       setStudents(formattedStudents);
