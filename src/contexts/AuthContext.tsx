@@ -33,9 +33,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let mounted = true;
+    
+    const initializeAuth = async () => {
+      try {
+        setLoading(true);
+        
+        // Get initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          if (mounted) {
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const currentUser = session?.user ?? null;
+        
+        if (mounted) {
+          setUser(currentUser);
+        }
+
+        if (currentUser && mounted) {
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', currentUser.id)
+              .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no profile exists
+
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('Error fetching profile:', profileError);
+            }
+            
+            if (mounted) {
+              setProfile(profileData);
+            }
+          } catch (profileErr) {
+            console.error('Error in profile fetch:', profileErr);
+            if (mounted) {
+              setProfile(null);
+            }
+          }
+        } else if (mounted) {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Initialize auth state
+    initializeAuth();
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         try {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
@@ -45,9 +112,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .from('profiles')
               .select('*')
               .eq('user_id', currentUser.id)
-              .single();
+              .maybeSingle();
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is not an error in this case
+            if (error && error.code !== 'PGRST116') {
               console.error('Error fetching profile on auth change:', error);
               setProfile(null);
             } else {
@@ -57,16 +124,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setProfile(null);
           }
         } catch (e) {
-            console.error("Error in onAuthStateChange handler:", e);
-            setUser(null);
-            setProfile(null);
-        } finally {
-            setLoading(false);
+          console.error("Error in onAuthStateChange handler:", e);
+          setUser(null);
+          setProfile(null);
         }
       }
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
