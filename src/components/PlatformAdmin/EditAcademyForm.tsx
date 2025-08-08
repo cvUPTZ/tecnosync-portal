@@ -119,7 +119,7 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
   const adminUrl = `${window.location.origin}/login`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Academy URLs */}
       <Card>
         <CardHeader>
@@ -128,8 +128,8 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Public Website</Label>
-            <div className="flex items-center gap-2">
-              <code className="bg-gray-100 px-2 py-1 rounded text-sm flex-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <code className="bg-muted px-2 py-1 rounded text-sm flex-1 break-all">
                 {publicUrl}
               </code>
               <Button 
@@ -149,8 +149,8 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
 
           <div className="space-y-2">
             <Label>Admin Login</Label>
-            <div className="flex items-center gap-2">
-              <code className="bg-gray-100 px-2 py-1 rounded text-sm flex-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <code className="bg-muted px-2 py-1 rounded text-sm flex-1 break-all">
                 {adminUrl}
               </code>
               <Button 
@@ -176,17 +176,19 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
           <CardTitle>Admin Account</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Admin Email</Label>
-            <code className="bg-gray-100 px-2 py-1 rounded text-sm block">
-              {adminProfile?.email || 'Loading...'}
-            </code>
-          </div>
-          <div className="space-y-2">
-            <Label>Admin Name</Label>
-            <code className="bg-gray-100 px-2 py-1 rounded text-sm block">
-              {adminProfile?.full_name || 'Loading...'}
-            </code>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Admin Email</Label>
+              <code className="bg-muted px-2 py-1 rounded text-sm block break-all">
+                {adminProfile?.email || 'Loading...'}
+              </code>
+            </div>
+            <div className="space-y-2">
+              <Label>Admin Name</Label>
+              <code className="bg-muted px-2 py-1 rounded text-sm block">
+                {adminProfile?.full_name || 'Loading...'}
+              </code>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Password</Label>
@@ -223,7 +225,7 @@ const EditAcademyForm: React.FC<EditAcademyFormProps> = ({ academy, onSuccess })
                 render={() => (
                   <FormItem>
                     <FormLabel>Enabled Modules</FormLabel>
-                    <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                       {availableModules.map((item) => (
                         <FormField
                           key={item.id}
