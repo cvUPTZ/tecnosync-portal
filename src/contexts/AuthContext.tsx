@@ -158,9 +158,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const isPlatformAdmin = () => {
-    // Check if user exists in platform_admins table through profile role
-    // The database RLS policies will enforce proper access control
-    return profile?.role === 'platform_admin' || user?.user_metadata?.role === 'platform_admin';
+    // SECURITY FIX: Only check database profile, never trust user metadata
+    // User metadata can be manipulated, only database profiles are authoritative
+    return profile?.role === 'platform_admin';
   };
 
   const hasModuleAccess = (module: string) => {
