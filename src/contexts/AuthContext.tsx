@@ -33,14 +33,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+    console.log('[Auth] provider mounted');
 
     const initializeAuth = async () => {
+      console.log('[Auth] initializeAuth start');
       try {
         setLoading(true);
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
         if (sessionError) {
-          console.error('Error getting session:', sessionError);
+          console.error('[Auth] getSession error:', sessionError);
           if (mounted) {
             setUser(null);
             setProfile(null);
@@ -52,38 +55,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mounted) setUser(currentUser);
 
         if (currentUser && mounted) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .maybeSingle();
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', currentUser.id)
+              .maybeSingle();
 
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error fetching profile:', profileError);
-            if (mounted) setProfile(null);
-          } else if (mounted) {
-            setProfile(profileData);
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('[Auth] profile fetch error:', profileError);
+              setProfile(null);
+            } else {
+              setProfile(profileData);
+            }
+          } catch (profileErr) {
+            console.error('[Auth] error fetching profile:', profileErr);
+            setProfile(null);
           }
-        } else if (mounted) {
+        } else {
           setProfile(null);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('[Auth] initializeAuth unexpected error:', error);
         if (mounted) {
           setUser(null);
           setProfile(null);
         }
       } finally {
-        if (mounted) setLoading(false); // ✅ always clear loading
+        if (mounted) {
+          console.log('[Auth] initializeAuth done — setting loading=false');
+          setLoading(false);
+        }
       }
     };
 
     initializeAuth();
 
-    // Listen for auth state changes
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (!mounted) return;
+        console.log('[Auth] onAuthStateChange fired:', event, session?.user?.id || 'no-user');
 
         try {
           const currentUser = session?.user ?? null;
@@ -97,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .maybeSingle();
 
             if (error && error.code !== 'PGRST116') {
-              console.error('Error fetching profile on auth change:', error);
+              console.error('[Auth] profile fetch error on auth change:', error);
               setProfile(null);
             } else {
               setProfile(profileData);
@@ -106,18 +118,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setProfile(null);
           }
         } catch (e) {
-          console.error('Error in onAuthStateChange handler:', e);
+          console.error("[Auth] error in onAuthStateChange handler:", e);
           setUser(null);
           setProfile(null);
         } finally {
-          if (mounted) setLoading(false); // ✅ always clear loading
+          // ✅ Always clear loading at the end
+          console.log('[Auth] onAuthStateChange — setting loading=false');
+          setLoading(false);
         }
       }
     );
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+        console.log('[Auth] unsubscribed auth listener');
+      }
     };
   }, []);
 
@@ -126,17 +143,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-    } finally {
-      // Let onAuthStateChange handle user/profile, but ensure we clear loading if it doesn't fire
-      setTimeout(() => setLoading(false), 3000);
+      // onAuthStateChange will set loading=false
+    } catch (error) {
+      console.error('[Auth] signIn error:', error);
+      setLoading(false);
+      throw error;
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    setLoading(false); // ✅ prevent stuck loading after logout
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('[Auth] signOut error:', e);
+    } finally {
+      setUser(null);
+      setProfile(null);
+      setLoading(false);
+    }
   };
 
   const isDirector = () => profile?.role === 'director';
@@ -157,18 +181,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getAcademyId = () => profile?.academy_id || null;
 
+  const value: AuthContextType = {
+    user,
+    profile,
+    loading,
+    signIn,
+    signOut,
+    isPlatformAdmin,
+    isDirector,
+    hasModuleAccess,
+    getAcademyId
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      profile,
-      loading,
-      signIn,
-      signOut,
-      isPlatformAdmin,
-      isDirector,
-      hasModuleAccess,
-      getAcademyId
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -176,6 +202,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };
