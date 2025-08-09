@@ -239,28 +239,18 @@ const App: React.FC = () => {
     </QueryClientProvider>
   );
 };
-
-// Component to handle redirection after login
 const HandleLoginRedirect: React.FC = () => {
   const { user, isPlatformAdmin, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+  if (loading) return null; // Let Suspense handle loading
 
-  if (!user) {
-    // If not logged in, show the public index page
-    return <Index />;
-  }
+  if (!user) return <Index />;
 
-  // If logged in, redirect based on role
   if (isPlatformAdmin()) {
     return <Navigate to="/platform-admin/dashboard" state={{ from: location }} replace />;
-  } else {
-    // Assuming any other logged-in user is an academy admin
-    return <Navigate to="/admin/dashboard" state={{ from: location }} replace />;
   }
+  return <Navigate to="/admin/dashboard" state={{ from: location }} replace />;
 };
 
 // Protected routes
