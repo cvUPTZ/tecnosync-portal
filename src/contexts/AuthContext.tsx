@@ -31,7 +31,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
+  const logLoading = (msg: string, value: boolean) => {
+    console.log(`[AuthContext] ${msg} → loading =`, value);
+    setLoading(value);
+  };
+
   const fetchProfile = async (uid: string) => {
+    console.log(`[AuthContext] Fetching profile for user_id=${uid}`);
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -39,9 +45,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching profile:', error);
+      console.error('[AuthContext] Error fetching profile:', error);
       return null;
     }
+    console.log('[AuthContext] Profile fetched:', data);
     return data;
   };
 
@@ -49,11 +56,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let mounted = true;
 
     const initializeAuth = async () => {
+      console.log('[AuthContext] Initializing auth...');
+      logLoading('initial load start', true);
+
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('[AuthContext] getSession result:', { session, sessionError });
 
         if (sessionError) {
-          console.error('Error getting session:', sessionError);
           if (mounted) {
             setUser(null);
             setProfile(null);
@@ -62,7 +72,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const currentUser = session?.user ?? null;
-        if (mounted) setUser(currentUser);
+        if (mounted) {
+          setUser(currentUser);
+          console.log('[AuthContext] User set from getSession:', currentUser);
+        }
 
         if (currentUser && mounted) {
           const profileData = await fetchProfile(currentUser.id);
@@ -71,14 +84,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfile(null);
         }
       } catch (err) {
-        console.error('Error initializing auth:', err);
+        console.error('[AuthContext] Error initializing auth:', err);
         if (mounted) {
           setUser(null);
           setProfile(null);
         }
       } finally {
         if (mounted) {
-          setLoading(false);
+          logLoading('initial load end', false);
           setInitialized(true);
         }
       }
@@ -87,28 +100,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        // Only block UI on the very first load
-       if (!initialized) setLoading(true);
+      async (event, session) => {
+        console.log(`[AuthContext] onAuthStateChange event: ${event}`, session);
 
-try {
-  const currentUser = session?.user ?? null;
-  setUser(currentUser);
+        if (!initialized) {
+          logLoading('auth change before init', true);
+        } else {
+          console.log('[AuthContext] Already initialized → NOT setting loading=true');
+        }
 
-  if (currentUser) {
-    const profileData = await fetchProfile(currentUser.id);
-    setProfile(profileData);
-  } else {
-    setProfile(null);
-  }
-} catch (err) {
-  console.error('Error in onAuthStateChange handler:', err);
-  setUser(null);
-  setProfile(null);
-} finally {
-  setLoading(false);
-}
+        try {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+          console.log('[AuthContext] User set from auth change:', currentUser);
 
+          if (currentUser) {
+            const profileData = await fetchProfile(currentUser.id);
+            setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
+        } catch (err) {
+          console.error('[AuthContext] Error in onAuthStateChange handler:', err);
+          setUser(null);
+          setProfile(null);
+        } finally {
+          logLoading('auth change end', false);
+        }
       }
     );
 
@@ -119,23 +137,23 @@ try {
   }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
+    logLoading('signIn start', true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     } finally {
-      setLoading(false);
+      logLoading('signIn end', false);
     }
   };
 
   const signOut = async () => {
-    setLoading(true);
+    logLoading('signOut start', true);
     try {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
     } finally {
-      setLoading(false);
+      logLoading('signOut end', false);
     }
   };
 
