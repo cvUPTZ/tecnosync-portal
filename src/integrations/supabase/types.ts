@@ -62,6 +62,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_action_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           created_at: string
@@ -1006,6 +1045,16 @@ export type Database = {
       is_platform_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_action_type: string
+          p_target_table?: string
+          p_target_id?: string
+          p_old_values?: Json
+          p_new_values?: Json
+        }
+        Returns: undefined
       }
       log_document_access: {
         Args: {
