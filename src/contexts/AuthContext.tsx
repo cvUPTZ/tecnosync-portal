@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false); // track first load
+  const [initialized, setInitialized] = useState(false);
 
   const fetchProfile = async (uid: string) => {
     const { data, error } = await supabase
@@ -88,8 +88,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        // Only set loading during profile fetch, not every time
-        if (mounted && initialized) setLoading(true);
+        // Only block UI on the very first load
+        if (!initialized) setLoading(true);
 
         try {
           const currentUser = session?.user ?? null;
@@ -106,7 +106,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
           setProfile(null);
         } finally {
-          if (mounted) setLoading(false);
+          // Always end the cycle
+          setLoading(false);
         }
       }
     );
@@ -128,9 +129,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+    setLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isDirector = () => profile?.role === 'director';
@@ -141,7 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (isPlatformAdmin()) return true;
     if (isDirector()) {
       const directorModules = [
-        'dashboard', 'students', 'registrations', 'attendance', 
+        'dashboard', 'students', 'registrations', 'attendance',
         'finance', 'website', 'settings'
       ];
       return directorModules.includes(module);
@@ -151,20 +157,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getAcademyId = () => profile?.academy_id || null;
 
-  const value = {
-    user,
-    profile,
-    loading,
-    signIn,
-    signOut,
-    isPlatformAdmin,
-    isDirector,
-    hasModuleAccess,
-    getAcademyId
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        signIn,
+        signOut,
+        isPlatformAdmin,
+        isDirector,
+        hasModuleAccess,
+        getAcademyId
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
