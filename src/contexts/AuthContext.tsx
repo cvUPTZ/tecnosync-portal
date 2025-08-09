@@ -89,26 +89,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         // Only block UI on the very first load
-        if (!initialized) setLoading(true);
+       if (!initialized) setLoading(true);
 
-        try {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
+try {
+  const currentUser = session?.user ?? null;
+  setUser(currentUser);
 
-          if (currentUser) {
-            const profileData = await fetchProfile(currentUser.id);
-            setProfile(profileData);
-          } else {
-            setProfile(null);
-          }
-        } catch (err) {
-          console.error('Error in onAuthStateChange handler:', err);
-          setUser(null);
-          setProfile(null);
-        } finally {
-          // Always end the cycle
-          setLoading(false);
-        }
+  if (currentUser) {
+    const profileData = await fetchProfile(currentUser.id);
+    setProfile(profileData);
+  } else {
+    setProfile(null);
+  }
+} catch (err) {
+  console.error('Error in onAuthStateChange handler:', err);
+  setUser(null);
+  setProfile(null);
+} finally {
+  setLoading(false);
+}
+
       }
     );
 
