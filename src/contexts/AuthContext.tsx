@@ -127,6 +127,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Error in onAuthStateChange handler:", e);
           setUser(null);
           setProfile(null);
+        } finally {
+          // Always set loading to false after auth state change
+          if (mounted) {
+            setLoading(false);
+          }
         }
       }
     );
@@ -139,12 +144,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setLoading(false);
+        throw error;
+      }
+      // Auth state change will handle setting loading to false
+    } catch (error) {
       setLoading(false);
       throw error;
     }
-    // Auth state change will handle the rest
   };
 
   const signOut = async () => {
