@@ -239,51 +239,57 @@ const App: React.FC = () => {
     </QueryClientProvider>
   );
 };
+
+// Component to handle redirection after login
 const HandleLoginRedirect: React.FC = () => {
   const { user, isPlatformAdmin, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return null; // Let Suspense handle loading
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
-  if (!user) return <Index />;
+  if (!user) {
+    return <Index />;
+  }
 
   if (isPlatformAdmin()) {
     return <Navigate to="/platform-admin/dashboard" state={{ from: location }} replace />;
+  } else {
+    return <Navigate to="/admin/dashboard" state={{ from: location }} replace />;
   }
-  return <Navigate to="/admin/dashboard" state={{ from: location }} replace />;
 };
 
 // Protected routes
 const PlatformAdminRoute: React.FC = () => {
   const { isPlatformAdmin, loading, user } = useAuth();
-  
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  
+
   if (!user) {
     return <Navigate to="/login" />;
   }
-  
+
   return isPlatformAdmin() ? <PlatformAdminLayout /> : <Navigate to="/" />;
 };
 
 const AcademyAdminRoute: React.FC = () => {
   const { user, profile, loading, isPlatformAdmin } = useAuth();
-  
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  
+
   if (!user || !profile) {
     return <Navigate to="/login" />;
   }
-  
-  // Redirect if a platform admin somehow lands here
+
   if (isPlatformAdmin()) {
     return <Navigate to="/platform-admin/dashboard" />;
   }
-  
+
   return <AdminLayout />;
 };
 
