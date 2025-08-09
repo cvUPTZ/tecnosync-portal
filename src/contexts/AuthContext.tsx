@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -30,20 +29,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false); // track first load
+
+  const fetchProfile = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', uid)
+      .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+    return data;
+  };
 
   useEffect(() => {
     let mounted = true;
-    console.log('[Auth] provider mounted');
 
     const initializeAuth = async () => {
-      console.log('[Auth] initializeAuth start');
       try {
-        setLoading(true);
-
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) {
-          console.error('[Auth] getSession error:', sessionError);
+          console.error('Error getting session:', sessionError);
           if (mounted) {
             setUser(null);
             setProfile(null);
@@ -55,112 +65,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mounted) setUser(currentUser);
 
         if (currentUser && mounted) {
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', currentUser.id)
-              .maybeSingle();
-
-            if (profileError && profileError.code !== 'PGRST116') {
-              console.error('[Auth] profile fetch error:', profileError);
-              setProfile(null);
-            } else {
-              setProfile(profileData);
-            }
-          } catch (profileErr) {
-            console.error('[Auth] error fetching profile:', profileErr);
-            setProfile(null);
-          }
-        } else {
+          const profileData = await fetchProfile(currentUser.id);
+          if (mounted) setProfile(profileData);
+        } else if (mounted) {
           setProfile(null);
         }
-      } catch (error) {
-        console.error('[Auth] initializeAuth unexpected error:', error);
+      } catch (err) {
+        console.error('Error initializing auth:', err);
         if (mounted) {
           setUser(null);
           setProfile(null);
         }
       } finally {
         if (mounted) {
-          console.log('[Auth] initializeAuth done — setting loading=false');
           setLoading(false);
+          setInitialized(true);
         }
       }
     };
 
     initializeAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        console.log('[Auth] onAuthStateChange fired:', event, session?.user?.id || 'no-user');
+      async (_event, session) => {
+        // Only set loading during profile fetch, not every time
+        if (mounted && initialized) setLoading(true);
 
         try {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
 
           if (currentUser) {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', currentUser.id)
-              .maybeSingle();
-
-            if (error && error.code !== 'PGRST116') {
-              console.error('[Auth] profile fetch error on auth change:', error);
-              setProfile(null);
-            } else {
-              setProfile(profileData);
-            }
+            const profileData = await fetchProfile(currentUser.id);
+            setProfile(profileData);
           } else {
             setProfile(null);
           }
-        } catch (e) {
-          console.error("[Auth] error in onAuthStateChange handler:", e);
+        } catch (err) {
+          console.error('Error in onAuthStateChange handler:', err);
           setUser(null);
           setProfile(null);
         } finally {
-          // ✅ Always clear loading at the end
-          console.log('[Auth] onAuthStateChange — setting loading=false');
-          setLoading(false);
+          if (mounted) setLoading(false);
         }
       }
     );
 
     return () => {
       mounted = false;
-      if (subscription) {
-        subscription.unsubscribe();
-        console.log('[Auth] unsubscribed auth listener');
-      }
+      subscription.unsubscribe();
     };
-  }, []);
+  }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // onAuthStateChange will set loading=false
-    } catch (error) {
-      console.error('[Auth] signIn error:', error);
+    } finally {
       setLoading(false);
-      throw error;
     }
   };
 
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.error('[Auth] signOut error:', e);
-    } finally {
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
   };
 
   const isDirector = () => profile?.role === 'director';
@@ -171,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (isPlatformAdmin()) return true;
     if (isDirector()) {
       const directorModules = [
-        'dashboard', 'students', 'registrations', 'attendance',
+        'dashboard', 'students', 'registrations', 'attendance', 
         'finance', 'website', 'settings'
       ];
       return directorModules.includes(module);
@@ -181,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getAcademyId = () => profile?.academy_id || null;
 
-  const value: AuthContextType = {
+  const value = {
     user,
     profile,
     loading,
@@ -202,8 +172,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
