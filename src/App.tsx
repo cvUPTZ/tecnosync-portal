@@ -243,10 +243,10 @@ const App: React.FC = () => {
 
 // Component to handle redirection after login
 const HandleLoginRedirect: React.FC = () => {
-  const { user, profile, isPlatformAdmin, loading } = useAuth();
+  const { user, profile, isPlatformAdmin, loading, initialized } = useAuth();
   const location = useLocation();
 
-  if (loading || (user && !profile)) {
+  if (loading || !initialized || (user && !profile)) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -263,32 +263,32 @@ const HandleLoginRedirect: React.FC = () => {
 
 // Protected routes
 const PlatformAdminRoute: React.FC = () => {
-  const { isPlatformAdmin, loading, user, profile } = useAuth();
+  const { isPlatformAdmin, loading, user, profile, initialized } = useAuth();
 
-  if (loading) {
+  if (loading || !initialized) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!profile) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  return isPlatformAdmin() ? <PlatformAdminLayout /> : <Navigate to="/" />;
+  return isPlatformAdmin() ? <PlatformAdminLayout /> : <Navigate to="/" replace />;
 };
 
 const AcademyAdminRoute: React.FC = () => {
-  const { user, profile, loading, isPlatformAdmin } = useAuth();
+  const { user, profile, loading, isPlatformAdmin, initialized } = useAuth();
 
-  if (loading) {
+  if (loading || !initialized) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!profile) {
@@ -296,7 +296,7 @@ const AcademyAdminRoute: React.FC = () => {
   }
 
   if (isPlatformAdmin()) {
-    return <Navigate to="/platform-admin/dashboard" />;
+    return <Navigate to="/platform-admin/dashboard" replace />;
   }
 
   return <AdminLayout />;

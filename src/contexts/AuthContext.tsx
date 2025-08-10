@@ -15,6 +15,7 @@ interface AuthContextType {
   user: SupabaseUser | null;
   profile: Profile | null;
   loading: boolean;
+  initialized: boolean;
   isPlatformAdmin: () => boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -177,6 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         profile,
         loading,
+        initialized,
         signIn,
         signOut,
         isPlatformAdmin,
