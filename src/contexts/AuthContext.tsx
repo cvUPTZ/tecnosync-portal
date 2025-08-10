@@ -97,38 +97,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    initializeAuth();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(`[AuthContext] onAuthStateChange event: ${event}`, session);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log(`[AuthContext] onAuthStateChange event: ${event}`, session);
-
-        if (!initialized) {
-          logLoading('auth change before init', true);
-        } else {
-          console.log('[AuthContext] Already initialized → NOT setting loading=true');
-        }
-
-        try {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
-          console.log('[AuthContext] User set from auth change:', currentUser);
-
-          if (currentUser) {
-            const profileData = await fetchProfile(currentUser.id);
-            setProfile(profileData);
-          } else {
-            setProfile(null);
-          }
-        } catch (err) {
-          console.error('[AuthContext] Error in onAuthStateChange handler:', err);
-          setUser(null);
-          setProfile(null);
-        } finally {
-          logLoading('auth change end', false);
-        }
+      if (!initialized) {
+        logLoading('auth change before init', true);
+      } else {
+        console.log('[AuthContext] Already initialized → NOT setting loading=true');
       }
-    );
+
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      console.log('[AuthContext] User set from auth change:', currentUser);
+
+      if (currentUser) {
+        setTimeout(async () => {
+          const profileData = await fetchProfile(currentUser.id);
+          setProfile(profileData);
+        }, 0);
+      } else {
+        setProfile(null);
+      }
+
+      // End loading immediately; profile fetch continues in background
+      logLoading('auth change end', false);
+    });
+
+    // After listener is set up, perform initial session check
+    initializeAuth();
 
     return () => {
       mounted = false;
