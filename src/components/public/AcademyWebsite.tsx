@@ -60,8 +60,7 @@ const AcademyWebsite = ({ section }: { section?: string }) => {
           .from('team_members')
           .select('*')
           .eq('academy_id', academyData.id)
-          .eq('is_public', true)
-          .order('order');
+          .order('display_order');
 
         if (teamError) throw teamError;
         setTeamMembers(teamData || []);
