@@ -142,6 +142,7 @@ const App: React.FC = () => {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HandleLoginRedirect />} />
+              <Route path="/home" element={<Index />} />
               <Route path="/login" element={<UnifiedLogin />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
