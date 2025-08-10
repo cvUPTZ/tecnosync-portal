@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [initialized]);
+  }, []); // Remove initialized from dependencies to prevent infinite loop
 
   const signIn = async (email: string, password: string) => {
     logLoading('signIn start', true);
