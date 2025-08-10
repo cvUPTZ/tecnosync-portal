@@ -242,10 +242,10 @@ const App: React.FC = () => {
 
 // Component to handle redirection after login
 const HandleLoginRedirect: React.FC = () => {
-  const { user, isPlatformAdmin, loading } = useAuth();
+  const { user, profile, isPlatformAdmin, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (loading || (user && !profile)) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -262,7 +262,7 @@ const HandleLoginRedirect: React.FC = () => {
 
 // Protected routes
 const PlatformAdminRoute: React.FC = () => {
-  const { isPlatformAdmin, loading, user } = useAuth();
+  const { isPlatformAdmin, loading, user, profile } = useAuth();
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -270,6 +270,10 @@ const PlatformAdminRoute: React.FC = () => {
 
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  if (!profile) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return isPlatformAdmin() ? <PlatformAdminLayout /> : <Navigate to="/" />;
@@ -282,8 +286,12 @@ const AcademyAdminRoute: React.FC = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  if (!profile) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (isPlatformAdmin()) {
