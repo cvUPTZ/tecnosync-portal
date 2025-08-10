@@ -43,9 +43,10 @@ const AcademyWebsite = ({ section }: { section?: string }) => {
 
         // Fetch website content
         const { data: contentData, error: contentError } = await supabase
-          .from('website_content')
+          .from('public_pages')
           .select('content')
           .eq('academy_id', academyData.id)
+          .eq('slug', 'homepage')
           .single();
 
         if (contentError && contentError.code !== 'PGRST116') { // PGRST116 means no rows found
