@@ -33,6 +33,7 @@ const UnifiedLogin = () => {
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             providers={['google', 'github']}
+            redirectTo={`${window.location.origin}/`}
             theme="dark"
           />
         </CardContent>
