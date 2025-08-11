@@ -42,6 +42,9 @@ const PlatformHeader: React.FC<PlatformHeaderProps> = ({ academy }) => {
             ))}
           </div>
           <LanguageSwitcher />
+          <Link to="/login">
+            <Button variant="outline">Admin Login</Button>
+          </Link>
           <Link to={`/site/${academy.subdomain}/register`}>
             <Button className="bg-tfa-blue hover:bg-tfa-blue/90">Register</Button>
           </Link>
