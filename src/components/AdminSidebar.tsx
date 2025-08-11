@@ -155,13 +155,6 @@ const AdminSidebar = () => {
       moduleId: 'website',
     },
     {
-      id: 'theme',
-      label: 'تخصيص التصميم',
-      href: '/admin/theme',
-      icon: Palette,
-      moduleId: 'website',
-    },
-    {
       id: 'settings',
       label: 'إعدادات الأكاديمية',
       href: '/admin/settings',
