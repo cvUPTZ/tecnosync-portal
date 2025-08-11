@@ -192,13 +192,16 @@ const ContentManagement: React.FC<ContentManagementProps> = ({
       
       const { error } = await supabase
         .from('public_pages')
-        .upsert({
-          academy_id: academyId,
-          slug: pageSlug,
-          title: pageSlug === 'homepage' ? 'Home' : 'About Us',
-          content,
-          is_published: true
-        });
+        .upsert(
+          {
+            academy_id: academyId,
+            slug: pageSlug,
+            title: pageSlug === 'homepage' ? 'Home' : 'About Us',
+            content,
+            is_published: true
+          },
+          { onConflict: 'academy_id,slug' }
+        );
 
       if (error) throw error;
 

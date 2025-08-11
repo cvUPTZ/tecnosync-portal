@@ -51,12 +51,20 @@ const WebsiteContentManagement = () => {
     meta_description: '',
     is_published: true
   });
+  const [subdomain, setSubdomain] = useState<string | null>(null);
 
   useEffect(() => {
-    if (profile?.academy_id) {
-      loadPages();
-      loadWebsiteSettings();
-    }
+    if (!profile?.academy_id) return;
+    const loadAll = async () => {
+      await Promise.all([loadPages(), loadWebsiteSettings()]);
+      const { data } = await supabase
+        .from('academies')
+        .select('subdomain')
+        .eq('id', profile.academy_id)
+        .maybeSingle();
+      if (data?.subdomain) setSubdomain(data.subdomain);
+    };
+    loadAll();
   }, [profile?.academy_id]);
 
   const loadPages = async () => {
@@ -87,7 +95,7 @@ const WebsiteContentManagement = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      setWebsiteSettings(data);
+      setWebsiteSettings(data || null);
     } catch (error: any) {
       toast.error('Failed to load website settings: ' + error.message);
     } finally {
@@ -159,8 +167,10 @@ const WebsiteContentManagement = () => {
     return <div>Loading website content management...</div>;
   }
 
-  const academySubdomain = profile?.academy_id ? 'academy-' + profile.academy_id.slice(0, 8) : 'academy';
-  const previewUrl = `${window.location.origin}/academy/${academySubdomain}`;
+  const previewUrl = subdomain
+    ? `${window.location.origin}/site/${subdomain}`
+    : `${window.location.origin}/site/academy`;
+
 
   return (
     <div className="space-y-6">
