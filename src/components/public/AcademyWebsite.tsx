@@ -13,6 +13,9 @@ import GallerySection from './GallerySection';
 import ContactSection from './ContactSection';
 import PublicHeader from './PlatformHeader';
 import PublicFooter from './PlatformFooter';
+import SEO from '@/components/seo/SEO';
+import SectionRenderer, { SectionMap } from './layout/SectionRenderer';
+import { buildSiteConfig } from './site';
 
 const AcademyWebsite = ({ section }: { section?: string }) => {
   const { subdomain } = useParams();
@@ -131,35 +134,38 @@ const AcademyWebsite = ({ section }: { section?: string }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEO
+        title={buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).seo.title}
+        description={buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).seo.description}
+        canonical={buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).seo.canonical}
+        organization={{
+          name: academy.name,
+          email: academy.contact_email,
+          telephone: academy.contact_phone,
+        }}
+      />
       <PublicHeader academy={academy} />
 
       <main>
-        {!section || section === 'home' ? (
-          <>
-            <HeroSection content={content?.hero} />
-            <AboutSection content={content?.about} />
-            <FeaturesSection content={content?.features} />
-            <ProgramsSection />
-            <TeamSection teamMembers={teamMembers} />
-            <GallerySection />
-            <ContactSection academy={academy} />
-          </>
-        ) : section === 'about' ? (
-          <AboutSection content={content?.about} />
-        ) : section === 'team' ? (
-          <TeamSection teamMembers={teamMembers} />
-        ) : section === 'programs' ? (
-          <ProgramsSection />
-        ) : section === 'contact' ? (
-          <ContactSection academy={academy} />
-        ) : section === 'gallery' ? (
-          <GallerySection />
-        ) : null}
+        <SectionRenderer
+          sections={section ? buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).sections.filter(s => s.key === section) : buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).sections}
+          sectionMap={{
+            hero: () => <HeroSection content={content?.hero} />,
+            about: () => <AboutSection content={content?.about} />,
+            features: () => <FeaturesSection content={content?.features} />,
+            programs: () => <ProgramsSection />,
+            team: () => <TeamSection teamMembers={teamMembers} />,
+            gallery: () => <GallerySection />,
+            contact: () => <ContactSection academy={academy} />,
+          }}
+          theme={buildSiteConfig(academy, content, typeof window !== 'undefined' ? window.location.href : undefined).theme}
+        />
       </main>
 
       <PublicFooter academy={academy} />
     </div>
   );
+
 };
 
 export default AcademyWebsite;
