@@ -59,6 +59,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import EditUserForm from '@/components/UserManagement/EditUserForm';
 
 interface UserProfile {
   id: string;
@@ -71,6 +72,10 @@ interface UserProfile {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  academy_id: string | null;
+  academies: {
+    name: string;
+  } | null;
 }
 
 const userSchema = z.object({
@@ -79,6 +84,7 @@ const userSchema = z.object({
   phone: z.string().optional(),
   role: z.enum(['director', 'comptabilite_chief', 'coach', 'parent']),
   password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل').optional(),
+  academy_id: z.string().nullable(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -86,6 +92,7 @@ type UserFormData = z.infer<typeof userSchema>;
 const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
+  const [academies, setAcademies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -103,8 +110,27 @@ const UserManagement = () => {
       phone: '',
       role: 'coach',
       password: '',
+      academy_id: null,
     },
   });
+
+  const fetchAcademies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('academies')
+        .select('id, name')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setAcademies(data || []);
+    } catch (error) {
+      console.error('Error fetching academies:', error);
+      toast({
+        title: 'خطأ في جلب الأكاديميات',
+        description: 'لا يمكن تحميل قائمة الأكاديميات حاليًا.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Fetch users
   const fetchUsers = async () => {
@@ -112,7 +138,7 @@ const UserManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, academies(name)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -134,6 +160,7 @@ const UserManagement = () => {
   useEffect(() => {
     if (isPlatformAdmin()) {
       fetchUsers();
+      fetchAcademies();
     }
   }, [isPlatformAdmin]);
 
@@ -169,7 +196,7 @@ const UserManagement = () => {
           data: {
             full_name: data.full_name,
             role: data.role,
-            academy_id: profile?.academy_id,
+            academy_id: data.academy_id,
             admin_created: true, // Flag to indicate admin creation
           },
           emailRedirectTo: undefined, // Disable email redirect
@@ -401,6 +428,35 @@ const UserManagement = () => {
 
                   <FormField
                     control={form.control}
+                    name="academy_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الأكاديمية</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value || ''}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر أكاديمية" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value=""><em>لا شيء</em></SelectItem>
+                            {academies.map((academy) => (
+                              <SelectItem key={academy.id} value={academy.id}>
+                                {academy.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -557,6 +613,7 @@ const UserManagement = () => {
                   <TableHead>الاسم</TableHead>
                   <TableHead>البريد الإلكتروني</TableHead>
                   <TableHead>الهاتف</TableHead>
+                  <TableHead>الأكاديمية</TableHead>
                   <TableHead>الدور</TableHead>
                   <TableHead>الحالة</TableHead>
                   <TableHead>تاريخ الإنشاء</TableHead>
@@ -571,6 +628,7 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone || '-'}</TableCell>
+                    <TableCell>{user.academies?.name || 'N/A'}</TableCell>
                     <TableCell>
                       {getRoleBadge(user.role)}
                     </TableCell>
@@ -591,13 +649,29 @@ const UserManagement = () => {
                         >
                           {user.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingUser(user)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
+                        <Dialog open={editingUser?.id === user.id} onOpenChange={(isOpen) => !isOpen && setEditingUser(null)}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>تعديل المستخدم</DialogTitle>
+                              <DialogDescription>
+                                تحديث بيانات المستخدم والصلاحيات
+                              </DialogDescription>
+                            </DialogHeader>
+                            {editingUser && (
+                              <EditUserForm
+                                user={editingUser}
+                                academies={academies}
+                                onUpdate={updateUser}
+                                onCancel={() => setEditingUser(null)}
+                              />
+                            )}
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </TableCell>
                   </TableRow>
