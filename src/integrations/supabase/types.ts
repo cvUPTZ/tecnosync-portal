@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -999,8 +999,8 @@ export type Database = {
         Args: {
           academy_name: string
           academy_subdomain: string
-          admin_full_name: string
           admin_email: string
+          admin_full_name: string
           admin_password: string
           modules_config?: Json
         }
@@ -1010,11 +1010,11 @@ export type Database = {
         Args: {
           academy_name: string
           academy_subdomain: string
-          admin_full_name: string
           admin_email: string
+          admin_full_name: string
           admin_password: string
-          user_id: string
           modules_config?: Json
+          user_id: string
         }
         Returns: Json
       }
@@ -1034,6 +1034,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_role: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
@@ -1049,17 +1053,17 @@ export type Database = {
       log_admin_action: {
         Args: {
           p_action_type: string
-          p_target_table?: string
-          p_target_id?: string
-          p_old_values?: Json
           p_new_values?: Json
+          p_old_values?: Json
+          p_target_id?: string
+          p_target_table?: string
         }
         Returns: undefined
       }
       log_document_access: {
         Args: {
-          p_document_id: string
           p_action: string
+          p_document_id: string
           p_ip_address?: unknown
           p_user_agent?: string
         }

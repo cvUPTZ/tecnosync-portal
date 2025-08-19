@@ -115,7 +115,7 @@ const AdminSidebar = () => {
     {
       id: 'reports',
       label: 'التقارير المالية',
-      href: '/admin/reports',
+      href: '/admin/finance/reports',
       icon: BarChart3,
       moduleId: 'finance',
     },
@@ -157,7 +157,7 @@ const AdminSidebar = () => {
     {
       id: 'theme',
       label: 'تخصيص التصميم',
-      href: '/admin/theme',
+      href: '/admin/website?tab=theme',
       icon: Palette,
       moduleId: 'website',
     },

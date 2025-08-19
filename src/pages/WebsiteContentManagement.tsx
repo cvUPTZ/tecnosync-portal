@@ -54,10 +54,16 @@ const WebsiteContentManagement = () => {
   const [subdomain, setSubdomain] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!profile) {
+      setLoading(false);
+      return;
+    }
+    
     if (!profile?.academy_id) {
       setLoading(false);
       return;
     }
+    
     const loadAll = async () => {
       try {
         await Promise.all([loadPages(), loadWebsiteSettings()]);
@@ -75,6 +81,17 @@ const WebsiteContentManagement = () => {
     };
     loadAll();
   }, [profile?.academy_id]);
+
+  // Handle URL tab parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab) {
+      // Set the active tab based on URL parameter
+      const tabElement = document.querySelector(`[value="${tab}"]`) as HTMLElement;
+      tabElement?.click();
+    }
+  }, []);
 
   const loadPages = async () => {
     if (!profile?.academy_id) return;
@@ -185,7 +202,12 @@ const WebsiteContentManagement = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-muted-foreground">No academy access found. Please ensure you are logged in.</p>
+          <p className="text-muted-foreground mb-4">
+            You are not associated with any academy. Please contact the platform administrator to assign you to an academy.
+          </p>
+          <div className="text-sm text-muted-foreground">
+            Current role: {profile?.role || 'Unknown'}
+          </div>
         </div>
       </div>
     );
