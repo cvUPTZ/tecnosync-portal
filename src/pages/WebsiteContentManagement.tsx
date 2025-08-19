@@ -54,15 +54,24 @@ const WebsiteContentManagement = () => {
   const [subdomain, setSubdomain] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile?.academy_id) return;
+    if (!profile?.academy_id) {
+      setLoading(false);
+      return;
+    }
     const loadAll = async () => {
-      await Promise.all([loadPages(), loadWebsiteSettings()]);
-      const { data } = await supabase
-        .from('academies')
-        .select('subdomain')
-        .eq('id', profile.academy_id)
-        .maybeSingle();
-      if (data?.subdomain) setSubdomain(data.subdomain);
+      try {
+        await Promise.all([loadPages(), loadWebsiteSettings()]);
+        const { data } = await supabase
+          .from('academies')
+          .select('subdomain')
+          .eq('id', profile.academy_id)
+          .maybeSingle();
+        if (data?.subdomain) setSubdomain(data.subdomain);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     loadAll();
   }, [profile?.academy_id]);
@@ -96,11 +105,9 @@ const WebsiteContentManagement = () => {
 
       if (error && error.code !== 'PGRST116') throw error;
       setWebsiteSettings(data || null);
-    } catch (error: any) {
-      toast.error('Failed to load website settings: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
+      } catch (error: any) {
+        toast.error('Failed to load website settings: ' + error.message);
+      }
   };
 
   const saveWebsiteSettings = async () => {
@@ -164,7 +171,24 @@ const WebsiteContentManagement = () => {
   }, [selectedPage]);
 
   if (loading) {
-    return <div>Loading website content management...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading website content management...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile?.academy_id) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-muted-foreground">No academy access found. Please ensure you are logged in.</p>
+        </div>
+      </div>
+    );
   }
 
   const previewUrl = subdomain
