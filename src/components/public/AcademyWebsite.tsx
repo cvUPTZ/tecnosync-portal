@@ -32,16 +32,22 @@ const AcademyWebsite = ({ section }: { section?: string }) => {
         setLoading(true);
         if (!subdomain) throw new Error('نطاق غير صالح');
 
+        console.log('Fetching data for subdomain:', subdomain);
+
         // Fetch academy
         const { data: academyData, error: academyError } = await supabase
           .from('academies')
           .select('id, name, contact_phone, contact_email')
           .eq('subdomain', subdomain)
-          .single();
+          .maybeSingle();
 
-        if (academyError) throw academyError;
+        if (academyError) {
+          console.error('Academy error:', academyError);
+          throw academyError;
+        }
         if (!academyData) throw new Error('الأكاديمية غير موجودة');
 
+        console.log('Academy data found:', academyData);
         setAcademy(academyData);
 
         // Fetch website content

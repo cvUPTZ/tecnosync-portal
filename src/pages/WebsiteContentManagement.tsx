@@ -217,6 +217,8 @@ const WebsiteContentManagement = () => {
     ? `${window.location.origin}/site/${subdomain}`
     : `${window.location.origin}/site/academy`;
 
+  console.log('Preview URL:', previewUrl, 'Subdomain:', subdomain);
+
 
   return (
     <div className="space-y-6">
@@ -227,12 +229,14 @@ const WebsiteContentManagement = () => {
             Manage your academy's public website content, theme, and settings
           </p>
         </div>
-        <Button asChild variant="outline">
-          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-            <Eye className="w-4 h-4 mr-2" />
-            Preview Website
-          </a>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+              <Eye className="w-4 h-4 mr-2" />
+              Preview Website
+            </a>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="content" className="w-full">
@@ -417,11 +421,17 @@ const WebsiteContentManagement = () => {
               <CardDescription>Preview how your website looks to visitors</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Preview URL: <code className="bg-background px-2 py-1 rounded">{previewUrl}</code>
+                </p>
+              </div>
               <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
                 <iframe
                   src={previewUrl}
                   className="w-full h-full"
                   title="Website Preview"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                 />
               </div>
               <div className="mt-4 flex justify-center">
